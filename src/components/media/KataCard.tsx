@@ -1,97 +1,243 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Heart, Star, MoreVertical } from 'lucide-react';
+import { Star, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { MediaItem } from '@/types/media';
+import { TYPE_COLORS, STATUS_LABELS, STATUS_COLORS } from '@/lib/utils/constants';
+import { useMediaStore } from '@/lib/store';
+import { EditItemModal } from './EditItemModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 interface KataCardProps {
-    title: string;
-    type: 'BOOK' | 'GAME' | 'MOVIE' | 'SERIES';
-    coverUrl: string;
-    rating?: number;
-    status?: string;
+  item: MediaItem;
 }
 
-export function KataCard({ title, type, coverUrl, rating = 0 }: KataCardProps) {
-    const container = useRef<HTMLDivElement>(null);
-    const overlay = useRef<HTMLDivElement>(null);
+export function KataCard({ item }: KataCardProps) {
+  const container = useRef<HTMLDivElement>(null);
+  const overlay = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [showActions, setShowActions] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  const deleteItem = useMediaStore((state) => state.deleteItem);
 
-    useGSAP(() => {
-        // Hover animation
-        const tl = gsap.timeline({ paused: true });
+  useGSAP(() => {
+    const card = container.current;
+    if (!card) return;
 
-        tl.to(overlay.current, {
-            opacity: 1,
-            duration: 0.2,
-            ease: 'power2.out'
-        })
-            .to('.card-actions', {
-                y: 0,
-                opacity: 1,
-                duration: 0.2,
-                stagger: 0.05
-            }, '<');
+    const tl = gsap.timeline({ paused: true });
 
-        container.current?.addEventListener('mouseenter', () => tl.play());
-        container.current?.addEventListener('mouseleave', () => tl.reverse());
+    tl.to(overlay.current, {
+      opacity: 1,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+    .to('.card-actions', {
+      y: 0,
+      opacity: 1,
+      duration: 0.2,
+      stagger: 0.05
+    }, '<0.1')
+    .to(card, {
+      scale: 1.02,
+      duration: 0.3,
+      ease: 'back.out(1.2)'
+    }, '<');
 
-    }, { scope: container });
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!card) return;
+      
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = ((y - centerY) / centerY) * -8;
+      const rotateY = ((x - centerX) / centerX) * 8;
+      
+      gsap.to(card, {
+        rotationX: rotateX,
+        rotationY: rotateY,
+        duration: 0.3,
+        ease: 'power2.out',
+        transformPerspective: 1000,
+      });
 
-    const getTypeColor = (t: string) => {
-        switch (t) {
-            case 'BOOK': return 'var(--color-book)';
-            case 'GAME': return 'var(--color-game)';
-            case 'MOVIE': return 'var(--color-movie)';
-            case 'SERIES': return 'var(--color-series)';
-            default: return 'var(--accent-primary)';
-        }
+      gsap.to(imageRef.current, {
+        x: ((x - centerX) / centerX) * 10,
+        y: ((y - centerY) / centerY) * 10,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
     };
 
-    return (
-        <div
-            ref={container}
-            className="group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg transition-transform hover:-translate-y-1"
-        >
-            {/* Cover Image */}
-            <Image
-                src={coverUrl}
-                alt={title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            />
+    const handleMouseLeave = () => {
+      tl.reverse();
+      setShowActions(false);
+      
+      gsap.to(card, {
+        rotationX: 0,
+        rotationY: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: 'power2.out',
+      });
 
-            {/* Type Indicator */}
-            <div
-                className="absolute top-2 right-2 h-2 w-2 rounded-full shadow-sm"
-                style={{ backgroundColor: getTypeColor(type) }}
-            />
+      gsap.to(imageRef.current, {
+        x: 0,
+        y: 0,
+        duration: 0.5,
+        ease: 'power2.out',
+      });
+    };
 
-            {/* Hover Overlay */}
-            <div
-                ref={overlay}
-                className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0"
-            >
-                <h3 className="line-clamp-2 font-bold text-white leading-tight mb-1">
-                    {title}
-                </h3>
+    card.addEventListener('mouseenter', () => tl.play());
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
 
-                <div className="flex items-center gap-1 text-[var(--accent-warning)] mb-3">
-                    <Star size={14} fill="currentColor" />
-                    <span className="text-sm font-medium">{rating > 0 ? rating : '-'}</span>
-                </div>
+    return () => {
+      card.removeEventListener('mouseenter', () => tl.play());
+      card.removeEventListener('mousemove', handleMouseMove);
+      card.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, { scope: container });
 
-                <div className="flex items-center justify-between card-actions translate-y-2 opacity-0">
-                    <button className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors">
-                        <Heart size={16} />
-                    </button>
-                    <button className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors">
-                        <MoreVertical size={16} />
-                    </button>
-                </div>
-            </div>
+  const handleDeleteConfirm = () => {
+    gsap.to(container.current, {
+      scale: 0.8,
+      opacity: 0,
+      duration: 0.3,
+      ease: 'back.in(2)',
+      onComplete: () => {
+        toast.success(`Removed "${item.title}" from your kata`);
+        deleteItem(item.id);
+      }
+    });
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditModalOpen(true);
+    setShowActions(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleteDialogOpen(true);
+    setShowActions(false);
+  };
+
+  return (
+    <>
+      <div
+        ref={container}
+        className="group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform"
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        <div ref={imageRef} className="absolute inset-0 will-change-transform">
+          <Image
+            src={item.coverUrl}
+            alt={item.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          />
         </div>
-    );
+
+        <div
+          className="absolute top-2 right-2 h-2 w-2 rounded-full shadow-lg animate-pulse"
+          style={{ 
+            backgroundColor: TYPE_COLORS[item.type],
+            boxShadow: `0 0 10px ${TYPE_COLORS[item.type]}`
+          }}
+        />
+
+        <div
+          ref={overlay}
+          className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0"
+          style={{ transform: 'translateZ(20px)' }}
+        >
+          <h3 className="line-clamp-2 font-bold text-white leading-tight mb-1">
+            {item.title}
+          </h3>
+
+          <p className="text-xs text-[var(--text-secondary)] mb-1 line-clamp-1">
+            {item.author || item.platform || item.releaseYear}
+          </p>
+
+          <div className="flex items-center gap-1 text-[var(--accent-warning)] mb-2">
+            <Star size={14} fill="currentColor" className="animate-pulse" />
+            <span className="text-sm font-medium">
+              {item.rating !== null ? item.rating.toFixed(1) : '—'}
+            </span>
+          </div>
+
+          <div 
+            className="text-xs font-medium mb-3 transition-colors"
+            style={{ color: STATUS_COLORS[item.status] }}
+          >
+            {STATUS_LABELS[item.status]}
+          </div>
+
+          <div className="flex items-center justify-between card-actions translate-y-2 opacity-0">
+            <button 
+              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
+              onClick={handleEdit}
+            >
+              <Edit size={16} />
+            </button>
+            <button 
+              onClick={() => setShowActions(!showActions)}
+              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
+            >
+              <MoreVertical size={16} />
+            </button>
+          </div>
+
+          {showActions && (
+            <div className="absolute bottom-12 right-4 rounded-lg border border-white/10 bg-[var(--bg-primary)] p-2 shadow-xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <button
+                onClick={handleDeleteClick}
+                className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors"
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+            style={{ transform: 'skewX(-20deg)' }}
+          />
+        </div>
+      </div>
+
+      <EditItemModal
+        item={item}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Item"
+        message={`Are you sure you want to remove "${item.title}" from your library? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+    </>
+  );
 }

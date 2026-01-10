@@ -1,197 +1,435 @@
+'use client';
+
+import { useState } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
-import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film } from 'lucide-react';
+import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
-import { MOCK_MEDIA_ITEMS } from "@/lib/mock-data";
+import { useMediaStore } from "@/lib/store";
+import { FadeIn } from "@/components/FadeIn";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { SettingsModal } from "@/components/SettingsModal";
 
 export default function ProfilePage() {
-    return (
-        <div className="min-h-screen pb-20">
-            <Navbar />
+  const items = useMediaStore((state) => state.items);
+  const getStats = useMediaStore((state) => state.getStats);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'reviews' | 'stats'>('overview');
+  
+  const stats = getStats();
+  
+  const favoriteItems = items
+    .filter((item) => item.rating !== null)
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 3);
+  
+  const recentActivity = items
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 10);
 
-            <main className="container mx-auto px-4 pt-32 max-w-5xl">
-                {/* Header Profile */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
-                    <div className="flex items-center gap-6">
-                        <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center text-4xl">
-                            🧘
-                        </div>
-                        <div>
-                            <h1 className="text-4xl font-bold tracking-tight">Langa</h1>
-                            <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
-                                <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-                                Black Belt Media Consumer
-                            </p>
-                            <p className="text-[var(--text-tertiary)] text-sm mt-1">Joined January 2026</p>
-                        </div>
-                    </div>
+  const heatmapRef = useScrollAnimation({
+    from: { opacity: 0, y: 50, scale: 0.95 },
+    to: { opacity: 1, y: 0, scale: 1 },
+  });
 
-                    <button className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium flex items-center gap-2">
-                        <Settings size={16} />
-                        Edit Profile
-                    </button>
+  const favoritesRef = useScrollAnimation({
+    from: { opacity: 0, x: -50 },
+    to: { opacity: 1, x: 0 },
+  });
+
+  const timelineRef = useScrollAnimation({
+    from: { opacity: 0, x: 50 },
+    to: { opacity: 1, x: 0 },
+  });
+
+  return (
+    <>
+      <div className="min-h-screen pb-20">
+        <Navbar />
+
+        <main className="container mx-auto px-4 pt-32 max-w-5xl">
+          <FadeIn direction="up" delay={0.1}>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
+              <div className="flex items-center gap-6">
+                <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center">
+                  <User size={48} className="text-white" />
                 </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-                    <StatCard
-                        icon={<BookOpen size={20} />}
-                        label="Books Read"
-                        value="23"
-                        color="text-[var(--color-book)]"
-                        trend="+2 this month"
-                    />
-                    <StatCard
-                        icon={<Gamepad2 size={20} />}
-                        label="Games Beaten"
-                        value="12"
-                        color="text-[var(--color-game)]"
-                        trend="+1 this month"
-                    />
-                    <StatCard
-                        icon={<Tv size={20} />}
-                        label="Series Watched"
-                        value="18"
-                        color="text-[var(--color-series)]"
-                        trend="On break"
-                    />
-                    <StatCard
-                        icon={<Film size={20} />}
-                        label="Movies Seen"
-                        value="45"
-                        color="text-[var(--color-movie)]"
-                        trend="+4 this month"
-                    />
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Langa</h1>
+                  <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
+                    {stats.total} items tracked
+                  </p>
+                  <p className="text-[var(--text-tertiary)] text-sm mt-1">
+                    Average rating: {stats.averageRating > 0 ? `${stats.averageRating}/10` : 'No ratings yet'}
+                  </p>
                 </div>
+              </div>
 
-                {/* Content Tabs */}
-                <div className="border-b border-white/10 mb-8">
-                    <div className="flex gap-8">
-                        <TabItem label="Overview" active />
-                        <TabItem label="History" />
-                        <TabItem label="Reviews" />
-                        <TabItem label="Lists" />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    {/* Left Column: Stats & Activity */}
-                    <div className="lg:col-span-2 space-y-12">
-                        {/* Activity Heatmap Mock */}
-                        <section>
-                            <div className="flex items-center gap-3 mb-6">
-                                <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
-                                <h2 className="text-xl font-semibold">Kata Consistency</h2>
-                            </div>
-                            <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8">
-                                <div className="h-32 flex items-end justify-between gap-1">
-                                    {Array.from({ length: 40 }).map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="w-full rounded-sm bg-[var(--accent-primary)]"
-                                            style={{
-                                                height: `${Math.random() * 100}%`,
-                                                opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.8 + 0.2
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
-                                    <span>Jan 1</span>
-                                    <span>Daily Activity</span>
-                                    <span>Today</span>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Recent Favorites */}
-                        <section>
-                            <h2 className="text-xl font-semibold mb-6">Recent Favorites</h2>
-                            <div className="grid grid-cols-3 gap-4">
-                                {MOCK_MEDIA_ITEMS.slice(0, 3).map((item) => (
-                                    <KataCard
-                                        key={`fav-${item.id}`}
-                                        title={item.title}
-                                        type={item.type}
-                                        coverUrl={item.coverUrl}
-                                        rating={item.rating}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    </div>
-
-                    {/* Right Column: Recent Updates */}
-                    <div className="space-y-8">
-                        <section>
-                            <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Activity Log</h2>
-                            <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
-                                <TimelineItem
-                                    title="Completed Dune"
-                                    date="2 days ago"
-                                    type="BOOK"
-                                    desc="Rated 5 stars. Masterpiece."
-                                />
-                                <TimelineItem
-                                    title="Started Elden Ring"
-                                    date="1 week ago"
-                                    type="GAME"
-                                    desc="Prepare to die edition."
-                                />
-                                <TimelineItem
-                                    title="Watched Oppenheimer"
-                                    date="2 weeks ago"
-                                    type="MOVIE"
-                                    desc="Mind blowing visuals."
-                                />
-                            </div>
-                        </section>
-                    </div>
-                </div>
-
-            </main>
-        </div>
-    );
-}
-
-function StatCard({ label, value, color, icon, trend }: { label: string, value: string, color: string, icon: React.ReactNode, trend: string }) {
-    return (
-        <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-[var(--bg-secondary)] p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300">
-            <div className={`mb-4 ${color} opacity-80`}>{icon}</div>
-            <div className="text-3xl font-bold text-white mb-1">{value}</div>
-            <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
-            <div className="mt-4 text-xs font-mono text-[var(--text-tertiary)] opacity-50 group-hover:opacity-100 transition-opacity">
-                {trend}
+              <button 
+                onClick={() => setIsSettingsOpen(true)}
+                className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
+              >
+                <Settings size={16} />
+                Settings
+              </button>
             </div>
-        </div>
-    );
+          </FadeIn>
+
+          <FadeIn direction="up" delay={0.2}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+              <StatCard
+                icon={<BookOpen size={20} />}
+                label="Books"
+                value={stats.byType.BOOK || 0}
+                color="text-[var(--color-book)]"
+                total={stats.total}
+                delay={0}
+              />
+              <StatCard
+                icon={<Gamepad2 size={20} />}
+                label="Games"
+                value={stats.byType.GAME || 0}
+                color="text-[var(--color-game)]"
+                total={stats.total}
+                delay={0.1}
+              />
+              <StatCard
+                icon={<Tv size={20} />}
+                label="Series"
+                value={stats.byType.SERIES || 0}
+                color="text-[var(--color-series)]"
+                total={stats.total}
+                delay={0.2}
+              />
+              <StatCard
+                icon={<Film size={20} />}
+                label="Movies"
+                value={stats.byType.MOVIE || 0}
+                color="text-[var(--color-movie)]"
+                total={stats.total}
+                delay={0.3}
+              />
+            </div>
+          </FadeIn>
+
+          <FadeIn direction="up" delay={0.3}>
+            <div className="border-b border-white/10 mb-8">
+              <div className="flex gap-8">
+                <TabItem 
+                  label="Overview" 
+                  active={activeTab === 'overview'} 
+                  onClick={() => setActiveTab('overview')}
+                />
+                <TabItem 
+                  label="History" 
+                  active={activeTab === 'history'}
+                  onClick={() => setActiveTab('history')}
+                />
+                <TabItem 
+                  label="Reviews" 
+                  active={activeTab === 'reviews'}
+                  onClick={() => setActiveTab('reviews')}
+                />
+                <TabItem 
+                  label="Stats" 
+                  active={activeTab === 'stats'}
+                  onClick={() => setActiveTab('stats')}
+                />
+              </div>
+            </div>
+          </FadeIn>
+
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              <div className="lg:col-span-2 space-y-12">
+                <section ref={heatmapRef}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
+                    <h2 className="text-xl font-semibold">Activity</h2>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
+                    <div className="h-32 flex items-end justify-between gap-1">
+                      {Array.from({ length: 40 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-full rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
+                          style={{
+                            height: `${Math.random() * 100}%`,
+                            opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.8 + 0.2,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
+                      <span>Last 40 days</span>
+                      <span>{stats.total} items</span>
+                    </div>
+                  </div>
+                </section>
+
+                {favoriteItems.length > 0 && (
+                  <section ref={favoritesRef}>
+                    <h2 className="text-xl font-semibold mb-6">Top Rated</h2>
+                    <div className="grid grid-cols-3 gap-4">
+                      {favoriteItems.map((item, index) => (
+                        <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
+                          <KataCard item={item} />
+                        </FadeIn>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              <div className="space-y-8">
+                <section ref={timelineRef}>
+                  <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Recent Activity</h2>
+                  <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
+                    {recentActivity.slice(0, 5).map((item, index) => (
+                      <FadeIn key={item.id} delay={index * 0.15}>
+                        <TimelineItem
+                          title={item.title}
+                          date={getRelativeTime(item.createdAt)}
+                          type={item.type}
+                          desc={item.review || `Added to ${item.status.toLowerCase().replace(/_/g, ' ')}`}
+                        />
+                      </FadeIn>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'history' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold mb-6">Complete History</h2>
+              <div className="space-y-3">
+                {recentActivity.map((item, index) => (
+                  <FadeIn key={item.id} delay={index * 0.05}>
+                    <div className="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
+                      <img
+                        src={item.coverUrl}
+                        alt={item.title}
+                        className="h-16 w-12 rounded object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white">{item.title}</h3>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {item.author || item.platform || item.releaseYear}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-[var(--accent-primary)]">
+                          {item.rating ? `${item.rating}/10` : 'Not rated'}
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)]">
+                          {getRelativeTime(item.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </FadeIn>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold mb-6">Your Reviews</h2>
+              <div className="space-y-4">
+                {items
+                  .filter((item) => item.review)
+                  .map((item, index) => (
+                    <FadeIn key={item.id} delay={index * 0.05}>
+                      <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
+                        <div className="flex items-start gap-4 mb-4">
+                          <img
+                            src={item.coverUrl}
+                            alt={item.title}
+                            className="h-20 w-14 rounded object-cover"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                            <p className="text-sm text-[var(--text-secondary)] mb-2">
+                              {item.author || item.platform}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <div className="text-[var(--accent-warning)]">
+                                {item.rating ? `${item.rating}/10` : 'Not rated'}
+                              </div>
+                              <span className="text-[var(--text-tertiary)]">•</span>
+                              <span className="text-sm text-[var(--text-tertiary)]">
+                                {getRelativeTime(item.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                          {item.review}
+                        </p>
+                      </div>
+                    </FadeIn>
+                  ))}
+                {items.filter((item) => item.review).length === 0 && (
+                  <p className="text-center text-[var(--text-tertiary)] py-12">
+                    No reviews yet. Start reviewing your items!
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'stats' && (
+            <div className="space-y-8">
+              <h2 className="text-xl font-semibold mb-6">Detailed Statistics</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                  <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                    By Status
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(stats.byStatus).map(([status, count]) => (
+                      <div key={status} className="flex items-center justify-between">
+                        <span className="text-sm text-white capitalize">
+                          {status.replace(/_/g, ' ').toLowerCase()}
+                        </span>
+                        <span className="text-sm font-bold text-[var(--accent-primary)]">
+                          {count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                  <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                    Rating Distribution
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { label: '9-10', min: 9, max: 10 },
+                      { label: '7-8', min: 7, max: 9 },
+                      { label: '5-6', min: 5, max: 7 },
+                      { label: '0-4', min: 0, max: 5 },
+                    ].map(({ label, min, max }) => {
+                      const count = items.filter(
+                        (item) => item.rating !== null && item.rating >= min && item.rating < max
+                      ).length;
+                      return (
+                        <div key={label} className="flex items-center justify-between">
+                          <span className="text-sm text-white">{label}</span>
+                          <span className="text-sm font-bold text-[var(--accent-primary)]">
+                            {count}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+    </>
+  );
 }
 
-function TabItem({ label, active }: { label: string, active?: boolean }) {
-    return (
-        <button className={`pb-4 text-sm font-medium transition-colors relative ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}>
-            {label}
-            {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)] shadow-[0_0_10px_var(--accent-primary)]"></div>}
-        </button>
-    )
+function StatCard({ 
+  label, 
+  value, 
+  color, 
+  icon, 
+  total,
+  delay 
+}: { 
+  label: string;
+  value: number;
+  color: string;
+  icon: React.ReactNode;
+  total: number;
+  delay: number;
+}) {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  
+  return (
+    <FadeIn delay={delay} direction="up">
+      <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-[var(--bg-secondary)] p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300 hover:scale-105">
+        <div className={`mb-4 ${color} opacity-80 group-hover:scale-110 transition-transform`}>{icon}</div>
+        <div className="text-3xl font-bold text-white mb-1">{value}</div>
+        <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
+        <div className="mt-4 h-1 w-full rounded-full bg-white/5 overflow-hidden">
+          <div 
+            className={`h-full rounded-full transition-all duration-1000 ease-out`}
+            style={{ 
+              width: `${percentage}%`,
+              backgroundColor: `var(--color-${label.toLowerCase()})` 
+            }}
+          />
+        </div>
+      </div>
+    </FadeIn>
+  );
 }
 
-function TimelineItem({ title, date, type, desc }: { title: string, date: string, type: string, desc: string }) {
-    const getColor = (t: string) => {
-        switch (t) {
-            case 'BOOK': return 'bg-[var(--color-book)]';
-            case 'GAME': return 'bg-[var(--color-game)]';
-            case 'MOVIE': return 'bg-[var(--color-movie)]';
-            case 'SERIES': return 'bg-[var(--color-series)]';
-            default: return 'bg-gray-500';
-        }
-    };
+function TabItem({ 
+  label, 
+  active, 
+  onClick 
+}: { 
+  label: string; 
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`pb-4 text-sm font-medium transition-all relative ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}
+    >
+      {label}
+      {active && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)] shadow-[0_0_10px_var(--accent-primary)]"></div>
+      )}
+    </button>
+  );
+}
 
-    return (
-        <div className="relative">
-            <span className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ${getColor(type)} ring-4 ring-black`} />
-            <h4 className="text-sm font-medium text-white">{title}</h4>
-            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{date}</p>
-            <p className="text-xs text-[var(--text-secondary)] mt-2 italic">"{desc}"</p>
-        </div>
-    )
+function TimelineItem({ title, date, type, desc }: { title: string; date: string; type: string; desc: string }) {
+  const getColor = (t: string) => {
+    switch (t) {
+      case 'BOOK': return 'bg-[var(--color-book)]';
+      case 'GAME': return 'bg-[var(--color-game)]';
+      case 'MOVIE': return 'bg-[var(--color-movie)]';
+      case 'SERIES': return 'bg-[var(--color-series)]';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <span className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ${getColor(type)} ring-4 ring-black group-hover:scale-125 transition-transform`} />
+      <h4 className="text-sm font-medium text-white group-hover:text-[var(--accent-primary)] transition-colors">{title}</h4>
+      <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{date}</p>
+      <p className="text-xs text-[var(--text-secondary)] mt-2 line-clamp-2">{desc}</p>
+    </div>
+  );
+}
+
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
 }
