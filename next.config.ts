@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'image.api.playstation.com' },
       { protocol: 'https', hostname: 'image.tmdb.org' },
       { protocol: 'https', hostname: 'assets.nintendo.com' },
+      { protocol: 'https', hostname: 'www.impawards.com' },
+      { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
     ],
   },
 };
