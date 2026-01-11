@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 
 /**
@@ -8,21 +8,26 @@ import Lenis from 'lenis';
  * Only activates on desktop (>768px) to preserve native mobile scroll
  */
 export function useLenis() {
+  const [isClient, setIsClient] = useState(false);
+
+  // Asegurarse de que estamos en el cliente
   useEffect(() => {
-    // Only enable on desktop
-    if (typeof window === 'undefined' || window.innerWidth <= 768) {
-      return;
-    }
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const isMobile = window.innerWidth <= 768;
 
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: isMobile ? 0.8 : 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
-      smoothWheel: true,
+      smoothWheel: !isMobile,
       wheelMultiplier: 1,
-      smoothTouch: false, // Important: disable on touch devices
-      touchMultiplier: 2,
+      touchMultiplier: isMobile ? 1.5 : 2,
       infinite: false,
     });
 
@@ -37,5 +42,5 @@ export function useLenis() {
     return () => {
       lenis.destroy();
     };
-  }, []);
+  }, [isClient]);
 }

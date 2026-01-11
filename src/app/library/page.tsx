@@ -19,11 +19,11 @@ export default function LibraryPage() {
   const router = useRouter();
   const getFilteredItems = useMediaStore((state) => state.getFilteredItems);
   const getStats = useMediaStore((state) => state.getStats);
-  
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  
+
   const filteredItems = getFilteredItems();
   const stats = getStats();
 
@@ -76,26 +76,24 @@ export default function LibraryPage() {
                   {filteredItems.length} of {stats.total} items
                 </p>
               </div>
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid'
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
                       ? 'bg-[var(--accent-primary)] text-black'
                       : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
-                  }`}
+                    }`}
                   aria-label="Grid view"
                 >
                   <Grid3x3 size={20} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list'
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
                       ? 'bg-[var(--accent-primary)] text-black'
                       : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
-                  }`}
+                    }`}
                   aria-label="List view"
                 >
                   <List size={20} />
@@ -117,7 +115,7 @@ export default function LibraryPage() {
                   description="Try adjusting your filters or add new items to your library."
                   action={{
                     label: "Start Searching",
-                    onClick: () => router.push('/search'),
+                    onClick: () => router.push('/books'),
                   }}
                 />
               </FadeIn>
@@ -154,7 +152,7 @@ export default function LibraryPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => {}}
+                        onClick={() => { }}
                         className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-sm"
                       >
                         Edit

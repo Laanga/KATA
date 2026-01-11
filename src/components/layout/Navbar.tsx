@@ -16,9 +16,13 @@ export function Navbar() {
                 </div>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8">
+                <div className="hidden md:flex items-center gap-6">
+                    <NavLink href="/books" label="Books" />
+                    <NavLink href="/series" label="Series" />
+                    <NavLink href="/movies" label="Movies" />
+                    <NavLink href="/games" label="Games" />
+                    <div className="h-4 w-px bg-white/10 mx-2"></div>
                     <NavLink href="/library" label="Library" />
-                    <NavLink href="/profile" label="Stats" />
                 </div>
 
                 {/* Right Actions */}

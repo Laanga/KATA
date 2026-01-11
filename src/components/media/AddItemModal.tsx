@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
@@ -9,27 +9,38 @@ import { MediaType, MediaStatus } from '@/types/media';
 import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
+import { Search, Loader2 } from 'lucide-react';
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   prefilledType?: MediaType;
+  initialData?: Partial<{
+    title: string;
+    coverUrl: string;
+    releaseYear: number;
+    author: string;
+    platform: string;
+    review: string;
+  }>;
 }
 
-export function AddItemModal({ isOpen, onClose, prefilledType }: AddItemModalProps) {
+export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: AddItemModalProps) {
   const addItem = useMediaStore((state) => state.addItem);
-  
+
   const [formData, setFormData] = useState({
-    title: '',
+    title: initialData?.title || '',
     type: prefilledType || ('BOOK' as MediaType),
-    coverUrl: '',
+    coverUrl: initialData?.coverUrl || '',
     status: 'WANT_TO_READ' as MediaStatus,
     rating: null as number | null,
-    review: '',
-    author: '',
-    platform: '',
-    releaseYear: undefined as number | undefined,
+    review: initialData?.review || '',
+    author: initialData?.author || '',
+    platform: initialData?.platform || '',
+    releaseYear: initialData?.releaseYear || undefined as number | undefined,
   });
+
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   const typeOptions = Object.entries(TYPE_LABELS).map(([value, label]) => ({
     value,
@@ -92,7 +103,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType }: AddItemModalPro
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Item" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Type Selection */}
         <div>
           <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
@@ -105,132 +116,91 @@ export function AddItemModal({ isOpen, onClose, prefilledType }: AddItemModalPro
           />
         </div>
 
-        {/* Title */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Title *
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Enter title..."
-            className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-            required
-          />
-        </div>
-
-        {/* Cover URL */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Cover URL (optional)
-          </label>
-          <input
-            type="url"
-            value={formData.coverUrl}
-            onChange={(e) => setFormData({ ...formData, coverUrl: e.target.value })}
-            placeholder="https://..."
-            className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {/* Author (Books) or Platform (Games) */}
-          {formData.type === 'BOOK' && (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Author
-              </label>
-              <input
-                type="text"
-                value={formData.author}
-                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                placeholder="Author name..."
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-              />
-            </div>
-          )}
-
-          {formData.type === 'GAME' && (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Platform
-              </label>
-              <input
-                type="text"
-                value={formData.platform}
-                onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                placeholder="PS5, Xbox, PC..."
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-              />
-            </div>
-          )}
-
-          {/* Release Year */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Form Fields - similar to before but prefilled */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Release Year
+              Title *
             </label>
             <input
-              type="number"
-              value={formData.releaseYear || ''}
-              onChange={(e) => setFormData({ ...formData, releaseYear: e.target.value ? parseInt(e.target.value) : undefined })}
-              placeholder="2024"
-              min="1900"
-              max={new Date().getFullYear()}
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              required
             />
           </div>
-        </div>
 
-        {/* Status */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Status
-          </label>
-          <Select
-            value={formData.status}
-            onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
-            options={statusOptions}
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+                Release Year
+              </label>
+              <input
+                type="number"
+                value={formData.releaseYear || ''}
+                onChange={(e) => setFormData({ ...formData, releaseYear: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+                {formData.type === 'BOOK' ? 'Author' : formData.type === 'GAME' ? 'Platform' : 'Creator/Director'}
+              </label>
+              <input
+                type="text"
+                value={formData.type === 'BOOK' ? formData.author : formData.platform}
+                onChange={(e) => setFormData({ ...formData, [formData.type === 'BOOK' ? 'author' : 'platform']: e.target.value })}
+                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white"
+              />
+            </div>
+          </div>
 
-        {/* Rating */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Rating
-          </label>
-          <RatingInput
-            value={formData.rating}
-            onChange={(value) => setFormData({ ...formData, rating: value })}
-          />
-        </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              Status
+            </label>
+            <Select
+              value={formData.status}
+              onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
+              options={statusOptions}
+            />
+          </div>
 
-        {/* Review */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Review (optional)
-          </label>
-          <textarea
-            value={formData.review}
-            onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-            placeholder="Write your thoughts..."
-            className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-            rows={4}
-            maxLength={500}
-          />
-        </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              Rating
+            </label>
+            <RatingInput
+              value={formData.rating}
+              onChange={(value) => setFormData({ ...formData, rating: value })}
+            />
+          </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary">
-            Add Item
-          </Button>
-        </div>
-      </form>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              Review / Notes
+            </label>
+            <textarea
+              value={formData.review}
+              onChange={(e) => setFormData({ ...formData, review: e.target.value })}
+              className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              rows={3}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Add Item
+            </Button>
+          </div>
+        </form>
+
+      </div>
     </Modal>
   );
 }

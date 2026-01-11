@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import { cn } from '@/lib/utils/cn';
 
 interface SkeletonProps {
@@ -28,8 +30,29 @@ export function MediaCardSkeleton() {
 
 // Grid of skeletons
 export function MediaGridSkeleton({ count = 6 }: { count?: number }) {
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!gridRef.current) return;
+
+    const skeletons = gridRef.current.children;
+
+    gsap.set(skeletons, {
+      opacity: 0,
+      scale: 0.9,
+    });
+
+    gsap.to(skeletons, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.4,
+      stagger: 0.05,
+      ease: 'power2.out',
+    });
+  }, [count]);
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+    <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <MediaCardSkeleton key={i} />
       ))}

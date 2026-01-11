@@ -1,0 +1,207 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Search, Loader2, Plus, Info } from 'lucide-react';
+import { MediaType } from '@/types/media';
+import { useMediaStore } from '@/lib/store';
+import toast from 'react-hot-toast';
+import { AddItemModal } from './AddItemModal';
+import { FadeIn } from '@/components/FadeIn';
+
+interface SearchResult {
+    id: string | number;
+    title: string;
+    year?: number;
+    author?: string;
+    coverUrl?: string;
+    rating?: number;
+    overview?: string;
+}
+
+interface MediaSearchSectionProps {
+    type: MediaType;
+    title: string;
+    description: string;
+}
+
+export function MediaSearchSection({ type, title, description }: MediaSearchSectionProps) {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery.length >= 2) {
+                handleSearch();
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
+
+        setIsSearching(true);
+        setSearchResults([]);
+
+        try {
+            let endpoint = '';
+            switch (type) {
+                case 'MOVIE': endpoint = '/api/search/movies'; break;
+                case 'SERIES': endpoint = '/api/search/series'; break;
+                case 'GAME': endpoint = '/api/search/games'; break;
+                case 'BOOK': endpoint = '/api/search/books'; break;
+            }
+
+            const res = await fetch(`${endpoint}?q=${encodeURIComponent(searchQuery)}`);
+            const data = await res.json();
+
+            if (data.error) {
+                console.warn('Search API error:', data.error);
+                return;
+            }
+
+            let mappedResults: SearchResult[] = [];
+
+            if (type === 'MOVIE') {
+                mappedResults = (data.results || []).map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    year: item.release_date ? parseInt(item.release_date.split('-')[0]) : undefined,
+                    coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
+                    overview: item.overview
+                }));
+            } else if (type === 'SERIES') {
+                mappedResults = (data.results || []).map((item: any) => ({
+                    id: item.id,
+                    title: item.name,
+                    year: item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : undefined,
+                    coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
+                    overview: item.overview
+                }));
+            } else if (type === 'GAME') {
+                mappedResults = (Array.isArray(data) ? data : []).map((item: any) => ({
+                    id: item.id,
+                    title: item.name,
+                    year: item.first_release_date ? new Date(item.first_release_date * 1000).getFullYear() : undefined,
+                    coverUrl: item.cover?.url ? `https:${item.cover.url.replace('t_thumb', 't_cover_big')}` : undefined,
+                    overview: item.summary
+                }));
+            } else if (type === 'BOOK') {
+                mappedResults = (data.items || []).map((item: any) => ({
+                    id: item.id,
+                    title: item.volumeInfo.title,
+                    author: item.volumeInfo.authors?.[0],
+                    year: item.volumeInfo.publishedDate ? parseInt(item.volumeInfo.publishedDate.split('-')[0]) : undefined,
+                    coverUrl: item.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+                    overview: item.volumeInfo.description
+                }));
+            }
+
+            setSearchResults(mappedResults.slice(0, 12));
+        } catch (error) {
+            console.error('Search failed', error);
+            toast.error('Failed to search items');
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSelectResult = (result: SearchResult) => {
+        setSelectedResult(result);
+        setIsAddModalOpen(true);
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="text-center space-y-4">
+                <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
+                <p className="text-[var(--text-secondary)] max-w-lg mx-auto">{description}</p>
+
+                <div className="relative max-w-2xl mx-auto mt-8">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" size={20} />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={`Search for ${type.toLowerCase()}...`}
+                        className="w-full rounded-2xl border border-white/10 bg-[var(--bg-secondary)] pl-12 pr-6 py-4 text-lg text-white placeholder-[var(--text-tertiary)] shadow-lg focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-all"
+                        autoFocus
+                    />
+                    {isSearching && (
+                        <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[var(--text-tertiary)]" size={20} />
+                    )}
+                </div>
+            </div>
+
+            {/* Results Grid */}
+            {searchResults.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                    {searchResults.map((result, index) => (
+                        <FadeIn key={result.id} delay={index * 0.05}>
+                            <button
+                                onClick={() => handleSelectResult(result)}
+                                className="group w-full text-left relative aspect-[2/3] rounded-xl overflow-hidden bg-[var(--bg-secondary)] border border-white/5 hover:border-[var(--accent-primary)] transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                            >
+                                {result.coverUrl ? (
+                                    <img
+                                        src={result.coverUrl}
+                                        alt={result.title}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                        <span className="text-4xl mb-2">?</span>
+                                        <span className="text-xs text-[var(--text-tertiary)]">No Cover</span>
+                                    </div>
+                                )}
+
+                                {/* Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                                    <h3 className="font-bold text-white leading-tight line-clamp-2">{result.title}</h3>
+                                    <p className="text-sm text-[var(--accent-primary)] mt-1">
+                                        {result.year}
+                                        {result.author && ` • ${result.author}`}
+                                    </p>
+                                    <div className="mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/80">
+                                        <Plus size={14} />
+                                        Add to Library
+                                    </div>
+                                </div>
+                            </button>
+                        </FadeIn>
+                    ))}
+                </div>
+            )}
+
+            {searchQuery.length > 2 && searchResults.length === 0 && !isSearching && (
+                <div className="text-center py-20">
+                    <p className="text-[var(--text-tertiary)] text-lg">No results found for "{searchQuery}"</p>
+                </div>
+            )}
+
+            {/* Add Modal populated with selection */}
+            {selectedResult && (
+                <AddItemModal
+                    isOpen={isAddModalOpen}
+                    onClose={() => {
+                        setIsAddModalOpen(false);
+                        setSelectedResult(null);
+                    }}
+                    prefilledType={type}
+                    initialData={{
+                        title: selectedResult.title,
+                        coverUrl: selectedResult.coverUrl,
+                        releaseYear: selectedResult.year,
+                        author: selectedResult.author, // will be ignored if not book, but handled by implicit checks
+                        // We need to pass author/platform carefully? AddItemModal logic handles it roughly.
+                    }}
+                />
+            )}
+        </div>
+    );
+}

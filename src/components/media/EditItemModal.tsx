@@ -18,7 +18,7 @@ interface EditItemModalProps {
 
 export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
   const updateItem = useMediaStore((state) => state.updateItem);
-  
+
   const [formData, setFormData] = useState({
     status: item.status,
     rating: item.rating,
@@ -32,7 +32,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     updateItem(item.id, {
       status: formData.status,
       rating: formData.rating,
@@ -44,66 +44,77 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Item" size="md">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Item" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Item Info */}
-        <div className="flex gap-4">
+        <div className="flex gap-6 rounded-xl bg-white/5 p-4 ring-1 ring-white/10">
           <img
             src={item.coverUrl}
             alt={item.title}
-            className="h-32 w-24 rounded-lg object-cover"
+            className="h-24 w-16 rounded-lg object-cover shadow-lg"
           />
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
-            <p className="text-sm text-[var(--text-secondary)]">
+          <div className="flex flex-1 flex-col justify-center">
+            <h3 className="font-bold text-white text-lg leading-tight mb-1">{item.title}</h3>
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
               {item.author || item.platform || item.releaseYear}
             </p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
+                {item.type}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Status */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Status
-          </label>
-          <Select
-            value={formData.status}
-            onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
-            options={statusOptions}
-          />
-        </div>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* Status */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              Status
+            </label>
+            <Select
+              value={formData.status}
+              onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
+              options={statusOptions}
+              className="h-11 bg-[var(--bg-tertiary)]"
+            />
+          </div>
 
-        {/* Rating */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Rating
-          </label>
-          <RatingInput
-            value={formData.rating}
-            onChange={(value) => setFormData({ ...formData, rating: value })}
-          />
+          {/* Rating */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              Rating
+            </label>
+            <div className="flex h-11 items-center rounded-md border border-white/10 bg-[var(--bg-tertiary)] px-3">
+              <RatingInput
+                value={formData.rating}
+                onChange={(value) => setFormData({ ...formData, rating: value })}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Review */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Review (optional)
-          </label>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              Review
+            </label>
+            <span className="text-xs text-[var(--text-tertiary)]">
+              {formData.review.length}/500
+            </span>
+          </div>
           <textarea
             value={formData.review}
             onChange={(e) => setFormData({ ...formData, review: e.target.value })}
             placeholder="Write your thoughts..."
-            className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-            rows={4}
+            className="min-h-[120px] w-full resize-none rounded-xl border border-white/10 bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             maxLength={500}
           />
-          <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-            {formData.review.length}/500
-          </p>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 border-t border-white/10 pt-6">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>

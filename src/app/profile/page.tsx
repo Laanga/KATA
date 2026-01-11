@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
 import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
@@ -14,14 +14,14 @@ export default function ProfilePage() {
   const getStats = useMediaStore((state) => state.getStats);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'reviews' | 'stats'>('overview');
-  
+
   const stats = getStats();
-  
+
   const favoriteItems = items
     .filter((item) => item.rating !== null)
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))
     .slice(0, 3);
-  
+
   const recentActivity = items
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
@@ -40,6 +40,14 @@ export default function ProfilePage() {
     from: { opacity: 0, x: 50 },
     to: { opacity: 1, x: 0 },
   });
+
+  // Fix hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <>
@@ -60,12 +68,12 @@ export default function ProfilePage() {
                     {stats.total} items tracked
                   </p>
                   <p className="text-[var(--text-tertiary)] text-sm mt-1">
-                    Average rating: {stats.averageRating > 0 ? `${stats.averageRating}/10` : 'No ratings yet'}
+                    Average rating: {stats.averageRating > 0 ? `${stats.averageRating}/5` : 'No ratings yet'}
                   </p>
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => setIsSettingsOpen(true)}
                 className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
               >
@@ -115,23 +123,23 @@ export default function ProfilePage() {
           <FadeIn direction="up" delay={0.3}>
             <div className="border-b border-white/10 mb-8">
               <div className="flex gap-8">
-                <TabItem 
-                  label="Overview" 
-                  active={activeTab === 'overview'} 
+                <TabItem
+                  label="Overview"
+                  active={activeTab === 'overview'}
                   onClick={() => setActiveTab('overview')}
                 />
-                <TabItem 
-                  label="History" 
+                <TabItem
+                  label="History"
                   active={activeTab === 'history'}
                   onClick={() => setActiveTab('history')}
                 />
-                <TabItem 
-                  label="Reviews" 
+                <TabItem
+                  label="Reviews"
                   active={activeTab === 'reviews'}
                   onClick={() => setActiveTab('reviews')}
                 />
-                <TabItem 
-                  label="Stats" 
+                <TabItem
+                  label="Stats"
                   active={activeTab === 'stats'}
                   onClick={() => setActiveTab('stats')}
                 />
@@ -221,7 +229,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-[var(--accent-primary)]">
-                          {item.rating ? `${item.rating}/10` : 'Not rated'}
+                          {item.rating ? `${item.rating}/5` : 'Not rated'}
                         </p>
                         <p className="text-xs text-[var(--text-tertiary)]">
                           {getRelativeTime(item.createdAt)}
@@ -256,7 +264,7 @@ export default function ProfilePage() {
                             </p>
                             <div className="flex items-center gap-2">
                               <div className="text-[var(--accent-warning)]">
-                                {item.rating ? `${item.rating}/10` : 'Not rated'}
+                                {item.rating ? `${item.rating}/5` : 'Not rated'}
                               </div>
                               <span className="text-[var(--text-tertiary)]">•</span>
                               <span className="text-sm text-[var(--text-tertiary)]">
@@ -283,7 +291,7 @@ export default function ProfilePage() {
           {activeTab === 'stats' && (
             <div className="space-y-8">
               <h2 className="text-xl font-semibold mb-6">Detailed Statistics</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
                   <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
@@ -309,10 +317,10 @@ export default function ProfilePage() {
                   </h3>
                   <div className="space-y-3">
                     {[
-                      { label: '9-10', min: 9, max: 10 },
-                      { label: '7-8', min: 7, max: 9 },
-                      { label: '5-6', min: 5, max: 7 },
-                      { label: '0-4', min: 0, max: 5 },
+                      { label: '5', min: 4.5, max: 6 },
+                      { label: '4', min: 3.5, max: 4.5 },
+                      { label: '3', min: 2.5, max: 3.5 },
+                      { label: '1-2', min: 0, max: 2.5 },
                     ].map(({ label, min, max }) => {
                       const count = items.filter(
                         (item) => item.rating !== null && item.rating >= min && item.rating < max
@@ -342,14 +350,14 @@ export default function ProfilePage() {
   );
 }
 
-function StatCard({ 
-  label, 
-  value, 
-  color, 
-  icon, 
+function StatCard({
+  label,
+  value,
+  color,
+  icon,
   total,
-  delay 
-}: { 
+  delay
+}: {
   label: string;
   value: number;
   color: string;
@@ -358,7 +366,7 @@ function StatCard({
   delay: number;
 }) {
   const percentage = total > 0 ? (value / total) * 100 : 0;
-  
+
   return (
     <FadeIn delay={delay} direction="up">
       <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-[var(--bg-secondary)] p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300 hover:scale-105">
@@ -366,11 +374,11 @@ function StatCard({
         <div className="text-3xl font-bold text-white mb-1">{value}</div>
         <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
         <div className="mt-4 h-1 w-full rounded-full bg-white/5 overflow-hidden">
-          <div 
+          <div
             className={`h-full rounded-full transition-all duration-1000 ease-out`}
-            style={{ 
+            style={{
               width: `${percentage}%`,
-              backgroundColor: `var(--color-${label.toLowerCase()})` 
+              backgroundColor: `var(--color-${label.toLowerCase()})`
             }}
           />
         </div>
@@ -379,17 +387,17 @@ function StatCard({
   );
 }
 
-function TabItem({ 
-  label, 
-  active, 
-  onClick 
-}: { 
-  label: string; 
+function TabItem({
+  label,
+  active,
+  onClick
+}: {
+  label: string;
   active?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button 
+    <button
       onClick={onClick}
       className={`pb-4 text-sm font-medium transition-all relative ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}
     >
@@ -426,7 +434,7 @@ function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return 'Just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;

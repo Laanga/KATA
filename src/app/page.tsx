@@ -14,23 +14,21 @@ import { FloatingAddButton } from "@/components/FloatingAddButton";
 import { AddItemModal } from "@/components/media/AddItemModal";
 import { ShortcutsModal } from "@/components/ShortcutsModal";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { StatusDistribution } from "@/components/dashboard/StatusDistribution";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 
 export default function Home() {
   const router = useRouter();
   const items = useMediaStore((state) => state.items);
-  const getStats = useMediaStore((state) => state.getStats);
-  
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  
-  const stats = getStats();
-  
+
   const inProgressStatuses = ['READING', 'PLAYING', 'WATCHING'];
-  const inProgressItems = items.filter((item) => 
+  const inProgressItems = items.filter((item) =>
     inProgressStatuses.includes(item.status)
   );
-  
-  const recentItems = items.slice(0, 6);
 
   useKeyboardShortcuts([
     {
@@ -42,8 +40,8 @@ export default function Home() {
     {
       key: 'k',
       ctrl: true,
-      callback: () => router.push('/search'),
-      description: 'Search',
+      callback: () => router.push('/books'),
+      description: 'Go to search (Books)',
     },
     {
       key: 'l',
@@ -62,99 +60,75 @@ export default function Home() {
     },
   ]);
 
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen">
-        <Navbar />
-        <main className="container mx-auto px-4 pt-24">
-          <MediaGridSkeleton count={6} />
-        </main>
-        <FloatingAddButton />
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="min-h-screen pb-20">
         <Navbar />
 
-        <main className="container mx-auto px-4 pt-24">
+        <main className="container mx-auto px-4 pt-24 max-w-7xl">
           <FadeIn direction="up" delay={0.1}>
-            <header className="mb-12">
-              <h1 className="text-4xl font-bold tracking-tight mb-2 text-balance">
-                Good Evening, <span className="text-[var(--text-secondary)]">Langa</span>
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight mb-2 text-balance">
+                Summary
               </h1>
-              <p className="text-[var(--text-tertiary)]">
-                You have {inProgressItems.length} item{inProgressItems.length !== 1 ? 's' : ''} in progress.
+              <p className="text-[var(--text-secondary)]">
+                Welcome back, Langa. Here is your library at a glance.
               </p>
             </header>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.2}>
-            <section className="mb-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard label="Books" value={stats.byType.BOOK || 0} color="var(--color-book)" delay={0} />
-              <StatCard label="Games" value={stats.byType.GAME || 0} color="var(--color-game)" delay={0.1} />
-              <StatCard label="Movies" value={stats.byType.MOVIE || 0} color="var(--color-movie)" delay={0.2} />
-              <StatCard label="Series" value={stats.byType.SERIES || 0} color="var(--color-series)" delay={0.3} />
-            </section>
-          </FadeIn>
+          <DashboardMetrics />
 
-          {inProgressItems.length > 0 && (
-            <section className="mb-12">
-              <FadeIn direction="up" delay={0.3}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">In Progress</h2>
-                  <button 
-                    onClick={() => router.push('/library')}
-                    className="text-sm text-[var(--accent-primary)] hover:underline transition-all hover:translate-x-1"
-                  >
-                    View All
-                  </button>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column (2/3) - Distributions & In Progress */}
+            <div className="lg:col-span-2 space-y-8">
+              <StatusDistribution />
+
+              {/* In Progress Section */}
+              {inProgressItems.length > 0 && (
+                <FadeIn direction="up" scrollTrigger>
+                  <section>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-semibold">Active Focus</h2>
+                      <button
+                        onClick={() => router.push('/library?status=in_progress')}
+                        className="text-sm text-[var(--accent-primary)] hover:underline transition-all hover:translate-x-1"
+                      >
+                        View All
+                      </button>
+                    </div>
+
+                    <AnimatedGrid staggerDelay={0.08} className="grid-cols-2 sm:grid-cols-3">
+                      {inProgressItems.map((item) => (
+                        <KataCard key={item.id} item={item} />
+                      ))}
+                    </AnimatedGrid>
+                  </section>
+                </FadeIn>
+              )}
+            </div>
+
+            {/* Right Column (1/3) - Activity Feed */}
+            <div className="lg:col-span-1">
+              <FadeIn direction="left" delay={0.3}>
+                <ActivityFeed />
               </FadeIn>
+            </div>
+          </div>
 
-              <AnimatedGrid staggerDelay={0.08}>
-                {inProgressItems.map((item) => (
-                  <KataCard key={item.id} item={item} />
-                ))}
-              </AnimatedGrid>
-            </section>
+          {items.length === 0 && (
+            <div className="mt-12">
+              <EmptyState
+                icon={<BookOpen />}
+                title="Your library is empty"
+                description="Start by adding books, games, movies or series to your collection."
+                action={{
+                  label: "Add First Item",
+                  onClick: () => setIsAddModalOpen(true),
+                }}
+              />
+            </div>
           )}
-
-          <section>
-            <FadeIn direction="up" delay={0.4}>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Recent Activity</h2>
-                <button 
-                  onClick={() => router.push('/library')}
-                  className="text-sm text-[var(--accent-primary)] hover:underline transition-all hover:translate-x-1"
-                >
-                  View All
-                </button>
-              </div>
-            </FadeIn>
-
-            {recentItems.length === 0 ? (
-              <FadeIn delay={0.5}>
-                <EmptyState
-                  icon={<BookOpen />}
-                  title="No items yet"
-                  description="Start building your kata by adding your first item."
-                  action={{
-                    label: "Add Item",
-                    onClick: () => setIsAddModalOpen(true),
-                  }}
-                />
-              </FadeIn>
-            ) : (
-              <AnimatedGrid staggerDelay={0.06}>
-                {recentItems.map((item) => (
-                  <KataCard key={item.id} item={item} />
-                ))}
-              </AnimatedGrid>
-            )}
-          </section>
         </main>
 
         <FloatingAddButton />
@@ -173,18 +147,18 @@ export default function Home() {
   );
 }
 
-function StatCard({ label, value, color, delay }: { label: string; value: number; color: string; delay: number }) {
+function StatCard({ label, value, color, delay = 0 }: { label: string; value: number; color: string; delay?: number }) {
   return (
     <FadeIn delay={delay} direction="up">
       <div className="group rounded-xl border border-white/5 bg-[var(--bg-secondary)] p-6 transition-all hover:border-white/10 hover:scale-105">
         <div className="text-3xl font-bold text-white mb-1">{value}</div>
         <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
         <div className="mt-4 h-1 w-full rounded-full bg-white/5 overflow-hidden">
-          <div 
+          <div
             className="h-full rounded-full transition-all duration-1000 ease-out"
-            style={{ 
+            style={{
               width: `${Math.min((value / 20) * 100, 100)}%`,
-              backgroundColor: color 
+              backgroundColor: color
             }}
           />
         </div>

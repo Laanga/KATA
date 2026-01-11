@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils/cn';
 
@@ -22,9 +22,15 @@ export function AnimatedGrid({
   animateOnMount = true 
 }: AnimatedGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Asegurarse de que estamos en el cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    if (!animateOnMount || !gridRef.current) return;
+    if (!animateOnMount || !gridRef.current || !isClient) return;
 
     const items = gridRef.current.children;
 
@@ -45,7 +51,7 @@ export function AnimatedGrid({
       ease: 'power2.out',
       delay: 0.1,
     });
-  }, [animateOnMount, staggerDelay]);
+  }, [animateOnMount, staggerDelay, isClient]);
 
   return (
     <div

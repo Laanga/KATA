@@ -16,13 +16,13 @@ interface MediaStore {
   addItem: (item: MediaItem) => void;
   updateItem: (id: string, updates: Partial<MediaItem>) => void;
   deleteItem: (id: string) => void;
-  
+
   // Filters
   setFilters: (filters: Partial<MediaFilters>) => void;
   resetFilters: () => void;
   setSortBy: (sortBy: SortBy) => void;
   setSearchQuery: (query: string) => void;
-  
+
   // Computed
   getFilteredItems: () => MediaItem[];
   getItemById: (id: string) => MediaItem | undefined;
@@ -85,16 +85,16 @@ export const useMediaStore = create<MediaStore>()(
       // Computed
       getFilteredItems: () => {
         const { items, filters, sortBy, searchQuery } = get();
-        
+
         // Apply search first
         let filtered = searchMediaItems(items, searchQuery);
-        
+
         // Apply filters
         filtered = filterMediaItems(filtered, filters);
-        
+
         // Apply sorting
         filtered = sortMediaItems(filtered, sortBy);
-        
+
         return filtered;
       },
 
@@ -104,7 +104,7 @@ export const useMediaStore = create<MediaStore>()(
 
       getStats: () => {
         const items = get().items;
-        
+
         const byType = items.reduce((acc, item) => {
           acc[item.type] = (acc[item.type] || 0) + 1;
           return acc;
@@ -118,7 +118,7 @@ export const useMediaStore = create<MediaStore>()(
         const ratingsSum = items
           .filter((item) => item.rating !== null)
           .reduce((sum, item) => sum + (item.rating || 0), 0);
-        
+
         const ratedCount = items.filter((item) => item.rating !== null).length;
         const averageRating = ratedCount > 0 ? ratingsSum / ratedCount : 0;
 
@@ -131,8 +131,8 @@ export const useMediaStore = create<MediaStore>()(
       },
     }),
     {
-      name: 'kata-media-storage',
-      partialize: (state) => ({ 
+      name: 'kata-media-storage-v2',
+      partialize: (state) => ({
         items: state.items,
         filters: state.filters,
         sortBy: state.sortBy,
