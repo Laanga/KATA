@@ -47,6 +47,9 @@ ts-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Test files
+test-igdb.js
+
 # Editors
 .vscode/
 !.vscode/extensions.json

@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ui/ToastProvider";
 import { StoreInitializer } from "@/components/StoreInitializer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { PageTransition } from "@/components/PageTransition";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -25,13 +26,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} antialiased`}>
-        <SmoothScroll>
-          <StoreInitializer />
-          <PageTransition>
-            {children}
-          </PageTransition>
-          <ToastProvider />
-        </SmoothScroll>
+        <AuthProvider>
+          <SmoothScroll>
+            <StoreInitializer />
+            <PageTransition>
+              {children}
+            </PageTransition>
+            <ToastProvider />
+          </SmoothScroll>
+        </AuthProvider>
       </body>
     </html>
   );

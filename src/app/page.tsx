@@ -11,10 +11,26 @@ import { FadeIn } from "@/components/FadeIn";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import { StatusDistribution } from "@/components/dashboard/StatusDistribution";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Home() {
   const router = useRouter();
   const items = useMediaStore((state) => state.items);
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    const getUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Usa el username de metadata, o el email como fallback
+        const name = user.user_metadata?.username || user.email?.split('@')[0] || 'Usuario';
+        setUserName(name);
+      }
+    };
+    getUser();
+  }, []);
 
   const inProgressStatuses = ['READING', 'PLAYING', 'WATCHING'];
   const inProgressItems = items.filter((item) =>
@@ -32,7 +48,7 @@ export default function Home() {
               Resumen
             </h1>
             <p className="text-[var(--text-secondary)]">
-              Bienvenido de nuevo, Langa. Aquí tienes tu biblioteca de un vistazo.
+              Bienvenido de nuevo{userName ? `, ${userName}` : ''}. Aquí tienes tu biblioteca de un vistazo.
             </p>
           </header>
         </FadeIn>

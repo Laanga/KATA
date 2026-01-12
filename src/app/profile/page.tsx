@@ -8,14 +8,33 @@ import { useMediaStore } from "@/lib/store";
 import { FadeIn } from "@/components/FadeIn";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { SettingsModal } from "@/components/SettingsModal";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ProfilePage() {
   const items = useMediaStore((state) => state.items);
   const getStats = useMediaStore((state) => state.getStats);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'reviews' | 'stats'>('overview');
+  const [userName, setUserName] = useState<string>('Usuario');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const stats = getStats();
+
+  // Obtener información del usuario
+  useEffect(() => {
+    const getUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.username || user.email?.split('@')[0] || 'Usuario';
+        setUserName(name);
+        setUserEmail(user.email || '');
+        setAvatarUrl(user.user_metadata?.avatar_url || null);
+      }
+    };
+    getUser();
+  }, []);
 
   const favoriteItems = items
     .filter((item) => item.rating !== null)
@@ -58,17 +77,25 @@ export default function ProfilePage() {
           <FadeIn direction="up" delay={0.1}>
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
               <div className="flex items-center gap-6">
-                <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center">
-                  <User size={48} className="text-white" />
+                <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
+                  {avatarUrl ? (
+                    <img 
+                      src={avatarUrl} 
+                      alt={userName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={48} className="text-white" />
+                  )}
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Langa</h1>
+                  <h1 className="text-4xl font-bold tracking-tight">{userName}</h1>
                   <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
                     {stats.total} items tracked
                   </p>
                   <p className="text-[var(--text-tertiary)] text-sm mt-1">
-                    Average rating: {stats.averageRating > 0 ? `${stats.averageRating}/5` : 'No ratings yet'}
+                    {userEmail || 'No email'}
                   </p>
                 </div>
               </div>

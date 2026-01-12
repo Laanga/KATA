@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Menu, User } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { UserAvatar } from './UserAvatar';
 
 export function Navbar() {
     return (
@@ -27,9 +28,7 @@ export function Navbar() {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-4">
-                    <Link href="/profile" className="h-8 w-8 rounded-full bg-gradient-to-tr from-[var(--accent-primary)] to-emerald-900 flex items-center justify-center border border-white/10 hover:border-[var(--accent-primary)] transition-colors">
-                        <User size={16} className="text-white" />
-                    </Link>
+                    <UserAvatar />
                 </div>
             </div>
         </nav>
