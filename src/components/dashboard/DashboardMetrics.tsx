@@ -9,16 +9,10 @@ export function DashboardMetrics() {
 
     const totalItems = items.length;
 
-    const completedStatus = ['COMPLETED', 'READ', 'FINISHED', 'WATCHED']; // Mapping standard 'COMPLETED'
-    // Actually check the MediaStatus type in store. The Valid statuses are:
-    // WANT_TO_READ, READING, COMPLETED, DROPPED (Book)
-    // WANT_TO_PLAY, PLAYING, COMPLETED, DROPPED (Game)
-    // WANT_TO_WATCH, WATCHING, COMPLETED, DROPPED (Movie/Series)
-
     const completedItems = items.filter(i => i.status === 'COMPLETED').length;
     const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
-    // Calculate average rating of rated items
+    // Calculate average rating of rated items (0-5 scale)
     const ratedItems = items.filter(i => i.rating !== null);
     const avgRating = ratedItems.length > 0
         ? (ratedItems.reduce((acc, curr) => acc + (curr.rating || 0), 0) / ratedItems.length).toFixed(1)
@@ -27,27 +21,27 @@ export function DashboardMetrics() {
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <MetricCard
-                label="Total Items"
+                label="Total de Elementos"
                 value={totalItems.toString()}
                 icon={<Book size={20} />}
                 delay={0}
             />
             <MetricCard
-                label="Completed"
+                label="Completados"
                 value={`${completedItems} (${completionRate}%)`}
                 icon={<Trophy size={20} />}
                 delay={0.1}
             />
             <MetricCard
-                label="Avg Rating"
+                label="Puntuación Media"
                 value={avgRating}
                 icon={<Star size={20} />}
                 delay={0.2}
             />
             <MetricCard
-                label="Streak"
-                value="3 Days"
-                subtext="(Mock)"
+                label="Racha"
+                value="3 Días"
+                subtext="(Simulado)"
                 icon={<Clock size={20} />}
                 delay={0.3}
             />

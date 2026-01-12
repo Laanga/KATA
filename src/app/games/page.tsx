@@ -12,8 +12,8 @@ export default function GamesPage() {
                 <FadeIn>
                     <MediaSearchSection
                         type="GAME"
-                        title="Games"
-                        description="Search for games across all platforms. Powered by IGDB."
+                        title="Juegos"
+                        description="Busca juegos de todas las plataformas. Powered by IGDB."
                     />
                 </FadeIn>
             </main>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Menu, Search, User } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 
 export function Navbar() {
     return (
@@ -17,19 +17,16 @@ export function Navbar() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
-                    <NavLink href="/books" label="Books" />
+                    <NavLink href="/books" label="Libros" />
                     <NavLink href="/series" label="Series" />
-                    <NavLink href="/movies" label="Movies" />
-                    <NavLink href="/games" label="Games" />
+                    <NavLink href="/movies" label="Películas" />
+                    <NavLink href="/games" label="Juegos" />
                     <div className="h-4 w-px bg-white/10 mx-2"></div>
-                    <NavLink href="/library" label="Library" />
+                    <NavLink href="/library" label="Biblioteca" />
                 </div>
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-4">
-                    <Link href="/search" className="text-[var(--text-secondary)] hover:text-white transition-colors p-2">
-                        <Search size={20} />
-                    </Link>
                     <Link href="/profile" className="h-8 w-8 rounded-full bg-gradient-to-tr from-[var(--accent-primary)] to-emerald-900 flex items-center justify-center border border-white/10 hover:border-[var(--accent-primary)] transition-colors">
                         <User size={16} className="text-white" />
                     </Link>

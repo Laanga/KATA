@@ -9,7 +9,7 @@ import { MediaType, MediaStatus } from '@/types/media';
 import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
-import { Search, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface AddItemModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ interface AddItemModalProps {
     releaseYear: number;
     author: string;
     platform: string;
-    review: string;
+    genres: string[];
   }>;
 }
 
@@ -29,43 +29,42 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
   const addItem = useMediaStore((state) => state.addItem);
 
   const [formData, setFormData] = useState({
+    // Read-only data from API
     title: initialData?.title || '',
     type: prefilledType || ('BOOK' as MediaType),
     coverUrl: initialData?.coverUrl || '',
-    status: 'WANT_TO_READ' as MediaStatus,
-    rating: null as number | null,
-    review: initialData?.review || '',
     author: initialData?.author || '',
     platform: initialData?.platform || '',
     releaseYear: initialData?.releaseYear || undefined as number | undefined,
+    genres: initialData?.genres || [],
+    
+    // Editable user data
+    status: 'WANT_TO_READ' as MediaStatus,
+    rating: null as number | null,
+    review: '',
   });
 
-  const [isSearchMode, setIsSearchMode] = useState(false);
-
-  const typeOptions = Object.entries(TYPE_LABELS).map(([value, label]) => ({
-    value,
-    label: `${TYPE_ICONS[value as MediaType]} ${label}`,
-  }));
+  // Update status when type changes
+  useEffect(() => {
+    if (prefilledType) {
+      setFormData(prev => ({
+        ...prev,
+        type: prefilledType,
+        status: VALID_STATUSES[prefilledType][0],
+      }));
+    }
+  }, [prefilledType]);
 
   const statusOptions = VALID_STATUSES[formData.type].map((status) => ({
     value: status,
     label: STATUS_LABELS[status],
   }));
 
-  const handleTypeChange = (newType: string) => {
-    const type = newType as MediaType;
-    setFormData({
-      ...formData,
-      type,
-      status: VALID_STATUSES[type][0],
-    });
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      toast.error('Title is required');
+      toast.error('El título es obligatorio');
       return;
     }
 
@@ -73,92 +72,108 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
       id: crypto.randomUUID(),
       title: formData.title.trim(),
       type: formData.type,
-      coverUrl: formData.coverUrl || 'https://via.placeholder.com/300x450?text=No+Cover',
+      coverUrl: formData.coverUrl || 'https://via.placeholder.com/300x450?text=Sin+Portada',
       status: formData.status,
       rating: formData.rating,
       review: formData.review || undefined,
       author: formData.author || undefined,
       platform: formData.platform || undefined,
       releaseYear: formData.releaseYear,
+      genres: formData.genres,
       createdAt: new Date().toISOString(),
     };
 
     addItem(newItem);
-    toast.success(`Added "${formData.title}" to your kata`);
+    toast.success(`"${formData.title}" añadido a tu kata`);
     onClose();
 
-    // Reset form
-    setFormData({
-      title: '',
-      type: 'BOOK',
-      coverUrl: '',
-      status: 'WANT_TO_READ',
+    // Reset editable fields only
+    setFormData(prev => ({
+      ...prev,
+      status: VALID_STATUSES[prev.type][0],
       rating: null,
       review: '',
-      author: '',
-      platform: '',
-      releaseYear: undefined,
-    });
+    }));
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Item" size="lg">
-      <div className="space-y-6">
-        {/* Type Selection */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-            Type
-          </label>
-          <Select
-            value={formData.type}
-            onChange={handleTypeChange}
-            options={typeOptions}
-          />
+    <Modal isOpen={isOpen} onClose={onClose} title="Añadir a Tu Biblioteca" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Item Preview */}
+        <div className="rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-6">
+          <div className="flex items-start gap-4">
+            <div className="relative h-32 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)] border border-white/5">
+              {formData.coverUrl ? (
+                <Image
+                  src={formData.coverUrl}
+                  alt={formData.title}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[var(--text-tertiary)] text-xs">
+                  Sin Portada
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-2 mb-2">
+                <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
+                  {formData.title || 'Sin título'}
+                </h3>
+                <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-white/5 text-[var(--text-secondary)]">
+                  {TYPE_LABELS[formData.type]}
+                </span>
+              </div>
+              
+              {(formData.author || formData.platform) && (
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  {formData.author || formData.platform}
+                </p>
+              )}
+              
+              {formData.releaseYear && (
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  {formData.releaseYear}
+                </p>
+              )}
+              
+              {formData.genres && formData.genres.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {formData.genres.slice(0, 3).map((genre, index) => (
+                    <span
+                      key={index}
+                      className="text-xs px-2 py-0.5 rounded bg-white/5 text-[var(--text-tertiary)]"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                  {formData.genres.length > 3 && (
+                    <span className="text-xs text-[var(--text-tertiary)]">
+                      +{formData.genres.length - 3} más
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Form Fields - similar to before but prefilled */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Title *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-              required
-            />
+        {/* Editable Fields */}
+        <div className="space-y-6">
+          <div className="border-b border-white/10 pb-2">
+            <h4 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
+              Tu Información
+            </h4>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Release Year
-              </label>
-              <input
-                type="number"
-                value={formData.releaseYear || ''}
-                onChange={(e) => setFormData({ ...formData, releaseYear: e.target.value ? parseInt(e.target.value) : undefined })}
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                {formData.type === 'BOOK' ? 'Author' : formData.type === 'GAME' ? 'Platform' : 'Creator/Director'}
-              </label>
-              <input
-                type="text"
-                value={formData.type === 'BOOK' ? formData.author : formData.platform}
-                onChange={(e) => setFormData({ ...formData, [formData.type === 'BOOK' ? 'author' : 'platform']: e.target.value })}
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white"
-              />
-            </div>
-          </div>
-
+          {/* Status */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Status
+              Estado *
             </label>
             <Select
               value={formData.status}
@@ -167,40 +182,48 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
             />
           </div>
 
+          {/* Rating */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Rating
+              Puntuación
             </label>
             <RatingInput
               value={formData.rating}
               onChange={(value) => setFormData({ ...formData, rating: value })}
             />
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Opcional - Puntúa de 0 a 5 estrellas
+            </p>
           </div>
 
+          {/* Review */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Review / Notes
+              Reseña / Notas
             </label>
             <textarea
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-              className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-              rows={3}
+              className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-colors"
+              rows={4}
+              placeholder="¿Qué te pareció? (opcional)"
             />
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Opcional - Tus pensamientos y notas personales
+            </p>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-            <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary">
-              Add Item
-            </Button>
-          </div>
-        </form>
-
-      </div>
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="primary">
+            Añadir a la Biblioteca
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 }

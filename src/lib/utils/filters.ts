@@ -19,18 +19,18 @@ export function filterMediaItems(
     filtered = filtered.filter((item) => item.status === filters.status);
   }
 
-  // Filter by rating
+  // Filter by rating (0-5 scale)
   if (filters.rating !== 'ALL') {
     filtered = filtered.filter((item) => {
       if (!item.rating) return false;
       
       switch (filters.rating) {
         case 'HIGH':
-          return item.rating >= 8;
+          return item.rating >= 4; // 4-5 estrellas
         case 'MID':
-          return item.rating >= 5 && item.rating < 8;
+          return item.rating === 3; // 3 estrellas
         case 'LOW':
-          return item.rating < 5;
+          return item.rating < 3; // 1-2 estrellas
         default:
           return true;
       }

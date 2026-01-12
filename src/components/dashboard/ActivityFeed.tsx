@@ -17,7 +17,7 @@ export function ActivityFeed() {
     return (
         <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl overflow-hidden">
             <div className="p-6 border-b border-white/5">
-                <h3 className="text-lg font-semibold">Recent Activity</h3>
+                <h3 className="text-lg font-semibold">Actividad Reciente</h3>
             </div>
             <div>
                 {recentItems.map((item, index) => (
@@ -49,7 +49,7 @@ export function ActivityFeed() {
                                         {STATUS_LABELS[item.status]}
                                     </span>
                                     <span>•</span>
-                                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                                    <span>{new Date(item.createdAt).toLocaleDateString('es-ES')}</span>
                                 </div>
                             </div>
 

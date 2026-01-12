@@ -24,7 +24,6 @@ interface MediaStore {
   setSearchQuery: (query: string) => void;
 
   // Computed
-  getFilteredItems: () => MediaItem[];
   getItemById: (id: string) => MediaItem | undefined;
   getStats: () => {
     total: number;
@@ -83,21 +82,6 @@ export const useMediaStore = create<MediaStore>()(
       setSearchQuery: (searchQuery) => set({ searchQuery }),
 
       // Computed
-      getFilteredItems: () => {
-        const { items, filters, sortBy, searchQuery } = get();
-
-        // Apply search first
-        let filtered = searchMediaItems(items, searchQuery);
-
-        // Apply filters
-        filtered = filterMediaItems(filtered, filters);
-
-        // Apply sorting
-        filtered = sortMediaItems(filtered, sortBy);
-
-        return filtered;
-      },
-
       getItemById: (id) => {
         return get().items.find((item) => item.id === id);
       },
@@ -140,3 +124,25 @@ export const useMediaStore = create<MediaStore>()(
     }
   )
 );
+
+/**
+ * Custom hook that returns filtered items with automatic re-rendering
+ * when filters, sortBy, searchQuery, or items change
+ */
+export function useFilteredItems(): MediaItem[] {
+  const items = useMediaStore((state) => state.items);
+  const filters = useMediaStore((state) => state.filters);
+  const sortBy = useMediaStore((state) => state.sortBy);
+  const searchQuery = useMediaStore((state) => state.searchQuery);
+
+  // Apply search first
+  let filtered = searchMediaItems(items, searchQuery);
+
+  // Apply filters
+  filtered = filterMediaItems(filtered, filters);
+
+  // Apply sorting
+  filtered = sortMediaItems(filtered, sortBy);
+
+  return filtered;
+}

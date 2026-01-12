@@ -1,6 +1,6 @@
 'use client';
 
-import { Filter, SortAsc } from 'lucide-react';
+import { Filter, SortAsc, X } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
 import { useMediaStore } from '@/lib/store';
 import { MediaType, MediaStatus, SortBy } from '@/types/media';
@@ -11,9 +11,16 @@ export function FilterBar() {
   const sortBy = useMediaStore((state) => state.sortBy);
   const setFilters = useMediaStore((state) => state.setFilters);
   const setSortBy = useMediaStore((state) => state.setSortBy);
+  const resetFilters = useMediaStore((state) => state.resetFilters);
+
+  const hasActiveFilters = 
+    filters.type !== 'ALL' || 
+    filters.status !== 'ALL' || 
+    filters.rating !== 'ALL' ||
+    sortBy !== 'date_added';
 
   const typeOptions = [
-    { value: 'ALL', label: 'All Types' },
+    { value: 'ALL', label: 'Todos los Tipos' },
     ...Object.entries(TYPE_LABELS).map(([value, label]) => ({
       value,
       label: `${TYPE_ICONS[value as MediaType]} ${label}s`,
@@ -21,38 +28,43 @@ export function FilterBar() {
   ];
 
   const statusOptions = [
-    { value: 'ALL', label: 'All Statuses' },
-    { value: 'COMPLETED', label: 'Completed' },
-    { value: 'READING', label: 'Reading' },
-    { value: 'PLAYING', label: 'Playing' },
-    { value: 'WATCHING', label: 'Watching' },
-    { value: 'WANT_TO_READ', label: 'Want to Read' },
-    { value: 'WANT_TO_PLAY', label: 'Want to Play' },
-    { value: 'WANT_TO_WATCH', label: 'Want to Watch' },
-    { value: 'DROPPED', label: 'Dropped' },
+    { value: 'ALL', label: 'Todos los Estados' },
+    { value: 'COMPLETED', label: 'Completado' },
+    { value: 'READING', label: 'Leyendo' },
+    { value: 'PLAYING', label: 'Jugando' },
+    { value: 'WATCHING', label: 'Viendo' },
+    { value: 'WANT_TO_READ', label: 'Quiero Leer' },
+    { value: 'WANT_TO_PLAY', label: 'Quiero Jugar' },
+    { value: 'WANT_TO_WATCH', label: 'Quiero Ver' },
+    { value: 'DROPPED', label: 'Abandonado' },
   ];
 
   const ratingOptions = [
-    { value: 'ALL', label: 'Any Rating' },
-    { value: 'HIGH', label: '⭐ 8-10' },
-    { value: 'MID', label: '⭐ 5-7' },
-    { value: 'LOW', label: '⭐ 0-4' },
+    { value: 'ALL', label: 'Cualquier Puntuación' },
+    { value: 'HIGH', label: '⭐ 4-5 estrellas' },
+    { value: 'MID', label: '⭐ 3 estrellas' },
+    { value: 'LOW', label: '⭐ 1-2 estrellas' },
   ];
 
   const sortOptions = [
-    { value: 'date_added', label: 'Recently Added' },
-    { value: 'date_added_asc', label: 'Oldest First' },
-    { value: 'rating_desc', label: 'Highest Rated' },
-    { value: 'rating_asc', label: 'Lowest Rated' },
-    { value: 'title_asc', label: 'Title A-Z' },
-    { value: 'title_desc', label: 'Title Z-A' },
+    { value: 'date_added', label: 'Añadidos Recientemente' },
+    { value: 'date_added_asc', label: 'Más Antiguos Primero' },
+    { value: 'rating_desc', label: 'Mejor Puntuados' },
+    { value: 'rating_asc', label: 'Peor Puntuados' },
+    { value: 'title_asc', label: 'Título A-Z' },
+    { value: 'title_desc', label: 'Título Z-A' },
   ];
+
+  const handleReset = () => {
+    resetFilters();
+    setSortBy('date_added');
+  };
 
   return (
     <div className="sticky top-16 z-40 flex flex-wrap items-center gap-4 border-b border-white/10 bg-[var(--bg-primary)]/80 py-4 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <Filter size={18} className="text-[var(--text-tertiary)]" />
-        <span className="text-sm font-medium text-[var(--text-secondary)]">Filters:</span>
+        <span className="text-sm font-medium text-[var(--text-secondary)]">Filtros:</span>
       </div>
 
       {/* Type Filter */}
@@ -75,6 +87,17 @@ export function FilterBar() {
         onChange={(value) => setFilters({ rating: value as 'ALL' | 'HIGH' | 'MID' | 'LOW' })}
         options={ratingOptions}
       />
+
+      {/* Reset Button */}
+      {hasActiveFilters && (
+        <button
+          onClick={handleReset}
+          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[var(--bg-secondary)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-white"
+        >
+          <X size={14} />
+          Restablecer
+        </button>
+      )}
 
       <div className="ml-auto flex items-center gap-2">
         <SortAsc size={18} className="text-[var(--text-tertiary)]" />

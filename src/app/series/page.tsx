@@ -12,8 +12,8 @@ export default function SeriesPage() {
                 <FadeIn>
                     <MediaSearchSection
                         type="SERIES"
-                        title="TV Series"
-                        description="Find your next binge-worthy show. Powered by TMDB."
+                        title="Series de TV"
+                        description="Encuentra tu próxima serie adictiva. Powered by TMDB."
                     />
                 </FadeIn>
             </main>

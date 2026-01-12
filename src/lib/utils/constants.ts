@@ -3,20 +3,20 @@ import { MediaType, MediaStatus } from '@/types/media';
 // Status Labels
 export const STATUS_LABELS: Record<MediaStatus, string> = {
   // Books
-  WANT_TO_READ: 'Want to Read',
-  READING: 'Reading',
+  WANT_TO_READ: 'Quiero Leer',
+  READING: 'Leyendo',
   
   // Games
-  WANT_TO_PLAY: 'Want to Play',
-  PLAYING: 'Playing',
+  WANT_TO_PLAY: 'Quiero Jugar',
+  PLAYING: 'Jugando',
   
   // Movies/Series
-  WANT_TO_WATCH: 'Want to Watch',
-  WATCHING: 'Watching',
+  WANT_TO_WATCH: 'Quiero Ver',
+  WATCHING: 'Viendo',
   
   // Shared
-  COMPLETED: 'Completed',
-  DROPPED: 'Dropped',
+  COMPLETED: 'Completado',
+  DROPPED: 'Abandonado',
 };
 
 // Type Colors (from CSS variables)
@@ -57,8 +57,8 @@ export const TYPE_ICONS: Record<MediaType, string> = {
 
 // Type labels
 export const TYPE_LABELS: Record<MediaType, string> = {
-  BOOK: 'Book',
-  GAME: 'Game',
-  MOVIE: 'Movie',
-  SERIES: 'Series',
+  BOOK: 'Libro',
+  GAME: 'Juego',
+  MOVIE: 'Película',
+  SERIES: 'Serie',
 };

@@ -12,8 +12,8 @@ export default function BooksPage() {
                 <FadeIn>
                     <MediaSearchSection
                         type="BOOK"
-                        title="Books"
-                        description="Explore millions of books. Powered by Google Books."
+                        title="Libros"
+                        description="Explora millones de libros. Powered by Google Books."
                     />
                 </FadeIn>
             </main>

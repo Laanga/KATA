@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { RatingInput } from './RatingInput';
 import { MediaItem, MediaStatus } from '@/types/media';
-import { VALID_STATUSES, STATUS_LABELS } from '@/lib/utils/constants';
+import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils/constants';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface EditItemModalProps {
   item: MediaItem;
@@ -39,87 +40,134 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
       review: formData.review || undefined,
     });
 
-    toast.success(`Updated "${item.title}"`);
+    toast.success(`"${item.title}" actualizado`);
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Item" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Item Info */}
-        <div className="flex gap-6 rounded-xl bg-white/5 p-4 ring-1 ring-white/10">
-          <img
-            src={item.coverUrl}
-            alt={item.title}
-            className="h-24 w-16 rounded-lg object-cover shadow-lg"
-          />
-          <div className="flex flex-1 flex-col justify-center">
-            <h3 className="font-bold text-white text-lg leading-tight mb-1">{item.title}</h3>
-            <p className="text-sm font-medium text-[var(--text-secondary)]">
-              {item.author || item.platform || item.releaseYear}
-            </p>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
-                {item.type}
-              </span>
+    <Modal isOpen={isOpen} onClose={onClose} title="Editar Elemento" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Item Preview */}
+        <div className="rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-6">
+          <div className="flex items-start gap-4">
+            <div className="relative h-32 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)] border border-white/5">
+              <Image
+                src={item.coverUrl}
+                alt={item.title}
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-2 mb-2">
+                <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
+                  {item.title}
+                </h3>
+                <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-white/5 text-[var(--text-secondary)]">
+                  {TYPE_LABELS[item.type]}
+                </span>
+              </div>
+              
+              {(item.author || item.platform) && (
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  {item.author || item.platform}
+                </p>
+              )}
+              
+              {item.releaseYear && (
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  {item.releaseYear}
+                </p>
+              )}
+              
+              {item.genres && item.genres.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {item.genres.slice(0, 3).map((genre, index) => (
+                    <span
+                      key={index}
+                      className="text-xs px-2 py-0.5 rounded bg-white/5 text-[var(--text-tertiary)]"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                  {item.genres.length > 3 && (
+                    <span className="text-xs text-[var(--text-tertiary)]">
+                      +{item.genres.length - 3} más
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        {/* Editable Fields */}
+        <div className="space-y-6">
+          <div className="border-b border-white/10 pb-2">
+            <h4 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
+              Tu Información
+            </h4>
+          </div>
+
           {/* Status */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-              Status
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              Estado *
             </label>
             <Select
               value={formData.status}
               onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
               options={statusOptions}
-              className="h-11 bg-[var(--bg-tertiary)]"
             />
           </div>
 
           {/* Rating */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-              Rating
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              Puntuación
             </label>
-            <div className="flex h-11 items-center rounded-md border border-white/10 bg-[var(--bg-tertiary)] px-3">
-              <RatingInput
-                value={formData.rating}
-                onChange={(value) => setFormData({ ...formData, rating: value })}
-              />
-            </div>
+            <RatingInput
+              value={formData.rating}
+              onChange={(value) => setFormData({ ...formData, rating: value })}
+            />
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Opcional - Puntúa de 0 a 5 estrellas
+            </p>
           </div>
-        </div>
 
-        {/* Review */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-              Review
-            </label>
-            <span className="text-xs text-[var(--text-tertiary)]">
-              {formData.review.length}/500
-            </span>
+          {/* Review */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Reseña / Notas
+              </label>
+              <span className="text-xs text-[var(--text-tertiary)]">
+                {formData.review.length}/500
+              </span>
+            </div>
+            <textarea
+              value={formData.review}
+              onChange={(e) => setFormData({ ...formData, review: e.target.value })}
+              placeholder="¿Qué te pareció? (opcional)"
+              className="min-h-[120px] w-full resize-none rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              maxLength={500}
+            />
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Opcional - Tus pensamientos y notas personales
+            </p>
           </div>
-          <textarea
-            value={formData.review}
-            onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-            placeholder="Write your thoughts..."
-            className="min-h-[120px] w-full resize-none rounded-xl border border-white/10 bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-            maxLength={500}
-          />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 border-t border-white/10 pt-6">
+        <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" variant="primary">
-            Save Changes
+            Guardar Cambios
           </Button>
         </div>
       </form>

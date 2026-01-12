@@ -116,7 +116,7 @@ export function KataCard({ item }: KataCardProps) {
       duration: 0.3,
       ease: 'back.in(2)',
       onComplete: () => {
-        toast.success(`Removed "${item.title}" from your kata`);
+        toast.success(`"${item.title}" eliminado de tu kata`);
         deleteItem(item.id);
       }
     });
@@ -190,12 +190,14 @@ export function KataCard({ item }: KataCardProps) {
             <button 
               className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
               onClick={handleEdit}
+              aria-label="Editar"
             >
               <Edit size={16} />
             </button>
             <button 
               onClick={() => setShowActions(!showActions)}
               className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
+              aria-label="Más opciones"
             >
               <MoreVertical size={16} />
             </button>
@@ -208,7 +210,7 @@ export function KataCard({ item }: KataCardProps) {
                 className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors"
               >
                 <Trash2 size={16} />
-                Delete
+                Eliminar
               </button>
             </div>
           )}
@@ -232,10 +234,10 @@ export function KataCard({ item }: KataCardProps) {
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Item"
-        message={`Are you sure you want to remove "${item.title}" from your library? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Elemento"
+        message={`¿Estás seguro de que quieres eliminar "${item.title}" de tu biblioteca? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         variant="danger"
       />
     </>

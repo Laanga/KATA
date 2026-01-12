@@ -12,8 +12,8 @@ export default function MoviesPage() {
                 <FadeIn>
                     <MediaSearchSection
                         type="MOVIE"
-                        title="Movies"
-                        description="Discover popular and trending movies. Powered by TMDB."
+                        title="Películas"
+                        description="Descubre películas populares y tendencias. Powered by TMDB."
                     />
                 </FadeIn>
             </main>

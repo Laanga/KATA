@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -18,37 +18,29 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
+      const scrollY = window.scrollY;
+      
+      // Lock body scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-
-      // Prevent scroll events
-      const preventScroll = (e: Event) => {
-        if (e.target instanceof Element && e.target.closest('[role="dialog"]')) {
-          return; // Allow scrolling inside the modal
-        }
-        e.preventDefault();
-      };
-
-      // We only need to lock body/html overflow for modern browsers, but touchmove prevention helps on some mobile devices
-      document.addEventListener('touchmove', preventScroll, { passive: false });
 
       return () => {
+        // Restore body scroll
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
         document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-        document.removeEventListener('touchmove', preventScroll);
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
       };
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
   }, [isOpen]);
 
   // GSAP Animation
@@ -83,6 +75,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     });
   };
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -93,37 +91,47 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
+    <div 
+      className="fixed inset-0 z-50 overflow-hidden"
+      role="dialog" 
+      aria-modal="true"
+    >
       {/* Overlay */}
       <div
         ref={overlayRef}
         className="absolute inset-0 bg-black/60 backdrop-blur-md"
-        onClick={handleClose}
+        onClick={handleOverlayClick}
       />
 
-      {/* Content */}
-      <div
-        ref={contentRef}
-        className={cn(
-          'relative flex max-h-[calc(100vh-4rem)] w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl',
-          sizeClasses[size]
-        )}
-      >
-        {/* Header */}
-        {title && (
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button
-              onClick={handleClose}
-              className="rounded-lg p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        )}
+      {/* Modal Container - Scrollable */}
+      <div className="relative h-full overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6">
+        {/* Content */}
+        <div
+          ref={contentRef}
+          className={cn(
+            'relative w-full my-8 rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl',
+            sizeClasses[size]
+          )}
+        >
+          {/* Header */}
+          {title && (
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 sticky top-0 bg-[var(--bg-secondary)] z-10 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-white">{title}</h2>
+              <button
+                onClick={handleClose}
+                className="rounded-lg p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          )}
 
-        {/* Body */}
-        <div className="overflow-y-auto px-6 py-4">{children}</div>
+          {/* Body */}
+          <div ref={bodyRef} className="px-6 py-6">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );

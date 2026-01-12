@@ -24,6 +24,14 @@ interface MediaSearchSectionProps {
     description: string;
 }
 
+// Traducción de tipos para el placeholder
+const TYPE_SEARCH_LABELS: Record<MediaType, string> = {
+    BOOK: 'libro',
+    GAME: 'juego',
+    MOVIE: 'película',
+    SERIES: 'serie',
+};
+
 export function MediaSearchSection({ type, title, description }: MediaSearchSectionProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -105,7 +113,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
             setSearchResults(mappedResults.slice(0, 12));
         } catch (error) {
             console.error('Search failed', error);
-            toast.error('Failed to search items');
+            toast.error('Error al buscar elementos');
         } finally {
             setIsSearching(false);
         }
@@ -128,7 +136,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={`Search for ${type.toLowerCase()}...`}
+                        placeholder={`Buscar ${TYPE_SEARCH_LABELS[type]}...`}
                         className="w-full rounded-2xl border border-white/10 bg-[var(--bg-secondary)] pl-12 pr-6 py-4 text-lg text-white placeholder-[var(--text-tertiary)] shadow-lg focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-all"
                         autoFocus
                     />
@@ -156,7 +164,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
                                         <span className="text-4xl mb-2">?</span>
-                                        <span className="text-xs text-[var(--text-tertiary)]">No Cover</span>
+                                        <span className="text-xs text-[var(--text-tertiary)]">Sin Portada</span>
                                     </div>
                                 )}
 
@@ -169,7 +177,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                                     </p>
                                     <div className="mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/80">
                                         <Plus size={14} />
-                                        Add to Library
+                                        Añadir a Biblioteca
                                     </div>
                                 </div>
                             </button>
@@ -180,7 +188,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
 
             {searchQuery.length > 2 && searchResults.length === 0 && !isSearching && (
                 <div className="text-center py-20">
-                    <p className="text-[var(--text-tertiary)] text-lg">No results found for "{searchQuery}"</p>
+                    <p className="text-[var(--text-tertiary)] text-lg">No se encontraron resultados para "{searchQuery}"</p>
                 </div>
             )}
 
@@ -197,8 +205,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                         title: selectedResult.title,
                         coverUrl: selectedResult.coverUrl,
                         releaseYear: selectedResult.year,
-                        author: selectedResult.author, // will be ignored if not book, but handled by implicit checks
-                        // We need to pass author/platform carefully? AddItemModal logic handles it roughly.
+                        author: selectedResult.author,
                     }}
                 />
             )}

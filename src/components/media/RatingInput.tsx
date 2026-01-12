@@ -68,7 +68,7 @@ export function RatingInput({
         );
       })}
       <span className="ml-2 text-sm font-medium text-[var(--text-secondary)]">
-        {value ? `${value}/${max}` : 'Not rated'}
+        {value ? `${value}/${max}` : 'Sin puntuar'}
       </span>
     </div>
   );

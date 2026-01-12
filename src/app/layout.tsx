@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Kata (型)",
-  description: "Your media kata. Track books, games, movies, and series.",
+  description: "Tu kata de medios. Rastrea libros, juegos, películas y series.",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`${inter.variable} antialiased`}>
         <SmoothScroll>
           <StoreInitializer />
