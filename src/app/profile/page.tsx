@@ -85,7 +85,7 @@ export default function ProfilePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User size={48} className="text-white" />
+                  <User size={48} className="text-white" />
                   )}
                 </div>
                 <div>

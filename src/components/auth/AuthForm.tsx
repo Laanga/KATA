@@ -143,9 +143,19 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Contraseña
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)]">
+                Contraseña
+              </label>
+              {mode === 'login' && (
+                <a
+                  href="/forgot-password"
+                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </a>
+              )}
+            </div>
             <input
               id="password"
               name="password"

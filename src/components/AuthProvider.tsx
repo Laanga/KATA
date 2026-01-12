@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
-        const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing'];
+        const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password'];
         const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
         if (!user && !isPublicRoute) {
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
       
-      const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing'];
+      const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password'];
       const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
       if (!session && !isPublicRoute) {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, router, supabase.auth]);
 
   // Mostrar loading mientras verifica auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback'];
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (isLoading && !isPublicRoute) {

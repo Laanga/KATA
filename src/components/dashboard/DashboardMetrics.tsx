@@ -2,47 +2,74 @@
 
 import { FadeIn } from "@/components/FadeIn";
 import { useMediaStore } from "@/lib/store";
-import { Trophy, Star, Book, Clock } from "lucide-react";
+import { Trophy, Star, Book, Calendar } from "lucide-react";
+import { useMemo } from 'react';
 
 export function DashboardMetrics() {
     const items = useMediaStore((state) => state.items);
 
-    const totalItems = items.length;
+    const metrics = useMemo(() => {
+        const totalItems = items.length;
+        const completedItems = items.filter(i => i.status === 'COMPLETED').length;
+        const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
-    const completedItems = items.filter(i => i.status === 'COMPLETED').length;
-    const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+        // Calculate average rating
+        const ratedItems = items.filter(i => i.rating !== null);
+        const avgRating = ratedItems.length > 0
+            ? (ratedItems.reduce((acc, curr) => acc + (curr.rating || 0), 0) / ratedItems.length).toFixed(1)
+            : 'N/A';
 
-    // Calculate average rating of rated items (0-5 scale)
-    const ratedItems = items.filter(i => i.rating !== null);
-    const avgRating = ratedItems.length > 0
-        ? (ratedItems.reduce((acc, curr) => acc + (curr.rating || 0), 0) / ratedItems.length).toFixed(1)
-        : 'N/A';
+        // Items agregados este mes
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const itemsThisMonth = items.filter(item => {
+            const itemDate = new Date(item.createdAt);
+            return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+        }).length;
+
+        // Completados este mes
+        const completedThisMonth = items.filter(item => {
+            if (item.status !== 'COMPLETED' || !item.updatedAt) return false;
+            const completedDate = new Date(item.updatedAt);
+            return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear;
+        }).length;
+
+        return {
+            totalItems,
+            completedItems,
+            completionRate,
+            avgRating,
+            itemsThisMonth,
+            completedThisMonth,
+        };
+    }, [items]);
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <MetricCard
                 label="Total de Elementos"
-                value={totalItems.toString()}
+                value={metrics.totalItems.toString()}
                 icon={<Book size={20} />}
                 delay={0}
             />
             <MetricCard
                 label="Completados"
-                value={`${completedItems} (${completionRate}%)`}
+                value={`${metrics.completedItems} (${metrics.completionRate}%)`}
                 icon={<Trophy size={20} />}
                 delay={0.1}
             />
             <MetricCard
                 label="Puntuación Media"
-                value={avgRating}
+                value={metrics.avgRating}
                 icon={<Star size={20} />}
                 delay={0.2}
             />
             <MetricCard
-                label="Racha"
-                value="3 Días"
-                subtext="(Simulado)"
-                icon={<Clock size={20} />}
+                label="Este Mes"
+                value={`+${metrics.itemsThisMonth}`}
+                subtext={`${metrics.completedThisMonth} completados`}
+                icon={<Calendar size={20} />}
                 delay={0.3}
             />
         </div>

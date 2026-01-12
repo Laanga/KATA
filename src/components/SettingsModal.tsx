@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
-import { Download, Upload, Trash2, LogOut, Camera, User, Loader2 } from 'lucide-react';
+import { Download, Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface SettingsModalProps {
@@ -23,6 +23,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSendingPasswordEmail, setIsSendingPasswordEmail] = useState(false);
+  const [isPasswordEmailSent, setIsPasswordEmailSent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -146,7 +149,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   };
 
-  const handleExport = () => {
+  const handleExportJSON = () => {
     const dataStr = JSON.stringify(items, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -157,7 +160,46 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     link.click();
     
     URL.revokeObjectURL(url);
-    toast.success('Library exported successfully');
+    toast.success(`Biblioteca exportada como JSON (${items.length} items)`);
+  };
+
+  const handleExportCSV = () => {
+    // Headers CSV
+    const headers = ['ID', 'Título', 'Tipo', 'Estado', 'Valoración', 'Autor', 'Plataforma', 'Año', 'Géneros', 'Reseña', 'Fecha Creación', 'Fecha Actualización'];
+    
+    // Convertir items a filas CSV
+    const rows = items.map(item => [
+      item.id,
+      `"${item.title.replace(/"/g, '""')}"`, // Escapar comillas
+      item.type,
+      item.status,
+      item.rating?.toString() || '',
+      item.author ? `"${item.author.replace(/"/g, '""')}"` : '',
+      item.platform ? `"${item.platform.replace(/"/g, '""')}"` : '',
+      item.releaseYear?.toString() || '',
+      item.genres ? `"${item.genres.join(', ').replace(/"/g, '""')}"` : '',
+      item.review ? `"${item.review.replace(/"/g, '""')}"` : '',
+      item.createdAt,
+      item.updatedAt || '',
+    ]);
+    
+    // Crear contenido CSV
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    // Crear blob y descargar
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para Excel
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kata-export-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+    toast.success(`Biblioteca exportada como CSV (${items.length} items)`);
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,6 +255,30 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       toast.error('Error al actualizar el nombre');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setIsSendingPasswordEmail(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error('No se pudo obtener el email del usuario');
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setIsPasswordEmailSent(true);
+      toast.success('Email de recuperación enviado');
+    } catch (error: any) {
+      console.error('Error sending password reset email:', error);
+      toast.error(error.message || 'Error al enviar el email de recuperación');
+    } finally {
+      setIsSendingPasswordEmail(false);
     }
   };
 
@@ -374,6 +440,85 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 El email no se puede modificar
               </p>
             </div>
+
+            {/* Cambiar contraseña */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+                Contraseña
+              </label>
+              {!isPasswordEmailSent ? (
+                !isChangingPassword ? (
+                  <button
+                    onClick={() => setIsChangingPassword(true)}
+                    className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+                  >
+                    <Lock size={18} className="text-[var(--text-tertiary)]" />
+                    <span className="text-sm text-white">Cambiar contraseña</span>
+                  </button>
+                ) : (
+                  <div className="space-y-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5">
+                        <Mail size={18} className="text-emerald-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-white mb-1">
+                          Enviar email de recuperación
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)] mb-4">
+                          Te enviaremos un enlace seguro a tu email para cambiar tu contraseña
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setIsChangingPassword(false);
+                            }}
+                            disabled={isSendingPasswordEmail}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={handleChangePassword}
+                            isLoading={isSendingPasswordEmail}
+                          >
+                            {isSendingPasswordEmail ? 'Enviando...' : 'Enviar email'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      <CheckCircle size={18} className="text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-emerald-400 mb-1">
+                        Email enviado
+                      </p>
+                      <p className="text-xs text-[var(--text-tertiary)] mb-3">
+                        Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de entrada y spam.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setIsPasswordEmailSent(false);
+                          setIsChangingPassword(false);
+                        }}
+                        className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        Enviar de nuevo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -383,16 +528,30 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Data Management
           </h3>
           <div className="space-y-3">
-            {/* Export */}
+            {/* Export JSON */}
             <button
-              onClick={handleExport}
+              onClick={handleExportJSON}
               className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
             >
-              <Download size={20} className="text-[var(--accent-primary)]" />
+              <FileJson size={20} className="text-[var(--accent-primary)]" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">Export Library</p>
+                <p className="text-sm font-medium text-white">Exportar como JSON</p>
                 <p className="text-xs text-[var(--text-tertiary)]">
-                  Download your data as JSON ({items.length} items)
+                  Descarga tu biblioteca en formato JSON ({items.length} items)
+                </p>
+              </div>
+            </button>
+
+            {/* Export CSV */}
+            <button
+              onClick={handleExportCSV}
+              className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+            >
+              <FileSpreadsheet size={20} className="text-[var(--accent-primary)]" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">Exportar como CSV</p>
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  Descarga tu biblioteca en formato CSV para Excel ({items.length} items)
                 </p>
               </div>
             </button>
