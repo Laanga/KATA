@@ -9,6 +9,7 @@ import { MediaItem, MediaStatus } from '@/types/media';
 import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils/constants';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
+import { Lock } from 'lucide-react';
 import Image from 'next/image';
 
 interface EditItemModalProps {
@@ -40,17 +41,17 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
       review: formData.review || undefined,
     });
 
-    toast.success(`"${item.title}" actualizado`);
+    toast.success(`Updated "${item.title}"`);
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar Elemento" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Item" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        {/* Item Preview */}
+        {/* Item Preview - Read Only */}
         <div className="rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-6">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 mb-4">
             <div className="relative h-32 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)] border border-white/5">
               <Image
                 src={item.coverUrl}
@@ -95,12 +96,17 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
                   ))}
                   {item.genres.length > 3 && (
                     <span className="text-xs text-[var(--text-tertiary)]">
-                      +{item.genres.length - 3} más
+                      +{item.genres.length - 3} more
                     </span>
                   )}
                 </div>
               )}
             </div>
+          </div>
+          
+          <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)] pt-3 border-t border-white/5">
+            <Lock size={12} />
+            <span>Information from API (read-only)</span>
           </div>
         </div>
 
@@ -108,14 +114,14 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
         <div className="space-y-6">
           <div className="border-b border-white/10 pb-2">
             <h4 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
-              Tu Información
+              Your Information
             </h4>
           </div>
 
           {/* Status */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Estado *
+              Status *
             </label>
             <Select
               value={formData.status}
@@ -127,14 +133,14 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
           {/* Rating */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Puntuación
+              Rating
             </label>
             <RatingInput
               value={formData.rating}
               onChange={(value) => setFormData({ ...formData, rating: value })}
             />
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Opcional - Puntúa de 0 a 5 estrellas
+              Optional - Rate from 0 to 5
             </p>
           </div>
 
@@ -142,7 +148,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Reseña / Notas
+                Review / Notes
               </label>
               <span className="text-xs text-[var(--text-tertiary)]">
                 {formData.review.length}/500
@@ -151,12 +157,12 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
             <textarea
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-              placeholder="¿Qué te pareció? (opcional)"
+              placeholder="What did you think about it? (optional)"
               className="min-h-[120px] w-full resize-none rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               maxLength={500}
             />
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Opcional - Tus pensamientos y notas personales
+              Optional - Your personal thoughts and notes
             </p>
           </div>
         </div>
@@ -164,10 +170,10 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="submit" variant="primary">
-            Guardar Cambios
+            Save Changes
           </Button>
         </div>
       </form>
