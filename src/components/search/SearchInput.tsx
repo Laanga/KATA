@@ -23,10 +23,10 @@ export function SearchInput({ onSearch }: SearchInputProps) {
   };
 
   const tabs: Array<{ label: string; value: MediaType | 'ALL'; icon: React.ReactNode }> = [
-    { label: 'All', value: 'ALL', icon: <Search size={14} /> },
-    { label: 'Books', value: 'BOOK', icon: <BookOpen size={14} /> },
-    { label: 'Games', value: 'GAME', icon: <Gamepad2 size={14} /> },
-    { label: 'Movies', value: 'MOVIE', icon: <Film size={14} /> },
+    { label: 'Todos', value: 'ALL', icon: <Search size={14} /> },
+    { label: 'Libros', value: 'BOOK', icon: <BookOpen size={14} /> },
+    { label: 'Juegos', value: 'GAME', icon: <Gamepad2 size={14} /> },
+    { label: 'Películas', value: 'MOVIE', icon: <Film size={14} /> },
     { label: 'Series', value: 'SERIES', icon: <Tv size={14} /> },
   ];
 
@@ -35,7 +35,7 @@ export function SearchInput({ onSearch }: SearchInputProps) {
       <div className="relative group">
         <input
           type="text"
-          placeholder="Search for books, games, movies..."
+          placeholder="Buscar libros, juegos, películas..."
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
           className="w-full h-14 rounded-full border border-white/10 bg-[var(--bg-secondary)] pl-14 pr-6 text-lg text-white placeholder-[var(--text-tertiary)] shadow-lg transition-all focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] focus:outline-none"

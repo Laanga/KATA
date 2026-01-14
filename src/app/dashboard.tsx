@@ -6,8 +6,10 @@ import { RatingDistribution } from "@/components/dashboard/RatingDistribution";
 import { TopRatedItems } from "@/components/dashboard/TopRatedItems";
 import { YearDistribution } from "@/components/dashboard/YearDistribution";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMediaStore } from "@/lib/store";
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -22,6 +24,7 @@ export default function Home() {
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const activityRef = useRef<HTMLDivElement>(null);
+  const isInitialized = useMediaStore((state) => state.isInitialized);
 
   useEffect(() => {
     setMounted(true);
@@ -186,6 +189,16 @@ export default function Home() {
     return () => ctx.revert();
   }, [mounted]);
 
+  // Show skeleton while loading
+  if (!isInitialized) {
+    return (
+      <>
+        <Navbar />
+        <DashboardSkeleton />
+      </>
+    );
+  }
+
   return (
     <div ref={containerRef} className="min-h-screen pb-20 relative overflow-hidden">
       {/* Background effects */}
@@ -196,18 +209,18 @@ export default function Home() {
 
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 max-w-7xl relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 max-w-7xl relative z-10">
         {/* Header con animaciones */}
-        <header ref={headerRef} className="mb-16">
-          <div className="flex items-baseline gap-4 mb-4">
-            <h1 className="header-title text-5xl md:text-7xl font-bold tracking-tight text-balance bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none">
+        <header ref={headerRef} className="mb-8 sm:mb-12 md:mb-16">
+          <div className="flex items-baseline gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <h1 className="header-title text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight text-balance bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none">
               Resumen
             </h1>
-            <div className="header-kanji text-4xl md:text-5xl text-emerald-400/60 font-serif opacity-0">
+            <div className="header-kanji text-2xl sm:text-4xl md:text-5xl text-emerald-400/60 font-serif opacity-0">
               型
             </div>
           </div>
-          <p className="header-subtitle text-lg md:text-xl text-[var(--text-secondary)] mb-8 font-light">
+          <p className="header-subtitle text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-4 sm:mb-6 md:mb-8 font-light">
             {userName ? `Bienvenido de vuelta, ` : 'Bienvenido de vuelta, '}
             {userName && (
               <span className="text-emerald-400/80 font-medium">{userName}</span>
@@ -217,7 +230,7 @@ export default function Home() {
         </header>
 
         {/* Primera Fila: Top Rated + 3 Donut Charts con stagger */}
-        <div ref={cardsRef} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="will-change-transform">
             <TopRatedItems />
           </div>
@@ -233,7 +246,7 @@ export default function Home() {
         </div>
 
         {/* Segunda Fila: Activity Feed */}
-        <div ref={activityRef} className="mt-12 will-change-transform">
+        <div ref={activityRef} className="mt-6 sm:mt-8 md:mt-12 will-change-transform">
           <ActivityFeed />
         </div>
       </main>

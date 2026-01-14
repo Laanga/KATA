@@ -92,10 +92,10 @@ export default function ProfilePage() {
                   <h1 className="text-4xl font-bold tracking-tight">{userName}</h1>
                   <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-                    {stats.total} items tracked
+                    {stats.total} elementos rastreados
                   </p>
                   <p className="text-[var(--text-tertiary)] text-sm mt-1">
-                    {userEmail || 'No email'}
+                    {userEmail || 'Sin email'}
                   </p>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export default function ProfilePage() {
                 className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
               >
                 <Settings size={16} />
-                Settings
+                Ajustes
               </button>
             </div>
           </FadeIn>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
               <StatCard
                 icon={<BookOpen size={20} />}
-                label="Books"
+                label="Libros"
                 value={stats.byType.BOOK || 0}
                 color="text-[var(--color-book)]"
                 total={stats.total}
@@ -122,7 +122,7 @@ export default function ProfilePage() {
               />
               <StatCard
                 icon={<Gamepad2 size={20} />}
-                label="Games"
+                label="Juegos"
                 value={stats.byType.GAME || 0}
                 color="text-[var(--color-game)]"
                 total={stats.total}
@@ -138,7 +138,7 @@ export default function ProfilePage() {
               />
               <StatCard
                 icon={<Film size={20} />}
-                label="Movies"
+                label="Películas"
                 value={stats.byType.MOVIE || 0}
                 color="text-[var(--color-movie)]"
                 total={stats.total}
@@ -151,22 +151,22 @@ export default function ProfilePage() {
             <div className="border-b border-white/10 mb-8">
               <div className="flex gap-8">
                 <TabItem
-                  label="Overview"
+                  label="Resumen"
                   active={activeTab === 'overview'}
                   onClick={() => setActiveTab('overview')}
                 />
                 <TabItem
-                  label="History"
+                  label="Historial"
                   active={activeTab === 'history'}
                   onClick={() => setActiveTab('history')}
                 />
                 <TabItem
-                  label="Reviews"
+                  label="Reseñas"
                   active={activeTab === 'reviews'}
                   onClick={() => setActiveTab('reviews')}
                 />
                 <TabItem
-                  label="Stats"
+                  label="Estadísticas"
                   active={activeTab === 'stats'}
                   onClick={() => setActiveTab('stats')}
                 />
@@ -180,7 +180,7 @@ export default function ProfilePage() {
                 <section ref={heatmapRef}>
                   <div className="flex items-center gap-3 mb-6">
                     <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
-                    <h2 className="text-xl font-semibold">Activity</h2>
+                    <h2 className="text-xl font-semibold">Actividad</h2>
                   </div>
                   <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
                     <div className="h-32 flex items-end justify-between gap-1">
@@ -196,15 +196,15 @@ export default function ProfilePage() {
                       ))}
                     </div>
                     <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
-                      <span>Last 40 days</span>
-                      <span>{stats.total} items</span>
+                      <span>Últimos 40 días</span>
+                      <span>{stats.total} elementos</span>
                     </div>
                   </div>
                 </section>
 
                 {favoriteItems.length > 0 && (
                   <section ref={favoritesRef}>
-                    <h2 className="text-xl font-semibold mb-6">Top Rated</h2>
+                    <h2 className="text-xl font-semibold mb-6">Mejor Valorados</h2>
                     <div className="grid grid-cols-3 gap-4">
                       {favoriteItems.map((item, index) => (
                         <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
@@ -218,7 +218,7 @@ export default function ProfilePage() {
 
               <div className="space-y-8">
                 <section ref={timelineRef}>
-                  <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Recent Activity</h2>
+                  <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Actividad Reciente</h2>
                   <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
                     {recentActivity.slice(0, 5).map((item, index) => (
                       <FadeIn key={item.id} delay={index * 0.15}>
@@ -226,7 +226,7 @@ export default function ProfilePage() {
                           title={item.title}
                           date={getRelativeTime(item.createdAt)}
                           type={item.type}
-                          desc={item.review || `Added to ${item.status.toLowerCase().replace(/_/g, ' ')}`}
+                          desc={item.review || `Añadido a ${getStatusLabel(item.status)}`}
                         />
                       </FadeIn>
                     ))}
@@ -238,7 +238,7 @@ export default function ProfilePage() {
 
           {activeTab === 'history' && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold mb-6">Complete History</h2>
+              <h2 className="text-xl font-semibold mb-6">Historial Completo</h2>
               <div className="space-y-3">
                 {recentActivity.map((item, index) => (
                   <FadeIn key={item.id} delay={index * 0.05}>
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-[var(--accent-primary)]">
-                          {item.rating ? `${item.rating}/5` : 'Not rated'}
+                          {item.rating ? `${item.rating}/5` : 'Sin valorar'}
                         </p>
                         <p className="text-xs text-[var(--text-tertiary)]">
                           {getRelativeTime(item.createdAt)}
@@ -271,7 +271,7 @@ export default function ProfilePage() {
 
           {activeTab === 'reviews' && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold mb-6">Your Reviews</h2>
+              <h2 className="text-xl font-semibold mb-6">Tus Reseñas</h2>
               <div className="space-y-4">
                 {items
                   .filter((item) => item.review)
@@ -291,7 +291,7 @@ export default function ProfilePage() {
                             </p>
                             <div className="flex items-center gap-2">
                               <div className="text-[var(--accent-warning)]">
-                                {item.rating ? `${item.rating}/5` : 'Not rated'}
+                                {item.rating ? `${item.rating}/5` : 'Sin valorar'}
                               </div>
                               <span className="text-[var(--text-tertiary)]">•</span>
                               <span className="text-sm text-[var(--text-tertiary)]">
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                   ))}
                 {items.filter((item) => item.review).length === 0 && (
                   <p className="text-center text-[var(--text-tertiary)] py-12">
-                    No reviews yet. Start reviewing your items!
+                    Aún no tienes reseñas. ¡Comienza a reseñar tus elementos!
                   </p>
                 )}
               </div>
@@ -317,12 +317,12 @@ export default function ProfilePage() {
 
           {activeTab === 'stats' && (
             <div className="space-y-8">
-              <h2 className="text-xl font-semibold mb-6">Detailed Statistics</h2>
+              <h2 className="text-xl font-semibold mb-6">Estadísticas Detalladas</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
                   <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
-                    By Status
+                    Por Estado
                   </h3>
                   <div className="space-y-3">
                     {Object.entries(stats.byStatus).map(([status, count]) => (
@@ -340,7 +340,7 @@ export default function ProfilePage() {
 
                 <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
                   <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
-                    Rating Distribution
+                    Distribución de Valoraciones
                   </h3>
                   <div className="space-y-3">
                     {[
@@ -462,9 +462,23 @@ function getRelativeTime(dateString: string): string {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-  return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
+  if (diffInSeconds < 60) return 'Ahora mismo';
+  if (diffInSeconds < 3600) return `hace ${Math.floor(diffInSeconds / 60)} minuto${Math.floor(diffInSeconds / 60) > 1 ? 's' : ''}`;
+  if (diffInSeconds < 86400) return `hace ${Math.floor(diffInSeconds / 3600)} hora${Math.floor(diffInSeconds / 3600) > 1 ? 's' : ''}`;
+  if (diffInSeconds < 604800) return `hace ${Math.floor(diffInSeconds / 86400)} día${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''}`;
+  return `hace ${Math.floor(diffInSeconds / 604800)} semana${Math.floor(diffInSeconds / 604800) > 1 ? 's' : ''}`;
+}
+
+function getStatusLabel(status: string): string {
+  const statusMap: Record<string, string> = {
+    'WANT_TO_READ': 'Quiero Leer',
+    'READING': 'Leyendo',
+    'COMPLETED': 'Completado',
+    'DROPPED': 'Abandonado',
+    'WANT_TO_PLAY': 'Quiero Jugar',
+    'PLAYING': 'Jugando',
+    'WANT_TO_WATCH': 'Quiero Ver',
+    'WATCHING': 'Viendo',
+  };
+  return statusMap[status] || status;
 }

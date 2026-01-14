@@ -26,11 +26,15 @@ export interface MediaItem {
   updatedAt?: string;
 }
 
+// Grouped status for filtering (simplified)
+export type GroupedStatus = 'WANT_TO_CONSUME' | 'IN_PROGRESS' | 'COMPLETED' | 'ALL';
+
 // Filters
 export interface MediaFilters {
   type: MediaType | 'ALL';
-  status: MediaStatus | 'ALL';
-  rating: 'ALL' | 'HIGH' | 'MID' | 'LOW'; // HIGH: 8-10, MID: 5-7, LOW: 0-4
+  status: GroupedStatus | MediaStatus | 'ALL'; // Support both grouped and individual statuses
+  rating: 'ALL' | 'HIGH' | 'MID' | 'LOW'; // HIGH: 4-5, MID: 2.5-3.5, LOW: 0-2
+  genre: string | 'ALL';
 }
 
 export type SortBy = 

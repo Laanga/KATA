@@ -29,16 +29,25 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refrescar la sesión si está expirada
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password'];
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password', '/verify-email', '/choose-username'];
   const isPublicRoute = publicRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
+
+  // Refrescar la sesión si está expirada (solo si no es ruta pública para evitar errores innecesarios)
+  let user = null;
+  if (!isPublicRoute) {
+    try {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      user = authUser;
+    } catch (error) {
+      // En rutas públicas es normal que no haya sesión, ignorar errores
+      user = null;
+    }
+  }
 
   // Si no hay usuario y no está en una ruta pública, redirigir a landing
   if (!user && !isPublicRoute) {

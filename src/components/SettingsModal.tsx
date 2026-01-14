@@ -212,13 +212,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         const data = JSON.parse(event.target?.result as string);
         if (Array.isArray(data)) {
           setItems(data);
-          toast.success(`Imported ${data.length} items`);
+          toast.success(`${data.length} elementos importados`);
           onClose();
         } else {
-          toast.error('Invalid file format');
+          toast.error('Formato de archivo inválido');
         }
       } catch (error) {
-        toast.error('Failed to import file');
+        toast.error('Error al importar el archivo');
       }
     };
     reader.readAsText(file);
@@ -227,7 +227,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const handleClearLibrary = () => {
     setItems([]);
     setShowClearConfirm(false);
-    toast.success('Library cleared');
+    toast.success('Biblioteca vaciada');
     onClose();
   };
 
@@ -295,23 +295,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Settings" size="md">
-      <div className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title="Ajustes" size="lg">
+      <div className="space-y-5 sm:space-y-6">
         {/* User Info Section */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
             Perfil
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Avatar */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              <label className="mb-2 block text-xs sm:text-sm font-medium text-[var(--text-secondary)]">
                 Foto de Perfil
               </label>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 {/* Avatar preview */}
-                <div className="relative group">
-                  <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
+                <div className="relative group flex-shrink-0">
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
                     {avatarUrl ? (
                       <img 
                         src={avatarUrl} 
@@ -524,19 +524,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* Data Management */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
-            Data Management
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+            Gestión de Datos
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Export JSON */}
             <button
               onClick={handleExportJSON}
-              className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+              className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
             >
-              <FileJson size={20} className="text-[var(--accent-primary)]" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Exportar como JSON</p>
-                <p className="text-xs text-[var(--text-tertiary)]">
+              <FileJson size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-white">Exportar como JSON</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
                   Descarga tu biblioteca en formato JSON ({items.length} items)
                 </p>
               </div>
@@ -545,24 +545,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Export CSV */}
             <button
               onClick={handleExportCSV}
-              className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+              className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
             >
-              <FileSpreadsheet size={20} className="text-[var(--accent-primary)]" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Exportar como CSV</p>
-                <p className="text-xs text-[var(--text-tertiary)]">
+              <FileSpreadsheet size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-white">Exportar como CSV</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
                   Descarga tu biblioteca en formato CSV para Excel ({items.length} items)
                 </p>
               </div>
             </button>
 
             {/* Import */}
-            <label className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4 transition-colors hover:bg-[var(--bg-tertiary)]/80">
-              <Upload size={20} className="text-[var(--accent-primary)]" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Import Library</p>
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  Restore from a previous export
+            <label className="flex w-full cursor-pointer items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 transition-colors hover:bg-[var(--bg-tertiary)]/80">
+              <Upload size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-white">Importar Biblioteca</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
+                  Restaurar desde una exportación anterior
                 </p>
               </div>
               <input
@@ -581,16 +581,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               >
                 <Trash2 size={20} className="text-red-400" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-400">Clear Library</p>
+                  <p className="text-sm font-medium text-red-400">Vaciar Biblioteca</p>
                   <p className="text-xs text-red-400/70">
-                    Remove all items from your library
+                    Eliminar todos los elementos de tu biblioteca
                   </p>
                 </div>
               </button>
             ) : (
               <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
                 <p className="mb-3 text-sm text-red-400">
-                  Are you sure? This will permanently delete all {items.length} items.
+                  ¿Estás seguro? Esto eliminará permanentemente todos los {items.length} elementos.
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -598,14 +598,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     variant="ghost"
                     onClick={() => setShowClearConfirm(false)}
                   >
-                    Cancel
+                    Cancelar
                   </Button>
                   <Button
                     size="sm"
                     variant="danger"
                     onClick={handleClearLibrary}
                   >
-                    Yes, Clear All
+                    Sí, Vaciar Todo
                   </Button>
                 </div>
               </div>
@@ -615,16 +615,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* App Info */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
-            About
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+            Acerca de
           </h3>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2 text-xs sm:text-sm">
             <div className="flex justify-between">
-              <span className="text-[var(--text-tertiary)]">Version</span>
+              <span className="text-[var(--text-tertiary)]">Versión</span>
               <span className="text-white">1.0.0</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--text-tertiary)]">Total Items</span>
+              <span className="text-[var(--text-tertiary)]">Total de Elementos</span>
               <span className="text-white">{items.length}</span>
             </div>
           </div>
@@ -632,17 +632,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* Account Actions */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
             Cuenta
           </h3>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-left transition-colors hover:bg-red-500/10"
+            className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3 sm:p-4 text-left transition-colors hover:bg-red-500/10"
           >
-            <LogOut size={20} className="text-red-400" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-400">Cerrar Sesión</p>
-              <p className="text-xs text-red-400/70">
+            <LogOut size={18} className="sm:w-5 sm:h-5 text-red-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-red-400">Cerrar Sesión</p>
+              <p className="text-xs text-red-400/70 line-clamp-1">
                 Salir de tu cuenta
               </p>
             </div>
@@ -650,8 +650,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         {/* Close Button */}
-        <div className="flex justify-end pt-4 border-t border-white/10">
-          <Button variant="primary" onClick={onClose}>
+        <div className="flex justify-end pt-3 sm:pt-4 border-t border-white/10">
+          <Button variant="primary" onClick={onClose} size="sm" className="text-xs sm:text-sm">
             Cerrar
           </Button>
         </div>

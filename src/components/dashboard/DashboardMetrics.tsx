@@ -46,7 +46,7 @@ export function DashboardMetrics() {
     }, [items]);
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <MetricCard
                 label="Total de Elementos"
                 value={metrics.totalItems.toString()}
@@ -79,16 +79,16 @@ export function DashboardMetrics() {
 function MetricCard({ label, value, icon, subtext, delay }: { label: string; value: string; icon: React.ReactNode; subtext?: string, delay: number }) {
     return (
         <FadeIn delay={delay}>
-            <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors">
-                <div className="flex items-center gap-3 text-[var(--text-secondary)] mb-2">
-                    <div className="p-2 bg-white/5 rounded-lg text-[var(--accent-primary)]">
+            <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-2 sm:gap-3 text-[var(--text-secondary)] mb-1.5 sm:mb-2">
+                    <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg text-[var(--accent-primary)] flex-shrink-0">
                         {icon}
                     </div>
-                    <span className="text-sm font-medium">{label}</span>
+                    <span className="text-xs sm:text-sm font-medium line-clamp-1">{label}</span>
                 </div>
-                <div className="flex items-end gap-2">
-                    <span className="text-2xl font-bold text-white">{value}</span>
-                    {subtext && <span className="text-xs text-[var(--text-tertiary)] mb-1">{subtext}</span>}
+                <div className="flex items-end gap-1.5 sm:gap-2">
+                    <span className="text-xl sm:text-2xl font-bold text-white">{value}</span>
+                    {subtext && <span className="text-xs text-[var(--text-tertiary)] mb-0.5 sm:mb-1 hidden sm:inline">{subtext}</span>}
                 </div>
             </div>
         </FadeIn>

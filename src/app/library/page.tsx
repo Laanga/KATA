@@ -6,6 +6,7 @@ import { KataCard } from "@/components/media/KataCard";
 import { FilterBar } from "@/components/library/FilterBar";
 import { useMediaStore, useFilteredItems } from "@/lib/store";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LibrarySkeleton } from "@/components/ui/Skeleton";
 import { BookOpen, Grid3x3, List, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
@@ -17,21 +18,32 @@ export default function LibraryPage() {
   const router = useRouter();
   const getStats = useMediaStore((state) => state.getStats);
   const filteredItems = useFilteredItems();
+  const isInitialized = useMediaStore((state) => state.isInitialized);
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const stats = getStats();
 
+  // Show skeleton while loading
+  if (!isInitialized) {
+    return (
+      <>
+        <Navbar />
+        <LibrarySkeleton />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-20">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24">
+      <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24">
         <FadeIn direction="up" delay={0.1}>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Tu Biblioteca</h1>
-            <p className="text-[var(--text-secondary)] mb-6">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Tu Biblioteca</h1>
+            <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-4 sm:mb-6">
               {filteredItems.length} de {stats.total} elementos
             </p>
             
@@ -41,16 +53,16 @@ export default function LibraryPage() {
         </FadeIn>
 
         <FadeIn direction="up" delay={0.2}>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div></div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-colors text-sm"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-colors text-xs sm:text-sm"
               >
-                <Search size={18} />
-                <span>Buscar</span>
+                <Search size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">Buscar</span>
               </button>
               <button
                 onClick={() => setViewMode('grid')}

@@ -3,20 +3,40 @@
 import { Filter, SortAsc, X } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
 import { useMediaStore } from '@/lib/store';
-import { MediaType, MediaStatus, SortBy } from '@/types/media';
+import { MediaType, SortBy, GroupedStatus } from '@/types/media';
 import { TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
 
 export function FilterBar() {
   const filters = useMediaStore((state) => state.filters);
   const sortBy = useMediaStore((state) => state.sortBy);
+  const items = useMediaStore((state) => state.items);
   const setFilters = useMediaStore((state) => state.setFilters);
   const setSortBy = useMediaStore((state) => state.setSortBy);
   const resetFilters = useMediaStore((state) => state.resetFilters);
+
+  // Get unique genres from all items
+  const allGenres = Array.from(
+    new Set(
+      items
+        .flatMap(item => item.genres || [])
+        .filter(Boolean)
+        .sort()
+    )
+  );
+
+  const genreOptions = [
+    { value: 'ALL', label: 'Todos los Géneros' },
+    ...allGenres.map(genre => ({
+      value: genre,
+      label: genre,
+    })),
+  ];
 
   const hasActiveFilters = 
     filters.type !== 'ALL' || 
     filters.status !== 'ALL' || 
     filters.rating !== 'ALL' ||
+    filters.genre !== 'ALL' ||
     sortBy !== 'date_added';
 
   const typeOptions = [
@@ -29,14 +49,9 @@ export function FilterBar() {
 
   const statusOptions = [
     { value: 'ALL', label: 'Todos los Estados' },
+    { value: 'WANT_TO_CONSUME', label: 'Pendientes' },
+    { value: 'IN_PROGRESS', label: 'En Progreso' },
     { value: 'COMPLETED', label: 'Completado' },
-    { value: 'READING', label: 'Leyendo' },
-    { value: 'PLAYING', label: 'Jugando' },
-    { value: 'WATCHING', label: 'Viendo' },
-    { value: 'WANT_TO_READ', label: 'Quiero Leer' },
-    { value: 'WANT_TO_PLAY', label: 'Quiero Jugar' },
-    { value: 'WANT_TO_WATCH', label: 'Quiero Ver' },
-    { value: 'DROPPED', label: 'Abandonado' },
   ];
 
   const ratingOptions = [
@@ -77,7 +92,7 @@ export function FilterBar() {
       {/* Status Filter */}
       <Select
         value={filters.status}
-        onChange={(value) => setFilters({ status: value as MediaStatus | 'ALL' })}
+        onChange={(value) => setFilters({ status: value as GroupedStatus | 'ALL' })}
         options={statusOptions}
       />
 
@@ -87,6 +102,15 @@ export function FilterBar() {
         onChange={(value) => setFilters({ rating: value as 'ALL' | 'HIGH' | 'MID' | 'LOW' })}
         options={ratingOptions}
       />
+
+      {/* Genre Filter */}
+      {allGenres.length > 0 && (
+        <Select
+          value={filters.genre}
+          onChange={(value) => setFilters({ genre: value })}
+          options={genreOptions}
+        />
+      )}
 
       {/* Reset Button */}
       {hasActiveFilters && (

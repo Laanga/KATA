@@ -134,7 +134,7 @@ export function FullPageLoader() {
       <div className="text-center">
         <KataLoader />
         <p className="mt-6 text-sm text-[var(--text-tertiary)] animate-pulse">
-          Loading your kata...
+          Cargando tu kata...
         </p>
       </div>
     </div>

@@ -16,6 +16,7 @@ interface SearchResult {
     coverUrl?: string;
     rating?: number;
     overview?: string;
+    genres?: string[];
 }
 
 interface MediaSearchSectionProps {
@@ -81,7 +82,8 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     title: item.title,
                     year: item.release_date ? parseInt(item.release_date.split('-')[0]) : undefined,
                     coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
-                    overview: item.overview
+                    overview: item.overview,
+                    genres: item.genre_names || []
                 }));
             } else if (type === 'SERIES') {
                 mappedResults = (data.results || []).map((item: any) => ({
@@ -89,7 +91,8 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     title: item.name,
                     year: item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : undefined,
                     coverUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : undefined,
-                    overview: item.overview
+                    overview: item.overview,
+                    genres: item.genre_names || []
                 }));
             } else if (type === 'GAME') {
                 mappedResults = (Array.isArray(data) ? data : []).map((item: any) => ({
@@ -97,7 +100,8 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     title: item.name,
                     year: item.first_release_date ? new Date(item.first_release_date * 1000).getFullYear() : undefined,
                     coverUrl: item.cover?.url ? `https:${item.cover.url.replace('t_thumb', 't_cover_big')}` : undefined,
-                    overview: item.summary
+                    overview: item.summary,
+                    genres: item.genres?.map((g: any) => g.name).filter(Boolean) || []
                 }));
             } else if (type === 'BOOK') {
                 mappedResults = (data.items || []).map((item: any) => ({
@@ -106,7 +110,8 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     author: item.volumeInfo.authors?.[0],
                     year: item.volumeInfo.publishedDate ? parseInt(item.volumeInfo.publishedDate.split('-')[0]) : undefined,
                     coverUrl: item.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
-                    overview: item.volumeInfo.description
+                    overview: item.volumeInfo.description,
+                    genres: item.volumeInfo.genre_names || []
                 }));
             }
 
@@ -175,6 +180,23 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                                         {result.year}
                                         {result.author && ` • ${result.author}`}
                                     </p>
+                                    {result.genres && result.genres.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {result.genres.slice(0, 2).map((genre, idx) => (
+                                                <span 
+                                                    key={idx}
+                                                    className="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white/90 backdrop-blur-sm"
+                                                >
+                                                    {genre}
+                                                </span>
+                                            ))}
+                                            {result.genres.length > 2 && (
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white/90 backdrop-blur-sm">
+                                                    +{result.genres.length - 2}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className="mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/80">
                                         <Plus size={14} />
                                         Añadir a Biblioteca
@@ -206,6 +228,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                         coverUrl: selectedResult.coverUrl,
                         releaseYear: selectedResult.year,
                         author: selectedResult.author,
+                        genres: selectedResult.genres || [],
                     }}
                 />
             )}

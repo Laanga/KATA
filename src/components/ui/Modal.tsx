@@ -103,32 +103,44 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         onClick={handleOverlayClick}
       />
 
-      {/* Modal Container - Scrollable */}
-      <div className="relative h-full overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6">
+      {/* Modal Container */}
+      <div className="relative h-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
         {/* Content */}
         <div
           ref={contentRef}
           className={cn(
-            'relative w-full my-8 rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl',
+            'relative w-full max-h-[90vh] flex flex-col rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl',
             sizeClasses[size]
           )}
         >
-          {/* Header */}
+          {/* Header - Sticky */}
           {title && (
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 sticky top-0 bg-[var(--bg-secondary)] z-10 rounded-t-2xl">
-              <h2 className="text-xl font-bold text-white">{title}</h2>
+            <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3 sm:py-4 sticky top-0 bg-[var(--bg-secondary)] z-10 rounded-t-2xl flex-shrink-0">
+              <h2 className="text-lg sm:text-xl font-bold text-white">{title}</h2>
               <button
                 onClick={handleClose}
-                className="rounded-lg p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
-                aria-label="Close modal"
+                className="rounded-lg p-1.5 sm:p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
+                aria-label="Cerrar modal"
               >
-                <X size={20} />
+                <X size={18} className="sm:w-5 sm:h-5" />
               </button>
             </div>
           )}
 
-          {/* Body */}
-          <div ref={bodyRef} className="px-6 py-6">
+          {/* Body - Scrollable */}
+          <div 
+            ref={bodyRef} 
+            className="px-4 sm:px-6 py-4 sm:py-6 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain"
+            style={{ 
+              maxHeight: title ? 'calc(90vh - 80px)' : '90vh',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain'
+            }}
+            onWheel={(e) => {
+              // Ensure wheel events work on this element
+              e.stopPropagation();
+            }}
+          >
             {children}
           </div>
         </div>

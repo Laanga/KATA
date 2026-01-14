@@ -108,8 +108,24 @@ cd kata
 bun install
 
 # 3. Configura variables de entorno
-cp .env.example .env.local
-# Edita .env.local con tus credenciales de Supabase
+# Crea un archivo .env.local con las siguientes variables:
+
+# Supabase (requerido)
+NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
+
+# TMDB API (requerido para películas y series)
+TMDB_API_KEY=tu_tmdb_api_key
+
+# IGDB API (requerido para videojuegos)
+IGDB_CLIENT_ID=tu_igdb_client_id
+IGDB_CLIENT_SECRET=tu_igdb_client_secret
+
+# Google Books API (opcional, para evitar límites de rate)
+GOOGLE_BOOKS_API_KEY=tu_google_books_api_key
+
+# Site URL (opcional, para producción)
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # 4. Ejecuta en desarrollo
 bun dev
@@ -129,7 +145,11 @@ Para obtener datos reales de contenido multimedia, Kata utiliza:
 | [IGDB](https://api-docs.igdb.com/) | Videojuegos | Sí (cuenta Twitch) |
 | [Google Books](https://developers.google.com/books) | Libros | Opcional |
 
-> 💡 Las instrucciones para obtener las API keys están en `.env.example`
+> 💡 **Cómo obtener las API keys:**
+> - **Supabase**: Ve a tu [dashboard de Supabase](https://supabase.com/dashboard) → Settings → API
+> - **TMDB**: Regístrate en [TMDB](https://www.themoviedb.org/) → Settings → API → Request API Key
+> - **IGDB**: Crea una app en [Twitch Developer Console](https://dev.twitch.tv/console/apps) (usa IGDB API)
+> - **Google Books**: Opcional, en [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 
 ---
 

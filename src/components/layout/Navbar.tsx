@@ -1,48 +1,106 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
+import { usePathname } from 'next/navigation';
 
 export function Navbar() {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const pathname = usePathname();
+
+    const navLinks = [
+        { href: '/books', label: 'Libros' },
+        { href: '/series', label: 'Series' },
+        { href: '/movies', label: 'Películas' },
+        { href: '/games', label: 'Juegos' },
+        { href: '/library', label: 'Biblioteca' },
+    ];
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/10 bg-black/50 backdrop-blur-xl">
-                <div className="container mx-auto flex h-full items-center justify-between px-4">
+            <nav className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+                <div className="container mx-auto flex h-full items-center justify-between px-4 sm:px-6">
                     {/* Logo / Menu Mobile */}
-                    <div className="flex items-center gap-4">
-                        <button className="md:hidden text-[var(--text-secondary)] hover:text-white transition-colors">
-                            <Menu size={24} />
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <button 
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="md:hidden text-[var(--text-secondary)] hover:text-white transition-colors p-1"
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
                         </button>
-                        <Link href="/" className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            <span>Kata</span><span className="font-serif text-[var(--accent-primary)]">型</span>
+                        <Link 
+                            href="/" 
+                            className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-1.5 sm:gap-2"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            <span>Kata</span>
+                            <span className="font-serif text-[var(--accent-primary)]">型</span>
                         </Link>
                     </div>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
-                        <NavLink href="/books" label="Libros" />
-                        <NavLink href="/series" label="Series" />
-                        <NavLink href="/movies" label="Películas" />
-                        <NavLink href="/games" label="Juegos" />
+                        {navLinks.slice(0, 4).map((link) => (
+                            <NavLink key={link.href} href={link.href} label={link.label} pathname={pathname} />
+                        ))}
                         <div className="h-4 w-px bg-white/10 mx-2"></div>
-                        <NavLink href="/library" label="Biblioteca" />
+                        <NavLink href={navLinks[4].href} label={navLinks[4].label} pathname={pathname} />
                     </div>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <UserAvatar />
                     </div>
                 </div>
             </nav>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <>
+                    <div 
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                    <div className="fixed top-14 left-0 right-0 z-40 md:hidden bg-[var(--bg-primary)] border-b border-white/10 shadow-xl">
+                        <div className="container mx-auto px-4 py-4">
+                            <nav className="flex flex-col gap-1">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className={`px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                                            pathname === link.href
+                                                ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
+                                                : 'text-[var(--text-secondary)] hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
+                    </div>
+                </>
+            )}
         </>
     );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
+    const isActive = pathname === href;
+    
     return (
         <Link
             href={href}
-            className="text-sm font-medium text-[var(--text-secondary)] hover:text-white transition-colors"
+            className={`text-sm font-medium transition-colors ${
+                isActive
+                    ? 'text-[var(--accent-primary)]'
+                    : 'text-[var(--text-secondary)] hover:text-white'
+            }`}
         >
             {label}
         </Link>

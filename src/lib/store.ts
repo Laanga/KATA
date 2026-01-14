@@ -40,6 +40,7 @@ const DEFAULT_FILTERS: MediaFilters = {
   type: 'ALL',
   status: 'ALL',
   rating: 'ALL',
+  genre: 'ALL',
 };
 
 export const useMediaStore = create<MediaStore>()((set, get) => ({

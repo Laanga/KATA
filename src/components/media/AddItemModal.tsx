@@ -11,6 +11,7 @@ import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { Lock } from 'lucide-react';
 import Image from 'next/image';
+import { isValidTitle, isValidRating, isValidReview } from '@/lib/utils/validation';
 
 interface AddItemModalProps {
   isOpen: boolean;
@@ -64,28 +65,43 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title.trim()) {
-      toast.error('Title is required');
+    // Validate title
+    const titleValidation = isValidTitle(formData.title);
+    if (!titleValidation.valid) {
+      toast.error(titleValidation.message || 'Título inválido');
+      return;
+    }
+
+    // Validate rating
+    if (formData.rating !== null && !isValidRating(formData.rating)) {
+      toast.error('La valoración debe estar entre 0 y 5');
+      return;
+    }
+
+    // Validate review
+    const reviewValidation = isValidReview(formData.review);
+    if (!reviewValidation.valid) {
+      toast.error(reviewValidation.message || 'Reseña inválida');
       return;
     }
 
     const newItem = {
       id: crypto.randomUUID(),
-      title: formData.title.trim(),
+      title: titleValidation.sanitized!,
       type: formData.type,
       coverUrl: formData.coverUrl || 'https://via.placeholder.com/300x450?text=No+Cover',
       status: formData.status,
       rating: formData.rating,
-      review: formData.review || undefined,
-      author: formData.author || undefined,
-      platform: formData.platform || undefined,
+      review: reviewValidation.sanitized || formData.review || undefined,
+      author: formData.author ? formData.author.trim().slice(0, 100) : undefined,
+      platform: formData.platform ? formData.platform.trim().slice(0, 100) : undefined,
       releaseYear: formData.releaseYear,
       genres: formData.genres,
       createdAt: new Date().toISOString(),
     };
 
     addItem(newItem);
-    toast.success(`Added "${formData.title}" to your kata`);
+    toast.success(`"${formData.title}" añadido a tu biblioteca`);
     onClose();
 
     // Reset editable fields only
@@ -98,7 +114,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add to Your Library" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Añadir a tu Biblioteca" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Item Preview - Read Only */}
@@ -115,7 +131,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-[var(--text-tertiary)] text-xs">
-                  No Cover
+                  Sin Portada
                 </div>
               )}
             </div>
@@ -123,7 +139,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2 mb-2">
                 <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
-                  {formData.title || 'Untitled'}
+                  {formData.title || 'Sin título'}
                 </h3>
                 <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-white/5 text-[var(--text-secondary)]">
                   {TYPE_LABELS[formData.type]}
@@ -154,7 +170,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
                   ))}
                   {formData.genres.length > 3 && (
                     <span className="text-xs text-[var(--text-tertiary)]">
-                      +{formData.genres.length - 3} more
+                      +{formData.genres.length - 3} más
                     </span>
                   )}
                 </div>
@@ -164,7 +180,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
           
           <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)] pt-3 border-t border-white/5">
             <Lock size={12} />
-            <span>Information from API (read-only)</span>
+            <span>Información de la API (solo lectura)</span>
           </div>
         </div>
 
@@ -172,14 +188,14 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
         <div className="space-y-6">
           <div className="border-b border-white/10 pb-2">
             <h4 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
-              Your Information
+              Tu Información
             </h4>
           </div>
 
           {/* Status */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Status *
+              Estado *
             </label>
             <Select
               value={formData.status}
@@ -191,31 +207,31 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
           {/* Rating */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Rating
+              Valoración
             </label>
             <RatingInput
               value={formData.rating}
               onChange={(value) => setFormData({ ...formData, rating: value })}
             />
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Optional - Rate from 0 to 5
+              Opcional - Valora de 0 a 5
             </p>
           </div>
 
           {/* Review */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Review / Notes
+              Reseña / Notas
             </label>
             <textarea
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-colors"
               rows={4}
-              placeholder="What did you think about it? (optional)"
+              placeholder="¿Qué te pareció? (opcional)"
             />
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Optional - Your personal thoughts and notes
+              Opcional - Tus pensamientos y notas personales
             </p>
           </div>
         </div>
@@ -223,10 +239,10 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" variant="primary">
-            Add to Library
+            Añadir a Biblioteca
           </Button>
         </div>
       </form>

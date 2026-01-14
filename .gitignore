@@ -49,6 +49,17 @@ next-env.d.ts
 
 # Test files
 test-igdb.js
+*.test.js
+*.test.ts
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# SQL migration files (keep only schema)
+verificar-*.sql
+migracion-*.sql
 
 # Editors
 .vscode/

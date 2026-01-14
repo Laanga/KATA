@@ -6,13 +6,98 @@ import { cn } from '@/lib/utils/cn';
 
 interface SkeletonProps {
   className?: string;
+  variant?: 'default' | 'text' | 'circular' | 'rectangular' | 'kanji';
 }
 
-export function Skeleton({ className }: SkeletonProps) {
+export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
+  const kanjiRef = useRef<SVGPathElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (variant === 'kanji' && kanjiRef.current && containerRef.current) {
+      const path = kanjiRef.current;
+      const length = path.getTotalLength();
+
+      // Configurar el path para animación
+      gsap.set(path, {
+        strokeDasharray: length,
+        strokeDashoffset: length,
+        opacity: 0.3,
+      });
+
+      // Animación de escritura continua
+      const tl = gsap.timeline({ repeat: -1 });
+      
+      tl.to(path, {
+        strokeDashoffset: 0,
+        opacity: 0.6,
+        duration: 1.5,
+        ease: 'power2.inOut',
+      })
+      .to(path, {
+        strokeDashoffset: -length,
+        opacity: 0.3,
+        duration: 1.5,
+        ease: 'power2.inOut',
+        delay: 0.3,
+      });
+
+      // Pulso del contenedor
+      gsap.to(containerRef.current, {
+        scale: 1.05,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      return () => {
+        tl.kill();
+      };
+    }
+  }, [variant]);
+
+  if (variant === 'kanji') {
+    return (
+      <div 
+        ref={containerRef}
+        className={cn('flex items-center justify-center', className)}
+      >
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+        >
+          <path
+            ref={kanjiRef}
+            d="M 20 20 L 80 20 M 50 20 L 50 80 M 30 50 L 70 50 M 35 80 L 65 80"
+            stroke="var(--accent-primary)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.4"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  const baseClasses = 'animate-pulse bg-white/5';
+  const variantClasses = {
+    default: 'rounded-md',
+    text: 'rounded',
+    circular: 'rounded-full',
+    rectangular: 'rounded-none',
+  };
+
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-white/5',
+        baseClasses,
+        variantClasses[variant],
         className
       )}
     />
@@ -22,8 +107,9 @@ export function Skeleton({ className }: SkeletonProps) {
 // Card skeleton for media items
 export function MediaCardSkeleton() {
   return (
-    <div className="aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)]">
-      <Skeleton className="h-full w-full" />
+    <div className="aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] border border-white/5 relative">
+      <Skeleton className="h-full w-full" variant="kanji" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
     </div>
   );
 }
@@ -52,10 +138,188 @@ export function MediaGridSkeleton({ count = 6 }: { count?: number }) {
   }, [count]);
 
   return (
-    <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+    <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <MediaCardSkeleton key={i} />
       ))}
+    </div>
+  );
+}
+
+// Dashboard Metrics Skeleton
+export function DashboardMetricsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <Skeleton variant="kanji" className="h-full w-full" />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg" variant="rectangular" />
+              <Skeleton className="h-3 sm:h-4 w-20 sm:w-24" variant="text" />
+            </div>
+            <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-1" variant="text" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Chart Skeleton (for donut charts)
+export function ChartSkeleton() {
+  return (
+    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5">
+        <Skeleton variant="kanji" className="h-full w-full" />
+      </div>
+      <div className="relative z-10">
+        <Skeleton className="h-5 sm:h-6 w-24 sm:w-32 mb-4 sm:mb-6" variant="text" />
+        <div className="h-48 sm:h-64 flex items-center justify-center">
+          <div className="relative">
+            <Skeleton className="h-32 w-32 sm:h-48 sm:w-48" variant="kanji" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-[var(--bg-primary)] border-2 border-white/10" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 sm:mt-6 space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-3 w-3 rounded-full" variant="circular" />
+              <Skeleton className="h-3 sm:h-4 flex-1" variant="text" />
+              <Skeleton className="h-3 sm:h-4 w-6 sm:w-8" variant="text" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Top Rated Items Skeleton
+export function TopRatedSkeleton() {
+  return (
+    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl overflow-hidden relative">
+      <div className="absolute inset-0 opacity-5">
+        <Skeleton variant="kanji" className="h-full w-full" />
+      </div>
+      <div className="relative z-10">
+        <div className="p-4 sm:p-6 border-b border-white/5">
+          <Skeleton className="h-5 sm:h-6 w-24 sm:w-32 mb-2" variant="text" />
+          <Skeleton className="h-3 sm:h-4 w-36 sm:w-48" variant="text" />
+        </div>
+        <div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0">
+              <div className="relative h-12 w-9 sm:h-16 sm:w-12 rounded overflow-hidden flex-shrink-0">
+                <Skeleton variant="kanji" className="h-full w-full" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Skeleton className="h-4 sm:h-5 w-24 sm:w-32 mb-1.5 sm:mb-2" variant="text" />
+                <Skeleton className="h-3 sm:h-4 w-20 sm:w-24" variant="text" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Activity Feed Skeleton
+export function ActivityFeedSkeleton() {
+  return (
+    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl overflow-hidden relative">
+      <div className="absolute inset-0 opacity-5">
+        <Skeleton variant="kanji" className="h-full w-full" />
+      </div>
+      <div className="relative z-10">
+        <div className="p-4 sm:p-6 border-b border-white/5">
+          <Skeleton className="h-5 sm:h-6 w-28 sm:w-32" variant="text" />
+        </div>
+        <div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0">
+              <div className="relative h-10 w-7 sm:h-12 sm:w-8 rounded overflow-hidden flex-shrink-0">
+                <Skeleton variant="kanji" className="h-full w-full" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Skeleton className="h-3 sm:h-4 w-24 sm:w-28 mb-1.5 sm:mb-2" variant="text" />
+                <Skeleton className="h-3 w-16 sm:w-20" variant="text" />
+              </div>
+              <Skeleton className="h-3 sm:h-4 w-12 sm:w-16" variant="text" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Dashboard Full Skeleton
+export function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen pb-20">
+      <div className="container mx-auto px-4 pt-24 max-w-7xl">
+        {/* Header Skeleton */}
+        <div className="mb-16">
+          <Skeleton className="h-12 w-48 mb-4" variant="text" />
+          <Skeleton className="h-6 w-64 mb-8" variant="text" />
+          <Skeleton className="h-px w-64" variant="rectangular" />
+        </div>
+
+        {/* Metrics Skeleton */}
+        <DashboardMetricsSkeleton />
+
+        {/* Charts Grid Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-8">
+          <TopRatedSkeleton />
+          <ChartSkeleton />
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </div>
+
+        {/* Activity Feed Skeleton */}
+        <div className="mt-12">
+          <ActivityFeedSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Library Page Skeleton
+export function LibrarySkeleton() {
+  return (
+    <div className="min-h-screen pb-20">
+      <div className="container mx-auto px-4 pt-24">
+        {/* Header Skeleton */}
+        <div className="mb-8">
+          <Skeleton className="h-8 w-48 mb-2" variant="text" />
+          <Skeleton className="h-5 w-32 mb-6" variant="text" />
+          <DashboardMetricsSkeleton />
+        </div>
+
+        {/* Actions Skeleton */}
+        <div className="flex justify-end gap-2 mb-6">
+          <Skeleton className="h-10 w-24" variant="rectangular" />
+          <Skeleton className="h-10 w-10 rounded-lg" variant="rectangular" />
+          <Skeleton className="h-10 w-10 rounded-lg" variant="rectangular" />
+        </div>
+
+        {/* Filter Bar Skeleton */}
+        <div className="flex flex-wrap gap-4 mb-8 pb-4 border-b border-white/10">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-32 rounded-md" variant="rectangular" />
+          ))}
+        </div>
+
+        {/* Grid Skeleton */}
+        <MediaGridSkeleton count={12} />
+      </div>
     </div>
   );
 }

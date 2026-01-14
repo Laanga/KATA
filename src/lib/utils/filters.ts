@@ -1,4 +1,20 @@
-import { MediaItem, MediaFilters, SortBy } from '@/types/media';
+import { MediaItem, MediaFilters, SortBy, GroupedStatus } from '@/types/media';
+
+/**
+ * Get all statuses that belong to a grouped status
+ */
+function getStatusesForGroupedStatus(groupedStatus: GroupedStatus): string[] {
+  switch (groupedStatus) {
+    case 'WANT_TO_CONSUME':
+      return ['WANT_TO_READ', 'WANT_TO_PLAY', 'WANT_TO_WATCH'];
+    case 'IN_PROGRESS':
+      return ['READING', 'PLAYING', 'WATCHING'];
+    case 'COMPLETED':
+      return ['COMPLETED'];
+    default:
+      return [];
+  }
+}
 
 /**
  * Filter media items based on filters
@@ -14,9 +30,18 @@ export function filterMediaItems(
     filtered = filtered.filter((item) => item.type === filters.type);
   }
 
-  // Filter by status
+  // Filter by status (support both grouped and individual statuses)
   if (filters.status !== 'ALL') {
-    filtered = filtered.filter((item) => item.status === filters.status);
+    const statusFilter = filters.status;
+    
+    // Check if it's a grouped status
+    if (['WANT_TO_CONSUME', 'IN_PROGRESS', 'COMPLETED'].includes(statusFilter)) {
+      const statuses = getStatusesForGroupedStatus(statusFilter as GroupedStatus);
+      filtered = filtered.filter((item) => statuses.includes(item.status));
+    } else {
+      // Individual status filter
+      filtered = filtered.filter((item) => item.status === statusFilter);
+    }
   }
 
   // Filter by rating (0-5 scale)
@@ -28,12 +53,22 @@ export function filterMediaItems(
         case 'HIGH':
           return item.rating >= 4; // 4-5 estrellas
         case 'MID':
-          return item.rating === 3; // 3 estrellas
+          return item.rating >= 2.5 && item.rating < 4; // 2.5-3.5 estrellas
         case 'LOW':
-          return item.rating < 3; // 1-2 estrellas
+          return item.rating < 2.5; // 0-2 estrellas
         default:
           return true;
       }
+    });
+  }
+
+  // Filter by genre
+  if (filters.genre !== 'ALL') {
+    filtered = filtered.filter((item) => {
+      if (!item.genres || item.genres.length === 0) return false;
+      return item.genres.some(genre => 
+        genre.toLowerCase() === filters.genre.toLowerCase()
+      );
     });
   }
 
@@ -97,6 +132,9 @@ export function searchMediaItems(
 
     // Search in platform (games)
     if (item.platform?.toLowerCase().includes(lowerQuery)) return true;
+
+    // Search in genres
+    if (item.genres?.some(genre => genre.toLowerCase().includes(lowerQuery))) return true;
 
     return false;
   });

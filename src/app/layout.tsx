@@ -6,6 +6,7 @@ import { StoreInitializer } from "@/components/StoreInitializer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { PageTransition } from "@/components/PageTransition";
 import { AuthProvider } from "@/components/AuthProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png", // Opcional: crear este icono
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json", // Opcional: para PWA
 };
@@ -79,15 +80,17 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} antialiased`}>
-        <AuthProvider>
-        <SmoothScroll>
-          <StoreInitializer />
-          <PageTransition>
-            {children}
-          </PageTransition>
-          <ToastProvider />
-        </SmoothScroll>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <SmoothScroll>
+              <StoreInitializer />
+              <PageTransition>
+                {children}
+              </PageTransition>
+              <ToastProvider />
+            </SmoothScroll>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
