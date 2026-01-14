@@ -3,22 +3,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
-import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
+import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User, Search } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
 import { useMediaStore } from "@/lib/store";
 import { FadeIn } from "@/components/FadeIn";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { SettingsModal } from "@/components/SettingsModal";
 import { createClient } from "@/lib/supabase/client";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ProfileSkeleton } from "@/components/ui/Skeleton";
+import { useRouter } from "next/navigation";
+import { STATUS_LABELS, TYPE_LABELS } from "@/lib/utils/constants";
 
 export default function ProfilePage() {
   const items = useMediaStore((state) => state.items);
   const getStats = useMediaStore((state) => state.getStats);
+  const isInitialized = useMediaStore((state) => state.isInitialized);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'reviews' | 'stats'>('overview');
   const [userName, setUserName] = useState<string>('Usuario');
   const [userEmail, setUserEmail] = useState<string>('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   const stats = getStats();
 
@@ -63,11 +69,27 @@ export default function ProfilePage() {
 
   // Memoized activity chart data to prevent re-render flickering
   const activityChartData = useMemo(() => {
-    return Array.from({ length: 40 }).map(() => ({
-      height: Math.random() * 100,
-      opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.8 + 0.2,
-    }));
-  }, []);
+    const days = 40;
+    const now = new Date();
+    const data = Array.from({ length: days }).map((_, index) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - (days - 1 - index));
+      date.setHours(0, 0, 0, 0);
+
+      const dayItems = items.filter((item) => {
+        const itemDate = new Date(item.createdAt);
+        itemDate.setHours(0, 0, 0, 0);
+        return itemDate.getTime() === date.getTime();
+      });
+
+      const height = dayItems.length > 0 ? Math.min(100, dayItems.length * 20) : Math.random() * 10;
+      const opacity = dayItems.length > 0 ? Math.max(0.3, Math.min(1, dayItems.length * 0.2)) : Math.random() < 0.2 ? 0.1 : Math.random() * 0.2 + 0.1;
+
+      return { height, opacity };
+    });
+
+    return data;
+  }, [items]);
 
   // Fix hydration mismatch
   const [mounted, setMounted] = useState(false);
@@ -77,6 +99,20 @@ export default function ProfilePage() {
 
   if (!mounted) return null;
 
+  if (!isInitialized) {
+    return (
+      <>
+        <div className="min-h-screen pb-24 md:pb-0">
+          <Navbar />
+          <BottomNavigation />
+          <main className="container mx-auto px-4 pt-32 max-w-5xl">
+            <ProfileSkeleton />
+          </main>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen pb-24 md:pb-0">
@@ -84,297 +120,313 @@ export default function ProfilePage() {
         <BottomNavigation />
 
         <main className="container mx-auto px-4 pt-32 max-w-5xl">
-          <FadeIn direction="up" delay={0.1}>
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
-              <div className="flex items-center gap-6">
-                <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
-                  {avatarUrl ? (
-                    <img 
-                      src={avatarUrl} 
-                      alt={userName}
-                      className="w-full h-full object-cover"
+          {stats.total === 0 ? (
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <EmptyState
+                icon={<User className="w-16 h-16" />}
+                title="Tu perfil está vacío"
+                description="Añade películas, series, libros y videojuegos para empezar a trackear tus hábitos de consumo."
+                action={{
+                  label: "Buscar Contenido",
+                  onClick: () => router.push('/search'),
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <FadeIn direction="up" delay={0.1}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
+                  <div className="flex items-center gap-6">
+                    <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={userName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={48} className="text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-4xl font-bold tracking-tight">{userName}</h1>
+                      <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
+                        <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
+                        {stats.total} elementos rastreados
+                      </p>
+                      <p className="text-[var(--text-tertiary)] text-sm mt-1">
+                        {userEmail || 'Sin email'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
+                  >
+                    <Settings size={16} />
+                    Ajustes
+                  </button>
+                </div>
+              </FadeIn>
+
+              <FadeIn direction="up" delay={0.2}>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+                  <StatCard
+                    icon={<BookOpen size={20} />}
+                    label="Libros"
+                    value={stats.byType.BOOK || 0}
+                    color="text-[var(--color-book)]"
+                    total={stats.total}
+                    delay={0}
+                  />
+                  <StatCard
+                    icon={<Gamepad2 size={20} />}
+                    label="Juegos"
+                    value={stats.byType.GAME || 0}
+                    color="text-[var(--color-game)]"
+                    total={stats.total}
+                    delay={0.1}
+                  />
+                  <StatCard
+                    icon={<Tv size={20} />}
+                    label="Series"
+                    value={stats.byType.SERIES || 0}
+                    color="text-[var(--color-series)]"
+                    total={stats.total}
+                    delay={0.2}
+                  />
+                  <StatCard
+                    icon={<Film size={20} />}
+                    label="Películas"
+                    value={stats.byType.MOVIE || 0}
+                    color="text-[var(--color-movie)]"
+                    total={stats.total}
+                    delay={0.3}
+                  />
+                </div>
+              </FadeIn>
+
+              <FadeIn direction="up" delay={0.3}>
+                <div className="border-b border-white/10 mb-8">
+                  <div className="flex gap-8">
+                    <TabItem
+                      label="Resumen"
+                      active={activeTab === 'overview'}
+                      onClick={() => setActiveTab('overview')}
                     />
-                  ) : (
-                  <User size={48} className="text-white" />
-                  )}
+                    <TabItem
+                      label="Historial"
+                      active={activeTab === 'history'}
+                      onClick={() => setActiveTab('history')}
+                    />
+                    <TabItem
+                      label="Reseñas"
+                      active={activeTab === 'reviews'}
+                      onClick={() => setActiveTab('reviews')}
+                    />
+                    <TabItem
+                      label="Estadísticas"
+                      active={activeTab === 'stats'}
+                      onClick={() => setActiveTab('stats')}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-bold tracking-tight">{userName}</h1>
-                  <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-                    {stats.total} elementos rastreados
-                  </p>
-                  <p className="text-[var(--text-tertiary)] text-sm mt-1">
-                    {userEmail || 'Sin email'}
-                  </p>
+              </FadeIn>
+
+              {activeTab === 'overview' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                  <div className="lg:col-span-2 space-y-12">
+                    <section ref={heatmapRef}>
+                      <div className="flex items-center gap-3 mb-6">
+                        <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
+                        <h2 className="text-xl font-semibold">Actividad por Día</h2>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
+                        <div className="h-32 flex items-end justify-between gap-1">
+                          {activityChartData.map((data, i) => (
+                            <div
+                              key={i}
+                              className="w-full rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
+                              style={{
+                                height: `${data.height}%`,
+                                opacity: data.opacity,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
+                          <span>Hace 40 días</span>
+                          <span>Ayer</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    {favoriteItems.length > 0 && (
+                      <section ref={favoritesRef}>
+                        <h2 className="text-xl font-semibold mb-6">Mejor Valorados</h2>
+                        <div className="grid grid-cols-3 gap-4">
+                          {favoriteItems.map((item, index) => (
+                            <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
+                              <KataCard item={item} />
+                            </FadeIn>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+
+                  <div className="space-y-8">
+                    <section ref={timelineRef}>
+                      <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Actividad Reciente</h2>
+                      <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
+                        {recentActivity.slice(0, 5).map((item, index) => (
+                          <FadeIn key={item.id} delay={index * 0.15}>
+                            <TimelineItem
+                              title={item.title}
+                              date={getRelativeTime(item.createdAt)}
+                              type={item.type}
+                              desc={item.review || `Añadido a ${STATUS_LABELS[item.status as keyof typeof STATUS_LABELS] || item.status}`}
+                            />
+                          </FadeIn>
+                        ))}
+                      </div>
+                    </section>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
-              >
-                <Settings size={16} />
-                Ajustes
-              </button>
-            </div>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.2}>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-              <StatCard
-                icon={<BookOpen size={20} />}
-                label="Libros"
-                value={stats.byType.BOOK || 0}
-                color="text-[var(--color-book)]"
-                total={stats.total}
-                delay={0}
-              />
-              <StatCard
-                icon={<Gamepad2 size={20} />}
-                label="Juegos"
-                value={stats.byType.GAME || 0}
-                color="text-[var(--color-game)]"
-                total={stats.total}
-                delay={0.1}
-              />
-              <StatCard
-                icon={<Tv size={20} />}
-                label="Series"
-                value={stats.byType.SERIES || 0}
-                color="text-[var(--color-series)]"
-                total={stats.total}
-                delay={0.2}
-              />
-              <StatCard
-                icon={<Film size={20} />}
-                label="Películas"
-                value={stats.byType.MOVIE || 0}
-                color="text-[var(--color-movie)]"
-                total={stats.total}
-                delay={0.3}
-              />
-            </div>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.3}>
-            <div className="border-b border-white/10 mb-8">
-              <div className="flex gap-8">
-                <TabItem
-                  label="Resumen"
-                  active={activeTab === 'overview'}
-                  onClick={() => setActiveTab('overview')}
-                />
-                <TabItem
-                  label="Historial"
-                  active={activeTab === 'history'}
-                  onClick={() => setActiveTab('history')}
-                />
-                <TabItem
-                  label="Reseñas"
-                  active={activeTab === 'reviews'}
-                  onClick={() => setActiveTab('reviews')}
-                />
-                <TabItem
-                  label="Estadísticas"
-                  active={activeTab === 'stats'}
-                  onClick={() => setActiveTab('stats')}
-                />
-              </div>
-            </div>
-          </FadeIn>
-
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              <div className="lg:col-span-2 space-y-12">
-                <section ref={heatmapRef}>
-                  <div className="flex items-center gap-3 mb-6">
-                    <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
-                    <h2 className="text-xl font-semibold">Actividad</h2>
-                  </div>
-                  <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
-                    <div className="h-32 flex items-end justify-between gap-1">
-                      {activityChartData.map((data, i) => (
-                        <div
-                          key={i}
-                          className="w-full rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
-                          style={{
-                            height: `${data.height}%`,
-                            opacity: data.opacity,
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
-                      <span>Últimos 40 días</span>
-                      <span>{stats.total} elementos</span>
-                    </div>
-                  </div>
-                </section>
-
-                {favoriteItems.length > 0 && (
-                  <section ref={favoritesRef}>
-                    <h2 className="text-xl font-semibold mb-6">Mejor Valorados</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                      {favoriteItems.map((item, index) => (
-                        <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
-                          <KataCard item={item} />
-                        </FadeIn>
-                      ))}
-                    </div>
-                  </section>
-                )}
-              </div>
-
-              <div className="space-y-8">
-                <section ref={timelineRef}>
-                  <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">Actividad Reciente</h2>
-                  <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
-                    {recentActivity.slice(0, 5).map((item, index) => (
-                      <FadeIn key={item.id} delay={index * 0.15}>
-                        <TimelineItem
-                          title={item.title}
-                          date={getRelativeTime(item.createdAt)}
-                          type={item.type}
-                          desc={item.review || `Añadido a ${getStatusLabel(item.status)}`}
-                        />
-                      </FadeIn>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'history' && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold mb-6">Historial Completo</h2>
-              <div className="space-y-3">
-                {recentActivity.map((item, index) => (
-                  <FadeIn key={item.id} delay={index * 0.05}>
-                    <div className="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
-                      <img
-                        src={item.coverUrl}
-                        alt={item.title}
-                        className="h-16 w-12 rounded object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">{item.title}</h3>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          {item.author || item.platform || item.releaseYear}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-[var(--accent-primary)]">
-                          {item.rating ? `${item.rating}/5` : 'Sin valorar'}
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)]">
-                          {getRelativeTime(item.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'reviews' && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold mb-6">Tus Reseñas</h2>
-              <div className="space-y-4">
-                {items
-                  .filter((item) => item.review)
-                  .map((item, index) => (
-                    <FadeIn key={item.id} delay={index * 0.05}>
-                      <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
-                        <div className="flex items-start gap-4 mb-4">
+              {activeTab === 'history' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-6">Historial Completo</h2>
+                  <div className="space-y-3">
+                    {recentActivity.map((item, index) => (
+                      <FadeIn key={item.id} delay={index * 0.05}>
+                        <div className="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
                           <img
                             src={item.coverUrl}
                             alt={item.title}
-                            className="h-20 w-14 rounded object-cover"
+                            className="h-16 w-12 rounded object-cover"
                           />
                           <div className="flex-1">
-                            <h3 className="font-bold text-white mb-1">{item.title}</h3>
-                            <p className="text-sm text-[var(--text-secondary)] mb-2">
-                              {item.author || item.platform}
+                            <h3 className="font-semibold text-white">{item.title}</h3>
+                            <p className="text-sm text-[var(--text-secondary)]">
+                              {item.author || item.platform || item.releaseYear}
                             </p>
-                            <div className="flex items-center gap-2">
-                              <div className="text-[var(--accent-warning)]">
-                                {item.rating ? `${item.rating}/5` : 'Sin valorar'}
-                              </div>
-                              <span className="text-[var(--text-tertiary)]">•</span>
-                              <span className="text-sm text-[var(--text-tertiary)]">
-                                {getRelativeTime(item.createdAt)}
-                              </span>
-                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-[var(--accent-primary)]">
+                              {item.rating ? `${item.rating}/5` : 'Sin valorar'}
+                            </p>
+                            <p className="text-xs text-[var(--text-tertiary)]">
+                              {getRelativeTime(item.createdAt)}
+                            </p>
                           </div>
                         </div>
-                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                          {item.review}
-                        </p>
-                      </div>
-                    </FadeIn>
-                  ))}
-                {items.filter((item) => item.review).length === 0 && (
-                  <p className="text-center text-[var(--text-tertiary)] py-12">
-                    Aún no tienes reseñas. ¡Comienza a reseñar tus elementos!
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'stats' && (
-            <div className="space-y-8">
-              <h2 className="text-xl font-semibold mb-6">Estadísticas Detalladas</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
-                  <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
-                    Por Estado
-                  </h3>
-                  <div className="space-y-3">
-                    {Object.entries(stats.byStatus).map(([status, count]) => (
-                      <div key={status} className="flex items-center justify-between">
-                        <span className="text-sm text-white capitalize">
-                          {status.replace(/_/g, ' ').toLowerCase()}
-                        </span>
-                        <span className="text-sm font-bold text-[var(--accent-primary)]">
-                          {count}
-                        </span>
-                      </div>
+                      </FadeIn>
                     ))}
                   </div>
                 </div>
+              )}
 
-                <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
-                  <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
-                    Distribución de Valoraciones
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { label: '5', min: 4.5, max: 6 },
-                      { label: '4', min: 3.5, max: 4.5 },
-                      { label: '3', min: 2.5, max: 3.5 },
-                      { label: '1-2', min: 0, max: 2.5 },
-                    ].map(({ label, min, max }) => {
-                      const count = items.filter(
-                        (item) => item.rating !== null && item.rating >= min && item.rating < max
-                      ).length;
-                      return (
-                        <div key={label} className="flex items-center justify-between">
-                          <span className="text-sm text-white">{label}</span>
-                          <span className="text-sm font-bold text-[var(--accent-primary)]">
-                            {count}
-                          </span>
-                        </div>
-                      );
-                    })}
+              {activeTab === 'reviews' && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-6">Tus Reseñas</h2>
+                  <div className="space-y-4">
+                    {items
+                      .filter((item) => item.review)
+                      .map((item, index) => (
+                        <FadeIn key={item.id} delay={index * 0.05}>
+                          <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
+                            <div className="flex items-start gap-4 mb-4">
+                              <img
+                                src={item.coverUrl}
+                                alt={item.title}
+                                className="h-20 w-14 rounded object-cover"
+                              />
+                              <div className="flex-1">
+                                <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                                <p className="text-sm text-[var(--text-secondary)] mb-2">
+                                  {item.author || item.platform}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-[var(--accent-warning)]">
+                                    {item.rating ? `${item.rating}/5` : 'Sin valorar'}
+                                  </div>
+                                  <span className="text-[var(--text-tertiary)]">•</span>
+                                  <span className="text-sm text-[var(--text-tertiary)]">
+                                    {getRelativeTime(item.createdAt)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                              {item.review}
+                            </p>
+                          </div>
+                        </FadeIn>
+                      ))}
+                    {items.filter((item) => item.review).length === 0 && (
+                      <p className="text-center text-[var(--text-tertiary)] py-12">
+                        Aún no tienes reseñas. ¡Comienza a reseñar tus elementos!
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
+              )}
+
+              {activeTab === 'stats' && (
+                <div className="space-y-8">
+                  <h2 className="text-xl font-semibold mb-6">Estadísticas Detalladas</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                      <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                        Por Estado
+                      </h3>
+                      <div className="space-y-3">
+                        {Object.entries(stats.byStatus).map(([status, count]) => (
+                          <div key={status} className="flex items-center justify-between">
+                            <span className="text-sm text-white">
+                              {STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status}
+                            </span>
+                            <span className="text-sm font-bold text-[var(--accent-primary)]">
+                              {count}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                      <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                        Distribución de Valoraciones
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          { label: '5 estrellas', min: 4.5, max: 6 },
+                          { label: '4 estrellas', min: 3.5, max: 4.5 },
+                          { label: '3 estrellas', min: 2.5, max: 3.5 },
+                          { label: '1-2 estrellas', min: 0, max: 2.5 },
+                        ].map(({ label, min, max }) => {
+                          const count = items.filter(
+                            (item) => item.rating !== null && item.rating >= min && item.rating < max
+                          ).length;
+                          return (
+                            <div key={label} className="flex items-center justify-between">
+                              <span className="text-sm text-white">{label}</span>
+                              <span className="text-sm font-bold text-[var(--accent-primary)]">
+                                {count}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
@@ -477,18 +529,4 @@ function getRelativeTime(dateString: string): string {
   if (diffInSeconds < 86400) return `hace ${Math.floor(diffInSeconds / 3600)} hora${Math.floor(diffInSeconds / 3600) > 1 ? 's' : ''}`;
   if (diffInSeconds < 604800) return `hace ${Math.floor(diffInSeconds / 86400)} día${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''}`;
   return `hace ${Math.floor(diffInSeconds / 604800)} semana${Math.floor(diffInSeconds / 604800) > 1 ? 's' : ''}`;
-}
-
-function getStatusLabel(status: string): string {
-  const statusMap: Record<string, string> = {
-    'WANT_TO_READ': 'Quiero Leer',
-    'READING': 'Leyendo',
-    'COMPLETED': 'Completado',
-    'DROPPED': 'Abandonado',
-    'WANT_TO_PLAY': 'Quiero Jugar',
-    'PLAYING': 'Jugando',
-    'WANT_TO_WATCH': 'Quiero Ver',
-    'WATCHING': 'Viendo',
-  };
-  return statusMap[status] || status;
 }

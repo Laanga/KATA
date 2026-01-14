@@ -323,3 +323,102 @@ export function LibrarySkeleton() {
     </div>
   );
 }
+
+// Profile Page Skeleton
+export function ProfileSkeleton() {
+  return (
+    <div className="min-h-screen pb-24 md:pb-0">
+      <div className="container mx-auto px-4 pt-32 max-w-5xl">
+        {/* Header Skeleton */}
+        <div className="mb-12">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="relative h-28 w-28 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
+                <Skeleton variant="circular" className="h-full w-full" />
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-64" variant="text" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded-full" variant="circular" />
+                  <Skeleton className="h-4 w-32" variant="text" />
+                </div>
+                <Skeleton className="h-4 w-48" variant="text" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-32 rounded-full" variant="rectangular" />
+          </div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl p-6">
+              <div className="mb-4">
+                <Skeleton className="h-5 w-5" variant="rectangular" />
+              </div>
+              <Skeleton className="h-8 w-16 mb-1" variant="text" />
+              <Skeleton className="h-4 w-20" variant="text" />
+              <div className="mt-4 h-1 w-full rounded-full bg-white/5">
+                <Skeleton className="h-full w-2/3" variant="rectangular" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="border-b border-white/10 mb-8">
+          <div className="flex gap-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-24" variant="text" />
+            ))}
+          </div>
+        </div>
+
+        {/* Content Area Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 space-y-12">
+            {/* Activity Chart Skeleton */}
+            <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Skeleton className="h-6 w-6" variant="rectangular" />
+                <Skeleton className="h-6 w-32" variant="text" />
+              </div>
+              <div className="h-32 flex items-end justify-between gap-1">
+                {Array.from({ length: 40 }).map((_, i) => (
+                  <Skeleton key={i} className="w-full h-full rounded-sm" variant="rectangular" />
+                ))}
+              </div>
+            </div>
+
+            {/* Top Rated Items Skeleton */}
+            <div>
+              <Skeleton className="h-8 w-48 mb-6" variant="text" />
+              <div className="grid grid-cols-3 gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <MediaCardSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity Skeleton */}
+          <div className="space-y-8">
+            <Skeleton className="h-6 w-40 mb-4" variant="text" />
+            <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="relative">
+                  <Skeleton className="absolute -left-[29px] top-1 h-3 w-3 rounded-full" variant="circular" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-48" variant="text" />
+                    <Skeleton className="h-3 w-32" variant="text" />
+                    <Skeleton className="h-3 w-24" variant="text" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

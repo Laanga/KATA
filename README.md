@@ -146,10 +146,10 @@ Para obtener datos reales de contenido multimedia, Kata utiliza:
 | [Google Books](https://developers.google.com/books) | Libros | Opcional |
 
 > 💡 **Cómo obtener las API keys:**
-> - **Supabase**: Ve a tu [dashboard de Supabase](https://supabase.com/dashboard) → Settings → API
-> - **TMDB**: Regístrate en [TMDB](https://www.themoviedb.org/) → Settings → API → Request API Key
-> - **IGDB**: Crea una app en [Twitch Developer Console](https://dev.twitch.tv/console/apps) (usa IGDB API)
-> - **Google Books**: Opcional, en [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+> > - **Supabase**: Ve a tu [dashboard de Supabase](https://supabase.com/dashboard) → Settings → API
+> > - **TMDB**: Regístrate en [TMDB](https://www.themoviedb.org/) → Settings → API → Request API Key
+> > - **IGDB**: Crea una app en [Twitch Developer Console](https://dev.twitch.tv/console/apps) (usa IGDB API)
+> > - **Google Books**: Opcional, en [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 
 ---
 

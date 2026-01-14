@@ -37,21 +37,23 @@ export const metadata: Metadata = {
     siteName: "Kata",
     title: "Kata (型) - Tu biblioteca personal de medios",
     description: "Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.",
-    images: [
-      {
-        url: "/og-image.png", // Necesitarás crear esta imagen
-        width: 1200,
-        height: 630,
-        alt: "Kata - Biblioteca personal de medios",
-      },
-    ],
+    // TODO: Create og-image.png (1200x630) for social sharing
+    // images: [
+    //   {
+    //     url: "/og-image.png",
+    //     width: 1200,
+    //     height: 630,
+    //     alt: "Kata - Biblioteca personal de medios",
+    //   },
+    // ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kata (型) - Tu biblioteca personal de medios",
     description: "Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.",
-    images: ["/og-image.png"],
-    creator: "@kata", // Cambia por tu Twitter si tienes
+    // TODO: Update images when og-image.png is created
+    // images: ["/og-image.png"],
+    creator: "@kata",
   },
   robots: {
     index: true,
@@ -65,9 +67,10 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    // TODO: Create favicon.ico (16x16, 32x32) for browser tabs
+    // icon: "/favicon.ico",
+    // shortcut: "/favicon.ico",
+    // apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json", // Opcional: para PWA
 };
