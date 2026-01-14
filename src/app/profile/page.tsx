@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
+import BottomNavigation from "@/components/layout/BottomNavigation";
 import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
 import { useMediaStore } from "@/lib/store";
@@ -60,6 +61,14 @@ export default function ProfilePage() {
     to: { opacity: 1, x: 0 },
   });
 
+  // Memoized activity chart data to prevent re-render flickering
+  const activityChartData = useMemo(() => {
+    return Array.from({ length: 40 }).map(() => ({
+      height: Math.random() * 100,
+      opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.8 + 0.2,
+    }));
+  }, []);
+
   // Fix hydration mismatch
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -70,8 +79,9 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pb-24 md:pb-0">
         <Navbar />
+        <BottomNavigation />
 
         <main className="container mx-auto px-4 pt-32 max-w-5xl">
           <FadeIn direction="up" delay={0.1}>
@@ -184,13 +194,13 @@ export default function ProfilePage() {
                   </div>
                   <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
                     <div className="h-32 flex items-end justify-between gap-1">
-                      {Array.from({ length: 40 }).map((_, i) => (
+                      {activityChartData.map((data, i) => (
                         <div
                           key={i}
                           className="w-full rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
                           style={{
-                            height: `${Math.random() * 100}%`,
-                            opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.8 + 0.2,
+                            height: `${data.height}%`,
+                            opacity: data.opacity,
                           }}
                         />
                       ))}

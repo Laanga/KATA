@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import { usePathname } from 'next/navigation';
 
 export function Navbar() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const pathname = usePathname();
 
     const navLinks = [
@@ -20,21 +17,14 @@ export function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+            <nav className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 border-b border-white/10 bg-black/50 backdrop-blur-xl hidden md:flex flex-col">
                 <div className="container mx-auto flex h-full items-center justify-between px-4 sm:px-6">
                     {/* Logo / Menu Mobile */}
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <button 
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden text-[var(--text-secondary)] hover:text-white transition-colors p-1"
-                            aria-label="Toggle menu"
-                        >
-                            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-                        </button>
-                        <Link 
-                            href="/" 
+
+                        <Link
+                            href="/"
                             className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-1.5 sm:gap-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
                         >
                             <span>Kata</span>
                             <span className="font-serif text-[var(--accent-primary)]">型</span>
@@ -57,35 +47,7 @@ export function Navbar() {
                 </div>
             </nav>
 
-            {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <>
-                    <div 
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    />
-                    <div className="fixed top-14 left-0 right-0 z-40 md:hidden bg-[var(--bg-primary)] border-b border-white/10 shadow-xl">
-                        <div className="container mx-auto px-4 py-4">
-                            <nav className="flex flex-col gap-1">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className={`px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                                            pathname === link.href
-                                                ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
-                                                : 'text-[var(--text-secondary)] hover:text-white hover:bg-white/5'
-                                        }`}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-                </>
-            )}
+
         </>
     );
 }

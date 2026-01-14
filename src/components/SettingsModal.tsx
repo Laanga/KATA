@@ -7,6 +7,7 @@ import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { Download, Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import type { MediaItem } from '@/types/media';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -192,14 +193,53 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     // Crear blob y descargar
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para Excel
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `kata-export-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    
+
     URL.revokeObjectURL(url);
     toast.success(`Biblioteca exportada como CSV (${items.length} items)`);
+  };
+
+  const validateImportData = (data: unknown): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    if (!Array.isArray(data)) {
+      errors.push('El formato debe ser un array de elementos');
+      return { valid: false, errors };
+    }
+
+    if (data.length === 0) {
+      errors.push('El archivo está vacío');
+      return { valid: false, errors };
+    }
+
+    data.forEach((item: any, index) => {
+      const itemNum = index + 1;
+
+      if (!item.title || typeof item.title !== 'string') {
+        errors.push(`Item #${itemNum}: El título es requerido`);
+      }
+
+      if (!item.type || !['BOOK', 'GAME', 'MOVIE', 'SERIES'].includes(item.type)) {
+        errors.push(`Item #${itemNum}: El tipo debe ser BOOK, GAME, MOVIE o SERIES`);
+      }
+
+      if (item.coverUrl && typeof item.coverUrl !== 'string') {
+        errors.push(`Item #${itemNum}: La URL de portada debe ser un texto válido`);
+      }
+
+      if (item.rating !== null && item.rating !== undefined) {
+        const rating = Number(item.rating);
+        if (isNaN(rating) || rating < 0 || rating > 10) {
+          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 10`);
+        }
+      }
+    });
+
+    return { valid: errors.length === 0, errors };
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,15 +250,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
+
+        const validation = validateImportData(data);
+
+        if (!validation.valid) {
+          toast.error(validation.errors[0]);
+          return;
+        }
+
         if (Array.isArray(data)) {
           setItems(data);
           toast.success(`${data.length} elementos importados`);
           onClose();
-        } else {
-          toast.error('Formato de archivo inválido');
         }
-      } catch (error) {
-        toast.error('Error al importar el archivo');
+      } catch {
+        toast.error('Error al importar el archivo. Asegúrate de que sea un JSON válido.');
       }
     };
     reader.readAsText(file);

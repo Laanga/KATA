@@ -13,14 +13,14 @@ export interface MediaItem {
   coverUrl: string;
   rating: number | null;
   status: MediaStatus;
-  
+
   // Optional metadata
   author?: string;       // Books
   platform?: string;     // Games
   releaseYear?: number;  // All
   genres?: string[];     // All
   review?: string;       // User review
-  
+
   // Timestamps
   createdAt: string;
   updatedAt?: string;

@@ -1,29 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
+import BottomNavigation from "@/components/layout/BottomNavigation";
 import { KataCard } from "@/components/media/KataCard";
 import { FilterBar } from "@/components/library/FilterBar";
+import { EditItemModal } from "@/components/media/EditItemModal";
 import { useMediaStore, useFilteredItems } from "@/lib/store";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LibrarySkeleton } from "@/components/ui/Skeleton";
-import { BookOpen, Grid3x3, List, Search } from "lucide-react";
+import { BookOpen, Grid3x3, List } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
 import { FadeIn } from "@/components/FadeIn";
-import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import type { MediaItem } from "@/types/media";
 
 export default function LibraryPage() {
   const router = useRouter();
   const getStats = useMediaStore((state) => state.getStats);
   const filteredItems = useFilteredItems();
   const isInitialized = useMediaStore((state) => state.isInitialized);
+  const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const stats = getStats();
+
+  // Fix hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Show skeleton while loading
   if (!isInitialized) {
@@ -36,8 +44,9 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-24 md:pb-0">
       <Navbar />
+      <BottomNavigation />
 
       <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24">
         <FadeIn direction="up" delay={0.1}>
@@ -46,7 +55,7 @@ export default function LibraryPage() {
             <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-4 sm:mb-6">
               {filteredItems.length} de {stats.total} elementos
             </p>
-            
+
             {/* Métricas */}
             <DashboardMetrics />
           </div>
@@ -57,13 +66,6 @@ export default function LibraryPage() {
             <div></div>
 
             <div className="flex gap-2">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-colors text-xs sm:text-sm"
-              >
-                <Search size={16} className="sm:w-[18px] sm:h-[18px]" />
-                <span className="hidden sm:inline">Buscar</span>
-              </button>
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
@@ -101,7 +103,7 @@ export default function LibraryPage() {
                 description="Intenta ajustar tus filtros o busca nuevos elementos para añadir a tu biblioteca."
                 action={{
                   label: "Comenzar a Buscar",
-                  onClick: () => router.push('/books'),
+                  onClick: () => router.push('/search'),
                 }}
               />
             </FadeIn>
@@ -138,7 +140,7 @@ export default function LibraryPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => { }}
+                      onClick={() => setEditingItem(item)}
                       className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-sm"
                     >
                       Editar
@@ -150,7 +152,13 @@ export default function LibraryPage() {
           )}
         </div>
       </main>
-      <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {editingItem && (
+        <EditItemModal
+          item={editingItem}
+          isOpen={editingItem !== null}
+          onClose={() => setEditingItem(null)}
+        />
+      )}
     </div>
   );
 }

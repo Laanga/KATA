@@ -58,9 +58,9 @@ export default function ChooseUsernamePage() {
 
       toast.success('¡Nombre de usuario guardado!');
       window.location.href = '/';
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar username:', error);
-      toast.error(error.message || 'Error al guardar el nombre de usuario');
+      toast.error(error instanceof Error ? error.message : 'Error al guardar el nombre de usuario');
     } finally {
       setIsLoading(false);
     }

@@ -5,12 +5,12 @@
 CREATE TABLE IF NOT EXISTS public.media_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     -- Información básica
     type TEXT NOT NULL CHECK (type IN ('BOOK', 'GAME', 'MOVIE', 'SERIES')),
     title TEXT NOT NULL,
     cover_url TEXT,
-    
+
     -- Estado y valoración
     status TEXT NOT NULL CHECK (
         status IN (
@@ -21,11 +21,11 @@ CREATE TABLE IF NOT EXISTS public.media_items (
     ),
     rating DECIMAL(2,1) CHECK (rating IS NULL OR (rating >= 0 AND rating <= 5)),
     review TEXT,
-    
+
     -- Metadata flexible en JSONB
     -- Contiene: author, platform, release_year, genres (array), y otros campos
     metadata JSONB DEFAULT '{}'::jsonb,
-    
+
     -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL

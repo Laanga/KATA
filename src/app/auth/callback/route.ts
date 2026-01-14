@@ -4,48 +4,58 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const type = searchParams.get('type'); // 'signup', 'recovery', etc.
+  const type = searchParams.get('type');
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
-    if (!error) {
-      // Verificar si el email está confirmado
-      const { data: { user } } = await supabase.auth.getUser();
-      const emailConfirmed = user?.email_confirmed_at !== null;
-      const hasUsername = user?.user_metadata?.username;
-      
-      const forwardedHost = request.headers.get('x-forwarded-host');
-      const isLocalEnv = process.env.NODE_ENV === 'development';
-      
-      let redirectUrl = next;
-      
-      // Si viene de OAuth (Google) y no tiene username, redirigir a choose-username
-      if (!hasUsername && emailConfirmed) {
-        redirectUrl = '/choose-username';
-      } else if (type === 'recovery') {
-        // Para recuperación de contraseña, ir a reset-password
-        redirectUrl = '/reset-password';
-      } else if (!emailConfirmed) {
-        // Si el email no está confirmado, ir a verify-email
-        redirectUrl = '/verify-email';
-      } else if (type === 'signup' && emailConfirmed && hasUsername) {
-        // Si es un signup y el email está confirmado y tiene username, ir al dashboard
-        redirectUrl = '/';
-      }
-    
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${redirectUrl}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${redirectUrl}`);
-      } else {
-        return NextResponse.redirect(`${origin}${redirectUrl}`);
-      }
+
+    // Exchange code for session - this is the ONLY Supabase call we make
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
     }
+
+    // Get user info from session data (no additional Supabase call!)
+    const user = data.user;
+    const emailConfirmed = user?.email_confirmed_at !== null;
+    const hasUsername = user?.user_metadata?.username;
+
+    // Determine redirect based on user state
+    let redirectUrl = next;
+
+    if (!emailConfirmed) {
+      // Email not confirmed -> go to verify-email
+      redirectUrl = '/verify-email';
+    } else if (!hasUsername) {
+      // Email confirmed but no username -> go to choose-username
+      redirectUrl = '/choose-username';
+    } else if (type === 'recovery') {
+      // Password recovery -> go to reset-password
+      redirectUrl = '/reset-password';
+    } else if (type === 'signup' && emailConfirmed && hasUsername) {
+      // Completed signup -> go to dashboard
+      redirectUrl = '/';
+    }
+
+    // Determine correct origin for redirect
+    const forwardedHost = request.headers.get('x-forwarded-host');
+    const isLocalEnv = process.env.NODE_ENV === 'development';
+
+    let fullRedirectUrl: string;
+
+    if (isLocalEnv) {
+      fullRedirectUrl = `${origin}${redirectUrl}`;
+    } else if (forwardedHost) {
+      fullRedirectUrl = `https://${forwardedHost}${redirectUrl}`;
+    } else {
+      fullRedirectUrl = `${origin}${redirectUrl}`;
+    }
+
+    return NextResponse.redirect(fullRedirectUrl);
   }
 
-  // Si hay un error, redirigir a login
-  return NextResponse.redirect(`${origin}/login`);
+  // No code parameter - shouldn't happen, but handle gracefully
+  return NextResponse.redirect(`${origin}/login?error=no_code`);
 }

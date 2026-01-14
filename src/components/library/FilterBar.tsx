@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/Select';
 import { useMediaStore } from '@/lib/store';
 import { MediaType, SortBy, GroupedStatus } from '@/types/media';
 import { TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
+import { useMemo } from 'react';
 
 export function FilterBar() {
   const filters = useMediaStore((state) => state.filters);
@@ -14,15 +15,23 @@ export function FilterBar() {
   const setSortBy = useMediaStore((state) => state.setSortBy);
   const resetFilters = useMediaStore((state) => state.resetFilters);
 
-  // Get unique genres from all items
-  const allGenres = Array.from(
-    new Set(
-      items
-        .flatMap(item => item.genres || [])
-        .filter(Boolean)
-        .sort()
-    )
-  );
+  // Get unique genres from all items - memoized to prevent re-calculation
+  const allGenres = useMemo(() => {
+    const genres = items
+      .flatMap((item) => item.genres || [])
+      .filter(Boolean);
+    
+    const sortedGenres = Array.from(new Set(genres)).sort();
+    
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[FilterBar] Items with genres:', items.filter(i => i.genres && i.genres.length > 0));
+      console.log('[FilterBar] Total items:', items.length);
+      console.log('[FilterBar] All genres found:', sortedGenres);
+    }
+    
+    return sortedGenres;
+  }, [items]);
 
   const genreOptions = [
     { value: 'ALL', label: 'Todos los Géneros' },
@@ -103,14 +112,12 @@ export function FilterBar() {
         options={ratingOptions}
       />
 
-      {/* Genre Filter */}
-      {allGenres.length > 0 && (
+        {/* Genre Filter */}
         <Select
           value={filters.genre}
           onChange={(value) => setFilters({ genre: value })}
           options={genreOptions}
         />
-      )}
 
       {/* Reset Button */}
       {hasActiveFilters && (

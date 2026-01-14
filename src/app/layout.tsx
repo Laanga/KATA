@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { StoreInitializer } from "@/components/StoreInitializer";
@@ -8,9 +8,9 @@ import { PageTransition } from "@/components/PageTransition";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+const notoSansJP = Noto_Sans_JP({
+  variable: "--font-noto",
+  weight: ["300", "400", "500", "600", "700"],
   display: 'swap',
 });
 
@@ -78,8 +78,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={`${inter.variable} antialiased`}>
+    <html lang="es" className={notoSansJP.variable}>
+      <body className="antialiased">
         <ErrorBoundary>
           <AuthProvider>
             <SmoothScroll>

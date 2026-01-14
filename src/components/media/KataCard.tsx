@@ -23,7 +23,7 @@ export function KataCard({ item }: KataCardProps) {
   const [showActions, setShowActions] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+
   const deleteItem = useMediaStore((state) => state.deleteItem);
 
   useGSAP(() => {
@@ -51,17 +51,17 @@ export function KataCard({ item }: KataCardProps) {
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!card) return;
-      
+
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      
+
       const rotateX = ((y - centerY) / centerY) * -8;
       const rotateY = ((x - centerX) / centerX) * 8;
-      
+
       gsap.to(card, {
         rotationX: rotateX,
         rotationY: rotateY,
@@ -81,7 +81,7 @@ export function KataCard({ item }: KataCardProps) {
     const handleMouseLeave = () => {
       tl.reverse();
       setShowActions(false);
-      
+
       gsap.to(card, {
         rotationX: 0,
         rotationY: 0,
@@ -179,7 +179,7 @@ export function KataCard({ item }: KataCardProps) {
             </span>
           </div>
 
-          <div 
+          <div
             className="text-xs font-medium mb-3 transition-colors"
             style={{ color: STATUS_COLORS[item.status] }}
           >
@@ -187,16 +187,16 @@ export function KataCard({ item }: KataCardProps) {
           </div>
 
           <div className="flex items-center justify-between card-actions translate-y-2 opacity-0">
-            <button 
-              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
+            <button
+              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
               onClick={handleEdit}
               aria-label="Editar"
             >
               <Edit size={16} />
             </button>
-            <button 
+            <button
+              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
               onClick={() => setShowActions(!showActions)}
-              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
               aria-label="Más opciones"
             >
               <MoreVertical size={16} />
@@ -207,7 +207,7 @@ export function KataCard({ item }: KataCardProps) {
             <div className="absolute bottom-12 right-4 rounded-lg border border-white/10 bg-[var(--bg-primary)] p-2 shadow-xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
               <button
                 onClick={handleDeleteClick}
-                className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors"
+                className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors touch-target-mobile"
               >
                 <Trash2 size={16} />
                 Eliminar
@@ -217,7 +217,7 @@ export function KataCard({ item }: KataCardProps) {
         </div>
 
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <div 
+          <div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
             style={{ transform: 'skewX(-20deg)' }}
           />

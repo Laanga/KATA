@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
-  // Refrescar la sesión si está expirada (solo si no es ruta pública para evitar errores innecesarios)
+  // Solo verificar usuario en rutas protegidas
   let user = null;
   if (!isPublicRoute) {
     try {
@@ -43,8 +43,7 @@ export async function middleware(request: NextRequest) {
         data: { user: authUser },
       } = await supabase.auth.getUser();
       user = authUser;
-    } catch (error) {
-      // En rutas públicas es normal que no haya sesión, ignorar errores
+    } catch {
       user = null;
     }
   }
@@ -56,11 +55,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Si hay usuario y está en login, signup o landing, redirigir al dashboard
+  // Si hay usuario y está en auth pages (login, signup, landing), redirigir al dashboard
   const authPages = ['/login', '/signup', '/landing'];
   if (user && authPages.includes(request.nextUrl.pathname)) {
+    // Pero primero verificar si el usuario está completamente configurado
+    const emailConfirmed = user.email_confirmed_at !== null;
+    const hasUsername = user.user_metadata?.username;
+
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+
+    if (!emailConfirmed) {
+      url.pathname = '/verify-email';
+    } else if (!hasUsername) {
+      url.pathname = '/choose-username';
+    } else {
+      url.pathname = '/';
+    }
+
     return NextResponse.redirect(url);
   }
 

@@ -33,9 +33,9 @@ export default function ForgotPasswordPage() {
 
       setIsEmailSent(true);
       toast.success('Email enviado correctamente');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al enviar email:', error);
-      toast.error(error.message || 'Error al enviar el email');
+      toast.error(error instanceof Error ? error.message : 'Error al enviar el email');
     } finally {
       setIsLoading(false);
     }
