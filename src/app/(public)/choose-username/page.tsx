@@ -26,7 +26,7 @@ export default function ChooseUsernamePage() {
 
       // Si ya tiene username, redirigir al dashboard
       if (user.user_metadata?.username) {
-        window.location.href = '/';
+        window.location.href = '/home';
         return;
       }
 
@@ -57,7 +57,7 @@ export default function ChooseUsernamePage() {
       if (error) throw error;
 
       toast.success('¡Nombre de usuario guardado!');
-      window.location.href = '/';
+      window.location.href = '/home';
     } catch (error) {
       console.error('Error al guardar username:', error);
       toast.error(error instanceof Error ? error.message : 'Error al guardar el nombre de usuario');

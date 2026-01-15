@@ -9,7 +9,7 @@ export default function BottomNavigation() {
   const router = useRouter();
 
   const navItems = [
-    { href: '/', label: 'Home', icon: Home },
+    { href: '/home', label: 'Home', icon: Home },
     { href: '/library', label: 'Biblioteca', icon: Library },
     { href: '/search', label: 'Buscar', icon: Search },
     { href: '/profile', label: 'Perfil', icon: User },
@@ -18,7 +18,7 @@ export default function BottomNavigation() {
   const isActive = (href: string) => {
     if (href === '/library' && pathname === '/library') return true;
     if (href === '/search' && pathname === '/search') return true;
-    if (href === '/') return pathname === '/';
+    if (href === '/home') return pathname === '/home';
     return pathname === href;
   };
 

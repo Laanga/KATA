@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/landing" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>

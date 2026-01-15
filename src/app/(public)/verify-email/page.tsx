@@ -101,9 +101,10 @@ export default function VerifyEmailPage() {
       if (error) throw error;
 
       toast.success('Email reenviado. Revisa tu bandeja de entrada.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al reenviar email:', error);
-      toast.error(error.message || 'Error al reenviar el email');
+      const errorMessage = error instanceof Error ? error.message : 'Error al reenviar el email';
+      toast.error(errorMessage);
     } finally {
       setIsResending(false);
     }

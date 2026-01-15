@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setIsLoading(true);
+      setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.updateUser({
@@ -58,12 +58,13 @@ export default function ResetPasswordPage() {
 
       setIsSuccess(true);
       toast.success('Contraseña actualizada correctamente');
-      
+
       // Cerrar sesión para que el usuario inicie con la nueva contraseña
       await supabase.auth.signOut();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al actualizar contraseña:', error);
-      toast.error(error.message || 'Error al actualizar la contraseña');
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la contraseña';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +104,7 @@ export default function ResetPasswordPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/landing" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>

@@ -96,6 +96,7 @@ Interfaz oscura con animaciones fluidas. Cards 3D interactivas, transiciones sua
 
 - [Bun](https://bun.sh/) o [Node.js](https://nodejs.org/) 18+
 - Cuenta en [Supabase](https://supabase.com/) (gratis)
+- Variables de entorno configuradas (ver [MVP.md](./MVP.md) para detalles)
 
 ### Instalación
 
@@ -131,7 +132,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 bun dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) y ¡listo! 🎉
+> 💡 **IMPORTANTE:** Revisa [MVP.md](./MVP.md) para obtener las API keys y configurar producción.
 
 ---
 
@@ -208,6 +209,43 @@ src/
 | <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Search"> | <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Library"> |
 
 </div>
+
+---
+
+## 🚀 Deployment
+
+### Opción Rápida: Vercel (Recomendado)
+
+Vercel tiene soporte nativo para Next.js con Turbopack:
+
+1. **Preparar el proyecto**
+   ```bash
+   git add .
+   git commit -m "chore: prepare for production deployment"
+   git push origin main
+   ```
+
+2. **Deploy en Vercel**
+   - Ve a: https://vercel.com/new
+   - Importa tu repositorio de GitHub
+   - Configura:
+     * Framework Preset: Next.js
+     * Root Directory: `./`
+     * Build Command: `npm run build`
+     * Output Directory: `.next`
+   - Click "Deploy"
+
+3. **Configurar variables de entorno** en Vercel Dashboard:
+   - Settings → Environment Variables
+   - Agrega las variables necesarias (ver MVP.md para lista completa)
+
+4. **Configurar Supabase**:
+   - Ve a Supabase Dashboard → Authentication → URL Configuration
+   - Agrega tu dominio de Vercel
+
+### Instrucciones Detalladas
+
+Para un checklist completo y troubleshooting, consulta [MVP.md](./MVP.md).
 
 ---
 

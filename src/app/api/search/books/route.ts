@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createSearchHandler } from '@/lib/api/searchHandler';
-
+import type { GoogleBookVolume } from '@/types/api';
+ 
 export async function GET(request: NextRequest) {
   return createSearchHandler(request, {
     errorMessage: 'Failed to search books',
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
       const data = await response.json();
 
       // Enrich results with categories as genres
-      const enrichedItems = (data.items || []).map((item: any) => {
+      const enrichedItems = (data.items || []).map((item: GoogleBookVolume) => {
         const categories =
           item.volumeInfo?.categories || item.volumeInfo?.subject || [];
         return {

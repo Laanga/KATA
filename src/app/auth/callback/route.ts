@@ -5,12 +5,12 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const type = searchParams.get('type');
-  const next = searchParams.get('next') ?? '/';
+  const next = searchParams.get('next') ?? '/home';
 
   if (code) {
     const supabase = await createClient();
 
-    // Exchange code for session - this is the ONLY Supabase call we make
+    // Exchange code for session - this is ONLY Supabase call we make
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       redirectUrl = '/reset-password';
     } else if (type === 'signup' && emailConfirmed && hasUsername) {
       // Completed signup -> go to dashboard
-      redirectUrl = '/';
+      redirectUrl = '/home';
     }
 
     // Determine correct origin for redirect

@@ -2,8 +2,29 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  const { nextUrl } = request;
+  const pathname = nextUrl.pathname;
+
+  console.log('='.repeat(60));
+  console.log('Middleware: Processing request', { pathname, method: request.method });
+
+  // Debug: Log all cookies
+  const allCookies = request.cookies.getAll();
+  console.log('Middleware: All cookies received:', {
+    count: allCookies.length,
+    cookies: allCookies.map(c => ({
+      name: c.name,
+      value: c.value ? c.value.substring(0, 30) + '...' : '(empty)'
+    })),
+  });
+
+  // Debug: Check specifically for Supabase cookies
+  const supabaseCookieNames = allCookies.filter(c =>
+    c.name.includes('sb-access-token') || c.name.includes('sb-refresh-token')
+  );
+  console.log('Middleware: Supabase cookies found:', {
+    count: supabaseCookieNames.length,
+    cookies: supabaseCookieNames.map(c => ({ name: c.name, hasValue: !!c.value })),
   });
 
   const supabase = createServerClient(
@@ -14,79 +35,61 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
       },
     }
   );
 
-  // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/landing', '/forgot-password', '/reset-password', '/verify-email', '/choose-username'];
-  const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log('Middleware: User detection', {
+    pathname,
+    hasUser: !!user,
+    userId: user?.id,
+    email: user?.email,
+  });
 
-  // Solo verificar usuario en rutas protegidas
-  let user = null;
-  if (!isPublicRoute) {
-    try {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      user = authUser;
-    } catch {
-      user = null;
-    }
-  }
+  const publicRoutes = [
+    '/login',
+    '/signup',
+    '/auth/callback',
+    '/',
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
+    '/choose-username',
+  ];
 
-  // Si no hay usuario y no está en una ruta pública, redirigir a landing
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  console.log('Middleware: Route classification', {
+    pathname,
+    isPublicRoute,
+    matchedPublicRoute: publicRoutes.find(r => pathname.startsWith(r)),
+  });
+
+  // CASE 1: No user on protected route
   if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/landing';
+    console.log('🔴 Middleware: No user on protected route, redirecting to / (landing)');
+    const url = new URL('/', request.url);
     return NextResponse.redirect(url);
   }
 
-  // Si hay usuario y está en auth pages (login, signup, landing), redirigir al dashboard
-  const authPages = ['/login', '/signup', '/landing'];
-  if (user && authPages.includes(request.nextUrl.pathname)) {
-    // Pero primero verificar si el usuario está completamente configurado
-    const emailConfirmed = user.email_confirmed_at !== null;
-    const hasUsername = user.user_metadata?.username;
-
-    const url = request.nextUrl.clone();
-
-    if (!emailConfirmed) {
-      url.pathname = '/verify-email';
-    } else if (!hasUsername) {
-      url.pathname = '/choose-username';
-    } else {
-      url.pathname = '/';
-    }
-
+  // CASE 2: User on auth or landing page
+  if (user && (pathname === '/login' || pathname === '/signup' || pathname === '/')) {
+    console.log('🟢 Middleware: User on auth/landing page, redirecting to /home');
+    const url = new URL('/home', request.url);
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  console.log('✅ Middleware: Allowing request to proceed');
+  console.log('='.repeat(60));
+  return NextResponse.next();
 }
 
+// Use a simpler, more explicit matcher pattern
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public folder)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Match all routes except:
+    // - _next (Next.js internals)
+    // - Static files with extensions
+    '/((?!_next|api/|favicon.ico).*)',
   ],
 };

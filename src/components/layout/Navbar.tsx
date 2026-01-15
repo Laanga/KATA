@@ -23,7 +23,7 @@ export function Navbar() {
                     <div className="flex items-center gap-3 sm:gap-4">
 
                         <Link
-                            href="/"
+                            href="/home"
                             className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-1.5 sm:gap-2"
                         >
                             <span>Kata</span>

@@ -333,7 +333,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       await supabase.auth.signOut();
       toast.success('Sesión cerrada');
       // Usar window.location para forzar una navegación completa y limpiar el estado
-      window.location.href = '/landing';
+      window.location.href = '/';
     } catch (error) {
       console.error('Error logging out:', error);
       toast.error('Error al cerrar sesión');

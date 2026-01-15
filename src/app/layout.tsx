@@ -67,10 +67,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    // TODO: Create favicon.ico (16x16, 32x32) for browser tabs
-    // icon: "/favicon.ico",
-    // shortcut: "/favicon.ico",
-    // apple: "/apple-touch-icon.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json", // Opcional: para PWA
 };

@@ -22,7 +22,7 @@ export default function LoginPage() {
 
       {/* Back button */}
       <Link
-        href="/landing"
+        href="/"
         className="absolute top-6 left-6 z-20 flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-white transition-colors"
       >
         <ArrowLeft size={18} />
@@ -30,7 +30,7 @@ export default function LoginPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/landing" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>

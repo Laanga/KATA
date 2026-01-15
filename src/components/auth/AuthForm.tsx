@@ -101,7 +101,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
         setIsLoading(false);
         // Usar window.location para forzar navegación completa y cargar el estado de auth
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/home';
         }, 1000);
       } else {
         // Timeout para evitar que se quede colgado
