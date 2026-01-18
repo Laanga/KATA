@@ -42,6 +42,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isSendingPasswordEmail, setIsSendingPasswordEmail] = useState(false);
   const [isPasswordEmailSent, setIsPasswordEmailSent] = useState(false);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -50,12 +51,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Detectar si el usuario se registró con Google OAuth
+        const hasGoogleIdentity = user.identities?.some(
+          identity => identity.provider === 'google'
+        );
+        setIsGoogleUser(!!hasGoogleIdentity);
+
         setUsername(user.user_metadata?.username || user.email?.split('@')[0] || 'Usuario');
         setEmail(user.email || '');
         setAvatarUrl(user.user_metadata?.avatar_url || null);
       }
     };
-    
+
     if (isOpen) {
       loadUser();
     }
@@ -357,30 +364,30 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Ajustes" size="lg">
-      <div className="space-y-5 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* User Info Section */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
             Perfil
           </h3>
           <div className="space-y-3 sm:space-y-4">
             {/* Avatar */}
             <div>
-              <label className="mb-2 block text-xs sm:text-sm font-medium text-[var(--text-secondary)]">
+              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
                 Foto de Perfil
               </label>
               <div className="flex items-center gap-3 sm:gap-4">
                 {/* Avatar preview */}
                 <div className="relative group flex-shrink-0">
-                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
+                  <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
                     {avatarUrl ? (
-                      <img 
-                        src={avatarUrl} 
-                        alt="Avatar" 
+                      <img
+                        src={avatarUrl}
+                        alt="Avatar"
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <User size={32} className="text-white/70" />
+                      <User size={28} className="text-white/70 sm:size-[32]" />
                     )}
                   </div>
                   
@@ -403,7 +410,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
-                    className="text-sm text-[var(--accent-primary)] hover:underline disabled:opacity-50"
+                    className="text-xs text-[var(--accent-primary)] hover:underline disabled:opacity-50 sm:text-sm"
                   >
                     {isUploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
                   </button>
@@ -411,7 +418,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <button
                       onClick={handleRemoveAvatar}
                       disabled={isUploadingAvatar}
-                      className="text-sm text-red-400 hover:underline disabled:opacity-50"
+                      className="text-xs text-red-400 hover:underline disabled:opacity-50 sm:text-sm"
                     >
                       Eliminar
                     </button>
@@ -427,14 +434,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   className="hidden"
                 />
               </div>
-              <p className="mt-2 text-xs text-[var(--text-tertiary)]">
+              <p className="mt-1.5 text-xs text-[var(--text-tertiary)] sm:mt-2">
                 JPG, PNG o GIF. Máximo 2MB.
               </p>
             </div>
 
             {/* Username */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
                 Nombre de Usuario
               </label>
               <div className="flex gap-2">
@@ -443,7 +450,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!isEditingUsername || isSaving}
-                  className={`flex-1 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] ${
+                  className={`flex-1 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-xs text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] sm:p-3 sm:text-sm ${
                     !isEditingUsername ? 'opacity-70' : ''
                   }`}
                   placeholder="Tu nombre"
@@ -453,6 +460,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     variant="outline"
                     size="md"
                     onClick={() => setIsEditingUsername(true)}
+                    className="text-xs sm:text-sm"
                   >
                     Editar
                   </Button>
@@ -471,6 +479,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         });
                       }}
                       disabled={isSaving}
+                      className="text-xs sm:text-sm"
                     >
                       Cancelar
                     </Button>
@@ -479,6 +488,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       size="md"
                       onClick={handleSaveUsername}
                       isLoading={isSaving}
+                      className="text-xs sm:text-sm"
                     >
                       Guardar
                     </Button>
@@ -488,116 +498,120 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
+              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 disabled
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white opacity-70"
+                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-xs text-white opacity-70 sm:p-3 sm:text-sm"
               />
               <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 El email no se puede modificar
               </p>
             </div>
 
-            {/* Cambiar contraseña */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Contraseña
-              </label>
-              {!isPasswordEmailSent ? (
-                !isChangingPassword ? (
-                  <button
-                    onClick={() => setIsChangingPassword(true)}
-                    className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
-                  >
-                    <Lock size={18} className="text-[var(--text-tertiary)]" />
-                    <span className="text-sm text-white">Cambiar contraseña</span>
-                  </button>
-                ) : (
-                  <div className="space-y-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5">
-                        <Mail size={18} className="text-emerald-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-white mb-1">
-                          Enviar email de recuperación
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)] mb-4">
-                          Te enviaremos un enlace seguro a tu email para cambiar tu contraseña
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setIsChangingPassword(false);
-                            }}
-                            disabled={isSendingPasswordEmail}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={handleChangePassword}
-                            isLoading={isSendingPasswordEmail}
-                          >
-                            {isSendingPasswordEmail ? 'Enviando...' : 'Enviar email'}
-                          </Button>
+            {/* Cambiar contraseña - SOLO si NO es usuario de Google */}
+            {!isGoogleUser && (
+              <div>
+                <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
+                  Contraseña
+                </label>
+                {!isPasswordEmailSent ? (
+                  !isChangingPassword ? (
+                    <button
+                      onClick={() => setIsChangingPassword(true)}
+                      className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-3"
+                    >
+                      <Lock size={16} className="text-[var(--text-tertiary)] sm:size-[18]" />
+                      <span className="text-xs text-white sm:text-sm">Cambiar contraseña</span>
+                    </button>
+                  ) : (
+                    <div className="space-y-2.5 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:space-y-3 sm:p-4">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="mt-0.5">
+                          <Mail size={16} className="text-emerald-400 sm:size-[18]" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-white mb-1 sm:text-sm">
+                            Enviar email de recuperación
+                          </p>
+                          <p className="text-xs text-[var(--text-tertiary)] mb-3 sm:mb-4">
+                            Te enviaremos un enlace seguro a tu email para cambiar tu contraseña
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setIsChangingPassword(false);
+                              }}
+                              disabled={isSendingPasswordEmail}
+                              className="text-xs sm:text-sm"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={handleChangePassword}
+                              isLoading={isSendingPasswordEmail}
+                              className="text-xs sm:text-sm"
+                            >
+                              {isSendingPasswordEmail ? 'Enviando...' : 'Enviar email'}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )
-              ) : (
-                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5">
-                      <CheckCircle size={18} className="text-emerald-400" />
+                  )
+                ) : (
+                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="mt-0.5">
+                        <CheckCircle size={16} className="text-emerald-400 sm:size-[18]" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-emerald-400 mb-1 sm:text-sm">
+                          Email enviado
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)] mb-2 sm:mb-3">
+                          Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de entrada y spam.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setIsPasswordEmailSent(false);
+                            setIsChangingPassword(false);
+                          }}
+                          className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          Enviar de nuevo
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-emerald-400 mb-1">
-                        Email enviado
-                      </p>
-                      <p className="text-xs text-[var(--text-tertiary)] mb-3">
-                        Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de entrada y spam.
-                      </p>
-                      <button
-                        onClick={() => {
-                          setIsPasswordEmailSent(false);
-                          setIsChangingPassword(false);
-                        }}
-                        className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                      >
-                        Enviar de nuevo
-                      </button>
-                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Data Management */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
             Gestión de Datos
           </h3>
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-1.5 sm:space-y-3">
             {/* Export JSON */}
             <button
               onClick={handleExportJSON}
-              className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4"
             >
-              <FileJson size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+              <FileJson size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-white">Exportar como JSON</p>
-                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
+                <p className="text-xs font-medium text-white sm:text-sm">Exportar como JSON</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
                   Descarga tu biblioteca en formato JSON ({items.length} items)
                 </p>
               </div>
@@ -606,23 +620,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Export CSV */}
             <button
               onClick={handleExportCSV}
-              className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80"
+              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4"
             >
-              <FileSpreadsheet size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+              <FileSpreadsheet size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-white">Exportar como CSV</p>
-                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
+                <p className="text-xs font-medium text-white sm:text-sm">Exportar como CSV</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
                   Descarga tu biblioteca en formato CSV para Excel ({items.length} items)
                 </p>
               </div>
             </button>
 
             {/* Import */}
-            <label className="flex w-full cursor-pointer items-center gap-2 sm:gap-3 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:p-4 transition-colors hover:bg-[var(--bg-tertiary)]/80">
-              <Upload size={18} className="sm:w-5 sm:h-5 text-[var(--accent-primary)] flex-shrink-0" />
+            <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4">
+              <Upload size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-white">Importar Biblioteca</p>
-                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1">
+                <p className="text-xs font-medium text-white sm:text-sm">Importar Biblioteca</p>
+                <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
                   Restaurar desde una exportación anterior
                 </p>
               </div>
@@ -638,19 +652,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {!showClearConfirm ? (
               <button
                 onClick={() => setShowClearConfirm(true)}
-                className="flex w-full items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-left transition-colors hover:bg-red-500/10"
+                className="flex w-full items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-2.5 text-left transition-colors hover:bg-red-500/10 sm:gap-3 sm:p-4"
               >
-                <Trash2 size={20} className="text-red-400" />
+                <Trash2 size={16} className="text-red-400 sm:size-[20]" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-400">Vaciar Biblioteca</p>
-                  <p className="text-xs text-red-400/70">
+                  <p className="text-xs font-medium text-red-400 sm:text-sm">Vaciar Biblioteca</p>
+                  <p className="text-xs text-red-400/70 sm:text-sm">
                     Eliminar todos los elementos de tu biblioteca
                   </p>
                 </div>
               </button>
             ) : (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
-                <p className="mb-3 text-sm text-red-400">
+              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 sm:p-4">
+                <p className="mb-2 text-xs text-red-400 sm:mb-3 sm:text-sm">
                   ¿Estás seguro? Esto eliminará permanentemente todos los {items.length} elementos.
                 </p>
                 <div className="flex gap-2">
@@ -658,6 +672,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     size="sm"
                     variant="ghost"
                     onClick={() => setShowClearConfirm(false)}
+                    className="text-xs sm:text-sm"
                   >
                     Cancelar
                   </Button>
@@ -665,6 +680,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     size="sm"
                     variant="danger"
                     onClick={handleClearLibrary}
+                    className="text-xs sm:text-sm"
                   >
                     Sí, Vaciar Todo
                   </Button>
@@ -676,7 +692,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* App Info */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
             Acerca de
           </h3>
           <div className="space-y-2 text-xs sm:text-sm">
@@ -693,17 +709,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* Account Actions */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
             Cuenta
           </h3>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 sm:gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3 sm:p-4 text-left transition-colors hover:bg-red-500/10"
+            className="flex w-full items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-2.5 text-left transition-colors hover:bg-red-500/10 sm:gap-3 sm:p-4"
           >
-            <LogOut size={18} className="sm:w-5 sm:h-5 text-red-400 flex-shrink-0" />
+            <LogOut size={16} className="text-red-400 flex-shrink-0 sm:w-5 sm:h-5" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-red-400">Cerrar Sesión</p>
-              <p className="text-xs text-red-400/70 line-clamp-1">
+              <p className="text-xs font-medium text-red-400 sm:text-sm">Cerrar Sesión</p>
+              <p className="text-xs text-red-400/70 line-clamp-1 sm:text-sm">
                 Salir de tu cuenta
               </p>
             </div>
@@ -711,7 +727,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         {/* Close Button */}
-        <div className="flex justify-end pt-3 sm:pt-4 border-t border-white/10">
+        <div className="flex justify-end pt-2 border-t border-white/10 sm:pt-4">
           <Button variant="primary" onClick={onClose} size="sm" className="text-xs sm:text-sm">
             Cerrar
           </Button>

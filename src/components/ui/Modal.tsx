@@ -128,10 +128,10 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           )}
 
           {/* Body - Scrollable */}
-          <div 
-            ref={bodyRef} 
-            className="px-4 sm:px-6 py-4 sm:py-6 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain"
-            style={{ 
+          <div
+            ref={bodyRef}
+            className="px-3 py-3 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain sm:px-6 sm:py-6"
+            style={{
               maxHeight: title ? 'calc(90vh - 80px)' : '90vh',
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain'

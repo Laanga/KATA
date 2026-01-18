@@ -124,11 +124,10 @@ export default function ProfilePage() {
     );
   }
 
-  return (
+   return (
     <>
       <div className="min-h-screen pb-24 md:pb-0">
         <Navbar />
-        <BottomNavigation />
 
         <main className="container mx-auto px-4 pt-32 max-w-5xl">
           <>
@@ -442,11 +441,12 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </>
-        </main>
+                 </div>
+               )}
+             </>
+         </main>
       </div>
+      <BottomNavigation />
 
       <SettingsModal
         isOpen={isSettingsOpen}

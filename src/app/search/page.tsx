@@ -26,11 +26,11 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<MediaType>('BOOK');
 
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
-      <Navbar />
-      <BottomNavigation />
+    <>
+      <div className="min-h-screen pb-24 md:pb-0">
+        <Navbar />
 
-      <main className="container mx-auto px-4 pt-20 md:pt-24 max-w-7xl">
+        <main className="container mx-auto px-4 pt-20 md:pt-24 max-w-7xl">
         <FadeIn direction="up" delay={0.1}>
           {/* Header */}
           <div className="text-center mb-8">
@@ -80,8 +80,10 @@ export default function SearchPage() {
               description={descriptions[activeTab]}
             />
           </FadeIn>
-        </FadeIn>
-      </main>
+          </FadeIn>
+        </main>
+      </div>
+      <BottomNavigation />
 
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
@@ -92,6 +94,6 @@ export default function SearchPage() {
           scrollbar-width: none;
         }
       `}</style>
-    </div>
+    </>
   );
 }

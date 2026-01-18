@@ -38,11 +38,11 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
-      <Navbar />
-      <BottomNavigation />
+    <>
+      <div className="min-h-screen pb-24 md:pb-0">
+        <Navbar />
 
-      <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24">
+        <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24">
         <FadeIn direction="up" delay={0.1}>
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Tu Biblioteca</h1>
@@ -143,9 +143,11 @@ export default function LibraryPage() {
                 </FadeIn>
               ))}
             </div>
-          )}
-        </div>
-      </main>
+           )}
+         </div>
+       </main>
+      </div>
+      <BottomNavigation />
       {editingItem && (
         <EditItemModal
           item={editingItem}
@@ -153,6 +155,6 @@ export default function LibraryPage() {
           onClose={() => setEditingItem(null)}
         />
       )}
-    </div>
+    </>
   );
 }
