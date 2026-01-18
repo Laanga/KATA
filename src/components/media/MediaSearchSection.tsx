@@ -64,6 +64,7 @@ interface MediaSearchSectionProps {
     type: MediaType;
     title: string;
     description: string;
+    showSearchHint?: boolean;
 }
 
 // Traducción de tipos para el placeholder
@@ -74,7 +75,7 @@ const TYPE_SEARCH_LABELS: Record<MediaType, string> = {
     SERIES: 'serie',
 };
 
-export function MediaSearchSection({ type, title, description }: MediaSearchSectionProps) {
+export function MediaSearchSection({ type, title, description, showSearchHint = false }: MediaSearchSectionProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -190,6 +191,11 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                         <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[var(--text-tertiary)]" size={20} />
                     )}
                 </div>
+                {showSearchHint && (
+                    <p className="text-sm text-[var(--text-tertiary)] mt-2 text-center">
+                         La búsqueda requiere coincidencia literal. Intenta usar el nombre exacto del juego.
+                    </p>
+                )}
             </div>
 
             {/* Results Grid */}

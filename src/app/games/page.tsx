@@ -16,6 +16,7 @@ export default function GamesPage() {
                             type="GAME"
                             title="Juegos"
                             description="Busca juegos de todas las plataformas. Powered by IGDB."
+                            showSearchHint={true}
                         />
                     </FadeIn>
                 </main>
