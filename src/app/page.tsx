@@ -691,7 +691,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-sm text-[var(--text-tertiary)]">
-            © {new Date().getFullYear()} Kata. Hecho con 💚 para amantes de los medios.
+            © {new Date().getFullYear()} Kata. Para amantes de los medios.
           </p>
         </div>
       </footer>

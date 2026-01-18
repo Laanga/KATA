@@ -2,7 +2,7 @@
 
 import { FadeIn } from "@/components/FadeIn";
 import { useMediaStore } from "@/lib/store";
-import { TYPE_ICONS, STATUS_LABELS, STATUS_COLORS } from "@/lib/utils/constants";
+import { STATUS_LABELS, STATUS_COLORS } from "@/lib/utils/constants";
 import { Star } from "lucide-react";
 
 export function ActivityFeed() {
@@ -41,11 +41,8 @@ export function ActivityFeed() {
 
               {/* Info */}
               <div className="flex-1 min-w-0 z-10">
-                                <div className="flex items-center gap-2 mb-0.5">
+                                <div className="mb-0.5">
                                     <span className="text-sm font-medium text-white truncate">{item.title}</span>
-                                    <span className="text-xs text-[var(--text-tertiary)]" title={item.type}>
-                                        {TYPE_ICONS[item.type]}
-                                    </span>
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
                                     <span className="flex items-center gap-1.5">

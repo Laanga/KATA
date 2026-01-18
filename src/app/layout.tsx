@@ -7,6 +7,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { PageTransition } from "@/components/PageTransition";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Analytics } from "@vercel/analytics/next";
 
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto",
@@ -93,6 +94,7 @@ export default function RootLayout({
             </SmoothScroll>
           </AuthProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );

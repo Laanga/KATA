@@ -3,7 +3,6 @@
 import { FadeIn } from "@/components/FadeIn";
 import { useMediaStore } from "@/lib/store";
 import { getTopRatedItems } from "@/lib/utils/analytics";
-import { TYPE_ICONS, TYPE_LABELS } from "@/lib/utils/constants";
 import { Star, BookOpen, Gamepad2, Film, Tv } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -74,12 +73,7 @@ export function TopRatedItems() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0 z-10">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-white truncate">{item.title}</h4>
-                      <span className="text-xs text-[var(--text-tertiary)]" title={TYPE_LABELS[item.type]}>
-                        {TYPE_ICONS[item.type]}
-                      </span>
-                    </div>
+                    <h4 className="font-medium text-white truncate mb-1">{item.title}</h4>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1 text-emerald-400">
                         <Star size={14} fill="currentColor" />

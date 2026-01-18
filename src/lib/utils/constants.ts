@@ -49,10 +49,10 @@ export const VALID_STATUSES: Record<MediaType, MediaStatus[]> = {
 
 // Type icons (emoji)
 export const TYPE_ICONS: Record<MediaType, string> = {
-  BOOK: '📚',
-  GAME: '🎮',
-  MOVIE: '🎬',
-  SERIES: '📺',
+  BOOK: '',
+  GAME: '',
+  MOVIE: '',
+  SERIES: '',
 };
 
 // Type labels

@@ -4,7 +4,7 @@ import { Filter, SortAsc, X } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
 import { useMediaStore } from '@/lib/store';
 import { MediaType, SortBy, GroupedStatus } from '@/types/media';
-import { TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
+import { TYPE_LABELS } from '@/lib/utils/constants';
 import { useMemo } from 'react';
 
 export function FilterBar() {
@@ -52,7 +52,7 @@ export function FilterBar() {
     { value: 'ALL', label: 'Todos los Tipos' },
     ...Object.entries(TYPE_LABELS).map(([value, label]) => ({
       value,
-      label: `${TYPE_ICONS[value as MediaType]} ${label}s`,
+      label: `${label}s`,
     })),
   ];
 
@@ -65,9 +65,9 @@ export function FilterBar() {
 
   const ratingOptions = [
     { value: 'ALL', label: 'Cualquier Puntuación' },
-    { value: 'HIGH', label: '⭐ 4-5 estrellas' },
-    { value: 'MID', label: '⭐ 3 estrellas' },
-    { value: 'LOW', label: '⭐ 1-2 estrellas' },
+    { value: 'HIGH', label: '4-5 estrellas' },
+    { value: 'MID', label: '3 estrellas' },
+    { value: 'LOW', label: '1-2 estrellas' },
   ];
 
   const sortOptions = [

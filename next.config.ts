@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
           },
-          {
+            {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
@@ -61,7 +61,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://*.supabase.co https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.themoviedb.org",
+              "connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://*.vercel-analytics.com",
               "frame-src 'none'",
               "form-action 'self'",
               "base-uri 'self'",
