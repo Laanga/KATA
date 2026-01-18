@@ -5,13 +5,28 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
-import { Download, Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
+import { Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import type { MediaItem } from '@/types/media';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface ErrorWithMessage {
+  message?: string;
+}
+
+interface ImportedItem {
+  title?: string;
+  type?: string;
+  status?: string;
+  rating?: string | number;
+  review?: string;
+  author?: string;
+  platform?: string;
+  genres?: string;
+  coverUrl?: string;
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
@@ -107,11 +122,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setAvatarUrl(publicUrl);
       toast.success('Foto de perfil actualizada');
       
-      // Recargar para actualizar en todos lados
       window.location.reload();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast.error(error.message || 'Error al subir la imagen');
+      const errorWithMessage = error as ErrorWithMessage;
+      toast.error(errorWithMessage.message || 'Error al subir la imagen');
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -142,7 +157,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setAvatarUrl(null);
       toast.success('Foto de perfil eliminada');
       window.location.reload();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error removing avatar:', error);
       toast.error('Error al eliminar la imagen');
     } finally {
@@ -216,7 +231,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return { valid: false, errors };
     }
 
-    data.forEach((item: any, index) => {
+    data.forEach((item: ImportedItem, index) => {
       const itemNum = index + 1;
 
       if (!item.title || typeof item.title !== 'string') {
@@ -294,9 +309,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       toast.success('Nombre actualizado correctamente');
       setIsEditingUsername(false);
       
-      // Recargar la página para actualizar el nombre en todos lados
       window.location.reload();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating username:', error);
       toast.error('Error al actualizar el nombre');
     } finally {
@@ -320,9 +334,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       setIsPasswordEmailSent(true);
       toast.success('Email de recuperación enviado');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending password reset email:', error);
-      toast.error(error.message || 'Error al enviar el email de recuperación');
+      const errorWithMessage = error as ErrorWithMessage;
+      toast.error(errorWithMessage.message || 'Error al enviar el email de recuperación');
     } finally {
       setIsSendingPasswordEmail(false);
     }

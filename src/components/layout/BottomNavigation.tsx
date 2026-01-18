@@ -1,12 +1,11 @@
 'use client';
 
 import { Home, Library, Search, User } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function BottomNavigation() {
   const pathname = usePathname();
-  const router = useRouter();
 
   const navItems = [
     { href: '/home', label: 'Home', icon: Home },

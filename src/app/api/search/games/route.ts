@@ -41,27 +41,78 @@ async function getIGDBToken(): Promise<string> {
   return data.access_token;
 }
 
+function sanitizeQuery(query: string): string {
+  return query
+    .replace(/"/g, '')
+    .replace(/;/g, '')
+    .replace(/"/g, '')
+    .replace(/'/g, '')
+    .replace(/`/g, '')
+    .replace(/\\/g, '')
+    .trim()
+    .slice(0, 100);
+}
+
 export async function GET(request: NextRequest) {
   return createSearchHandler(request, {
     errorMessage: 'Failed to search games',
     fetchFn: async (query) => {
+      const sanitizedQuery = sanitizeQuery(query);
       const accessToken = await getIGDBToken();
       const clientId = process.env.IGDB_CLIENT_ID!;
 
-      // IGDB uses a custom query language (body text)
-      const response = await fetch('https://api.igdb.com/v4/games', {
-        method: 'POST',
-        headers: {
-          'Client-ID': clientId,
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-        body: `search "${query}"; fields name, cover.url, first_release_date, summary, rating, genres.name; where cover != null; limit 20;`,
-      });
+      if (sanitizedQuery.length < 1) {
+        throw new Error('Query must be at least 1 character after sanitization');
+      }
 
-      if (!response.ok) throw new Error('IGDB API request failed');
+      const [strictResults, broadResults] = await Promise.all([
+        fetch('https://api.igdb.com/v4/games', {
+          method: 'POST',
+          headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+          },
+          body: `search "${sanitizedQuery}"; fields name, cover.url, first_release_date, summary, rating, genres.name; where cover != null; limit 10;`,
+        }),
+        fetch('https://api.igdb.com/v4/games', {
+          method: 'POST',
+          headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+          },
+          body: `fields name, cover.url, first_release_date, summary, rating, genres.name; where name ~ "*${sanitizedQuery}*" & cover != null; limit 20;`,
+        })
+      ]);
 
-      return response;
+      if (!strictResults.ok || !broadResults.ok) {
+        const errorText = strictResults.ok ? await broadResults.text() : await strictResults.text();
+        console.error('IGDB API Error:', strictResults.status, errorText);
+        throw new Error(`IGDB API request failed: ${strictResults.status} ${errorText}`);
+      }
+
+      const strictData = await strictResults.json();
+      const broadData = await broadResults.json();
+
+      const seenIds = new Set();
+      const mergedResults = [];
+
+      for (const game of strictData || []) {
+        if (!seenIds.has(game.id)) {
+          seenIds.add(game.id);
+          mergedResults.push(game);
+        }
+      }
+
+      for (const game of broadData || []) {
+        if (!seenIds.has(game.id)) {
+          seenIds.add(game.id);
+          mergedResults.push(game);
+        }
+      }
+
+      return Response.json(mergedResults.slice(0, 20));
     },
   });
 }

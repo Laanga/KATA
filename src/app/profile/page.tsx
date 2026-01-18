@@ -3,17 +3,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
-import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User, Search } from 'lucide-react';
+import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
 import { useMediaStore } from "@/lib/store";
 import { FadeIn } from "@/components/FadeIn";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { SettingsModal } from "@/components/SettingsModal";
 import { createClient } from "@/lib/supabase/client";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 import { ProfileSkeleton } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
-import { STATUS_LABELS, TYPE_LABELS } from "@/lib/utils/constants";
+import { STATUS_LABELS } from "@/lib/utils/constants";
 
 export default function ProfilePage() {
   const items = useMediaStore((state) => state.items);
@@ -25,6 +25,13 @@ export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState<string>('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const router = useRouter();
+
+  const [emptyDayData] = useState(() => {
+    return Array.from({ length: 40 }).map(() => ({
+      height: Math.random() * 10,
+      opacity: Math.random() < 0.2 ? 0.1 : Math.random() * 0.2 + 0.1,
+    }));
+  });
 
   const stats = getStats();
 
@@ -67,9 +74,9 @@ export default function ProfilePage() {
     to: { opacity: 1, x: 0 },
   });
 
-  // Memoized activity chart data to prevent re-render flickering
+  const days = 40;
+
   const activityChartData = useMemo(() => {
-    const days = 40;
     const now = new Date();
     const data = Array.from({ length: days }).map((_, index) => {
       const date = new Date(now);
@@ -82,17 +89,21 @@ export default function ProfilePage() {
         return itemDate.getTime() === date.getTime();
       });
 
-      const height = dayItems.length > 0 ? Math.min(100, dayItems.length * 20) : Math.random() * 10;
-      const opacity = dayItems.length > 0 ? Math.max(0.3, Math.min(1, dayItems.length * 0.2)) : Math.random() < 0.2 ? 0.1 : Math.random() * 0.2 + 0.1;
+      const height = dayItems.length > 0 ? Math.min(100, dayItems.length * 20) : emptyDayData[index].height;
+      const opacity = dayItems.length > 0 ? Math.max(0.3, Math.min(1, dayItems.length * 0.2)) : emptyDayData[index].opacity;
 
       return { height, opacity };
     });
 
     return data;
-  }, [items]);
+  }, [items, emptyDayData]);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
 
   // Fix hydration mismatch
   const [mounted, setMounted] = useState(false);
+
+   
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -120,20 +131,7 @@ export default function ProfilePage() {
         <BottomNavigation />
 
         <main className="container mx-auto px-4 pt-32 max-w-5xl">
-          {stats.total === 0 ? (
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <EmptyState
-                icon={<User className="w-16 h-16" />}
-                title="Tu perfil está vacío"
-                description="Añade películas, series, libros y videojuegos para empezar a trackear tus hábitos de consumo."
-                action={{
-                  label: "Buscar Contenido",
-                  onClick: () => router.push('/search'),
-                }}
-              />
-            </div>
-          ) : (
-            <>
+          <>
               <FadeIn direction="up" delay={0.1}>
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
                   <div className="flex items-center gap-6">
@@ -169,6 +167,26 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </FadeIn>
+
+              {stats.total === 0 && (
+                <FadeIn direction="up" delay={0.15}>
+                  <div className="mb-8 p-6 rounded-xl border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          Empieza a trackear tu contenido
+                        </h3>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          Añade tus primeras películas, series, libros o videojuegos para ver tus estadísticas y actividad.
+                        </p>
+                      </div>
+                      <Button onClick={() => router.push('/search')}>
+                        Buscar Contenido
+                      </Button>
+                    </div>
+                  </div>
+                </FadeIn>
+              )}
 
               <FadeIn direction="up" delay={0.2}>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
@@ -427,7 +445,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </>
-          )}
         </main>
       </div>
 

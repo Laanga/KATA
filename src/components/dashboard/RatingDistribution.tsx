@@ -3,12 +3,71 @@
 import { FadeIn } from "@/components/FadeIn";
 import { useMediaStore } from "@/lib/store";
 import { getRatingDistribution } from "@/lib/utils/analytics";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = {
-  '0-2': '#ef4444', // Rojo para bajo
-  '2.5-3.5': '#fbbf24', // Amarillo para medio
-  '4-5': '#10b981', // Verde para alto
+  '0-2': '#ef4444',
+  '2.5-3.5': '#fbbf24',
+  '4-5': '#10b981',
+};
+
+interface ChartData {
+  name: string;
+  value: number;
+  percentage: number;
+  range: string;
+  [key: string]: string | number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: ChartData; value: number; name: string }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
+        <p className="text-white font-medium">{data.name}</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {data.value} items ({data.payload.percentage}%)
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+interface CustomLabelProps {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+}
+
+const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: CustomLabelProps) => {
+  const RADIAN = Math.PI / 180;
+  const radius = (innerRadius || 0) + ((outerRadius || 0) - (innerRadius || 0)) * 0.5;
+  const x = (cx || 0) + radius * Math.cos(-(midAngle || 0) * RADIAN);
+  const y = (cy || 0) + radius * Math.sin(-(midAngle || 0) * RADIAN);
+
+  if ((percent || 0) < 0.05) return null;
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > (cx || 0) ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="text-xs font-medium"
+    >
+      {`${((percent || 0) * 100).toFixed(0)}%`}
+    </text>
+  );
 };
 
 export function RatingDistribution() {
@@ -29,49 +88,12 @@ export function RatingDistribution() {
     );
   }
 
-  const data = distribution.map(item => ({
+  const data: ChartData[] = distribution.map(item => ({
     name: item.label,
     value: item.count,
     percentage: item.percentage,
     range: item.range,
   }));
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      return (
-        <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
-          <p className="text-white font-medium">{data.name}</p>
-          <p className="text-sm text-[var(--text-secondary)]">
-            {data.value} items ({data.payload.percentage}%)
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (percent < 0.05) return null;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-xs font-medium"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
 
   return (
     <FadeIn delay={0.2}>

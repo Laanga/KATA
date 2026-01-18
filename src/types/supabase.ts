@@ -14,7 +14,7 @@ export interface MediaMetadata {
   platform?: string;
   release_year?: number;
   genres?: string[];
-  [key: string]: any; // Permite campos adicionales
+  [key: string]: unknown; // Permite campos adicionales
 }
 
 export interface Database {

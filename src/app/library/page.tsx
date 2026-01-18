@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import { KataCard } from "@/components/media/KataCard";
@@ -24,14 +24,8 @@ export default function LibraryPage() {
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [mounted, setMounted] = useState(false);
 
   const stats = getStats();
-
-  // Fix hydration
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Show skeleton while loading
   if (!isInitialized) {

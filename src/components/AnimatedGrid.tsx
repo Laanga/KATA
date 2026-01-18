@@ -24,7 +24,10 @@ export function AnimatedGrid({
   const gridRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
+
   // Asegurarse de que estamos en el cliente
+    
   useEffect(() => {
     setIsClient(true);
   }, []);

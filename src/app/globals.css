@@ -71,6 +71,11 @@
 
 html {
   font-family: var(--font-noto), 'Noto Sans JP', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 body {
@@ -92,44 +97,69 @@ body {
   }
 }
 
-/* Custom Scrollbar Styles */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+/* Custom Scrollbar Styles - Mobile Only */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.3);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(16, 185, 129, 0.7);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* Hide scrollbars on desktop */
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.2);
-  border-radius: 6px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-  transition: all 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.4);
-  background-clip: padding-box;
-  border: 2px solid transparent;
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: rgba(16, 185, 129, 0.6);
-  background-clip: padding-box;
-}
-
-/* Firefox Scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
+  * {
+    scrollbar-width: none;
+  }
 }
 
 /* Custom Utilities */
 @utility text-balance {
   text-wrap: balance;
+}
+
+/* Prevent horizontal overflow on landing */
+.landing-container {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.landing-container * {
+  max-width: 100vw;
+}
+
+.landing-container .animated-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform-origin: left;
+  pointer-events: none;
 }
 
 /* Mobile Touch Targets - iOS Human Interface Guidelines */

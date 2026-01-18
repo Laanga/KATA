@@ -1,6 +1,6 @@
 import { createClient } from './client';
 import type { MediaItem } from '@/types/media';
-import { dbRowToMediaItem, mediaItemToDbInsert, mediaItemToDbUpdate } from '@/types/supabase';
+import { dbRowToMediaItem, mediaItemToDbInsert, mediaItemToDbUpdate, type MediaMetadata } from '@/types/supabase';
 
 class MediaDatabase {
   private getClient() {
@@ -67,7 +67,8 @@ class MediaDatabase {
 
     const { data, error } = await supabase
       .from('media_items')
-      .insert(dbItem as any)
+      // @ts-expect-error - Supabase types are too strict with JSONB metadata
+      .insert(dbItem)
       .select()
       .single();
 
@@ -98,7 +99,8 @@ class MediaDatabase {
       .eq('id', id)
       .single();
 
-    const dbUpdate = mediaItemToDbUpdate(updates, (currentData as any)?.metadata);
+    const metadata = currentData ? (currentData as { metadata?: MediaMetadata }).metadata : undefined;
+    const dbUpdate = mediaItemToDbUpdate(updates, metadata);
 
     const { data, error } = await supabase
       .from('media_items')

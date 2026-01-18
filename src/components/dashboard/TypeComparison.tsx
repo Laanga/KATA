@@ -2,9 +2,9 @@
 
 import { FadeIn } from "@/components/FadeIn";
 import { useMediaStore } from "@/lib/store";
-import { TYPE_LABELS, TYPE_COLORS } from "@/lib/utils/constants";
+import { TYPE_LABELS } from "@/lib/utils/constants";
 import { MediaType } from "@/types/media";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = {
   BOOK: '#8b5cf6',
@@ -13,15 +13,73 @@ const COLORS = {
   SERIES: '#10b981',
 };
 
+interface ChartData {
+  name: string;
+  value: number;
+  percentage: number;
+  color: string;
+  [key: string]: string | number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: ChartData; value: number; name: string }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
+        <p className="text-white font-medium">{data.name}</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {data.value} items ({data.payload.percentage}%)
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+interface CustomLabelProps {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+}
+
+const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: CustomLabelProps) => {
+  const RADIAN = Math.PI / 180;
+  const radius = (innerRadius || 0) + ((outerRadius || 0) - (innerRadius || 0)) * 0.5;
+  const x = (cx || 0) + radius * Math.cos(-(midAngle || 0) * RADIAN);
+  const y = (cy || 0) + radius * Math.sin(-(midAngle || 0) * RADIAN);
+
+  if ((percent || 0) < 0.05) return null;
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > (cx || 0) ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="text-xs font-medium"
+    >
+      {`${((percent || 0) * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 export function TypeComparison() {
   const items = useMediaStore((state) => state.items);
-  
-  // Calcular estadísticas directamente desde items
+
   const byType = items.reduce((acc, item) => {
     acc[item.type] = (acc[item.type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  
+
   const total = Object.values(byType).reduce((a, b) => a + b, 0);
 
   if (total === 0) {
@@ -37,51 +95,14 @@ export function TypeComparison() {
     );
   }
 
-  const data = (Object.entries(byType) as [MediaType, number][])
-    .filter(([_, count]) => count > 0)
+  const data: ChartData[] = (Object.entries(byType) as [MediaType, number][])
+    .filter(([, count]) => count > 0)
     .map(([type, count]) => ({
       name: TYPE_LABELS[type],
       value: count,
       percentage: Math.round((count / total) * 100),
       color: COLORS[type],
     }));
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      return (
-        <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
-          <p className="text-white font-medium">{data.name}</p>
-          <p className="text-sm text-[var(--text-secondary)]">
-            {data.value} items ({data.payload.percentage}%)
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (percent < 0.05) return null; // No mostrar etiquetas muy pequeñas
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-xs font-medium"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
 
   return (
     <FadeIn delay={0.2}>

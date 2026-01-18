@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { RatingInput } from './RatingInput';
 import { MediaType, MediaStatus } from '@/types/media';
-import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS, TYPE_ICONS } from '@/lib/utils/constants';
+import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils/constants';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { Lock } from 'lucide-react';
@@ -46,6 +46,8 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
     review: '',
   });
 
+  /* eslint-disable react-hooks/set-state-in-effect */
+
   // Update status when type changes
   useEffect(() => {
     if (prefilledType) {
@@ -55,7 +57,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
         status: VALID_STATUSES[prefilledType][0],
       }));
     }
-  }, [prefilledType]);
+  }, [prefilledType]);  
 
   const statusOptions = VALID_STATUSES[formData.type].map((status) => ({
     value: status,

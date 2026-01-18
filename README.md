@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
-  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
-</picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
+   <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
+ </picture>
 
 <div align="center">
 
@@ -96,7 +96,6 @@ Interfaz oscura con animaciones fluidas. Cards 3D interactivas, transiciones sua
 
 - [Bun](https://bun.sh/) o [Node.js](https://nodejs.org/) 18+
 - Cuenta en [Supabase](https://supabase.com/) (gratis)
-- Variables de entorno configuradas (ver [MVP.md](./MVP.md) para detalles)
 
 ### Instalación
 
@@ -109,30 +108,14 @@ cd kata
 bun install
 
 # 3. Configura variables de entorno
-# Crea un archivo .env.local con las siguientes variables:
-
-# Supabase (requerido)
-NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
-
-# TMDB API (requerido para películas y series)
-TMDB_API_KEY=tu_tmdb_api_key
-
-# IGDB API (requerido para videojuegos)
-IGDB_CLIENT_ID=tu_igdb_client_id
-IGDB_CLIENT_SECRET=tu_igdb_client_secret
-
-# Google Books API (opcional, para evitar límites de rate)
-GOOGLE_BOOKS_API_KEY=tu_google_books_api_key
-
-# Site URL (opcional, para producción)
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+cp .env.example .env.local
+# Edita .env.local con tus credenciales de Supabase
 
 # 4. Ejecuta en desarrollo
 bun dev
 ```
 
-> 💡 **IMPORTANTE:** Revisa [MVP.md](./MVP.md) para obtener las API keys y configurar producción.
+Abre [http://localhost:3000](http://localhost:3000) y ¡listo! 🎉
 
 ---
 
@@ -146,11 +129,7 @@ Para obtener datos reales de contenido multimedia, Kata utiliza:
 | [IGDB](https://api-docs.igdb.com/) | Videojuegos | Sí (cuenta Twitch) |
 | [Google Books](https://developers.google.com/books) | Libros | Opcional |
 
-> 💡 **Cómo obtener las API keys:**
-> > - **Supabase**: Ve a tu [dashboard de Supabase](https://supabase.com/dashboard) → Settings → API
-> > - **TMDB**: Regístrate en [TMDB](https://www.themoviedb.org/) → Settings → API → Request API Key
-> > - **IGDB**: Crea una app en [Twitch Developer Console](https://dev.twitch.tv/console/apps) (usa IGDB API)
-> > - **Google Books**: Opcional, en [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+> 💡 Las instrucciones para obtener las API keys están en `.env.example`
 
 ---
 
@@ -212,43 +191,6 @@ src/
 
 ---
 
-## 🚀 Deployment
-
-### Opción Rápida: Vercel (Recomendado)
-
-Vercel tiene soporte nativo para Next.js con Turbopack:
-
-1. **Preparar el proyecto**
-   ```bash
-   git add .
-   git commit -m "chore: prepare for production deployment"
-   git push origin main
-   ```
-
-2. **Deploy en Vercel**
-   - Ve a: https://vercel.com/new
-   - Importa tu repositorio de GitHub
-   - Configura:
-     * Framework Preset: Next.js
-     * Root Directory: `./`
-     * Build Command: `npm run build`
-     * Output Directory: `.next`
-   - Click "Deploy"
-
-3. **Configurar variables de entorno** en Vercel Dashboard:
-   - Settings → Environment Variables
-   - Agrega las variables necesarias (ver MVP.md para lista completa)
-
-4. **Configurar Supabase**:
-   - Ve a Supabase Dashboard → Authentication → URL Configuration
-   - Agrega tu dominio de Vercel
-
-### Instrucciones Detalladas
-
-Para un checklist completo y troubleshooting, consulta [MVP.md](./MVP.md).
-
----
-
 ## 🤝 Contribuir
 
 Las contribuciones son bienvenidas. Para cambios importantes:
@@ -272,8 +214,8 @@ Proyecto personal de código abierto. Úsalo como quieras.
 **Hecho con ❤️ y mucho ☕**
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
-  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
+   <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
+   <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
 </picture>
 
 </div>

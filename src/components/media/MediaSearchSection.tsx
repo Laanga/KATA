@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Loader2, Plus, Info } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, Loader2, Plus } from 'lucide-react';
 import { MediaType } from '@/types/media';
-import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { AddItemModal } from './AddItemModal';
 import { FadeIn } from '@/components/FadeIn';
@@ -17,6 +16,48 @@ interface SearchResult {
     rating?: number;
     overview?: string;
     genres?: string[];
+}
+
+interface TMDBMovie {
+    id: number;
+    title: string;
+    release_date: string;
+    poster_path: string | null;
+    overview: string;
+    genre_ids: number[];
+    genre_names?: string[];
+}
+
+interface TMDBSeries {
+    id: number;
+    name: string;
+    first_air_date: string;
+    poster_path: string | null;
+    overview: string;
+    genre_ids: number[];
+    genre_names?: string[];
+}
+
+interface IGDBGame {
+    id: number;
+    name: string;
+    first_release_date: number;
+    cover?: { url: string };
+    summary: string;
+    rating: number;
+    genres?: Array<{ name: string }>;
+}
+
+interface GoogleBookVolume {
+    id: string;
+    volumeInfo: {
+        title: string;
+        authors?: string[];
+        publishedDate?: string;
+        imageLinks?: { thumbnail?: string };
+        description?: string;
+        genre_names?: string[];
+    };
 }
 
 interface MediaSearchSectionProps {
@@ -40,18 +81,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
     const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery.length >= 2) {
-                handleSearch();
-            }
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const handleSearch = async () => {
+    const handleSearch = useCallback(async () => {
         if (!searchQuery.trim()) return;
 
         setIsSearching(true);
@@ -77,7 +107,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
             let mappedResults: SearchResult[] = [];
 
             if (type === 'MOVIE') {
-                mappedResults = (data.results || []).map((item: any) => ({
+                mappedResults = (data.results || []).map((item: TMDBMovie) => ({
                     id: item.id,
                     title: item.title,
                     year: item.release_date ? parseInt(item.release_date.split('-')[0]) : undefined,
@@ -86,7 +116,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     genres: item.genre_names || []
                 }));
             } else if (type === 'SERIES') {
-                mappedResults = (data.results || []).map((item: any) => ({
+                mappedResults = (data.results || []).map((item: TMDBSeries) => ({
                     id: item.id,
                     title: item.name,
                     year: item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : undefined,
@@ -95,16 +125,16 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
                     genres: item.genre_names || []
                 }));
             } else if (type === 'GAME') {
-                mappedResults = (Array.isArray(data) ? data : []).map((item: any) => ({
+                mappedResults = (Array.isArray(data) ? data : []).map((item: IGDBGame) => ({
                     id: item.id,
                     title: item.name,
                     year: item.first_release_date ? new Date(item.first_release_date * 1000).getFullYear() : undefined,
                     coverUrl: item.cover?.url ? `https:${item.cover.url.replace('t_thumb', 't_cover_big')}` : undefined,
                     overview: item.summary,
-                    genres: item.genres?.map((g: any) => g.name).filter(Boolean) || []
+                    genres: item.genres?.map((g) => g.name).filter(Boolean) || []
                 }));
             } else if (type === 'BOOK') {
-                mappedResults = (data.items || []).map((item: any) => ({
+                mappedResults = (data.items || []).map((item: GoogleBookVolume) => ({
                     id: item.id,
                     title: item.volumeInfo.title,
                     author: item.volumeInfo.authors?.[0],
@@ -122,7 +152,18 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
         } finally {
             setIsSearching(false);
         }
-    };
+    }, [searchQuery, type]);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery.length >= 2) {
+                handleSearch();
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, handleSearch]);
 
     const handleSelectResult = (result: SearchResult) => {
         setSelectedResult(result);
@@ -210,7 +251,7 @@ export function MediaSearchSection({ type, title, description }: MediaSearchSect
 
             {searchQuery.length > 2 && searchResults.length === 0 && !isSearching && (
                 <div className="text-center py-20">
-                    <p className="text-[var(--text-tertiary)] text-lg">No se encontraron resultados para "{searchQuery}"</p>
+                    <p className="text-[var(--text-tertiary)] text-lg">No se encontraron resultados para &quot;{searchQuery}&quot;</p>
                 </div>
             )}
 

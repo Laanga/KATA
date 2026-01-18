@@ -47,7 +47,7 @@ export default function SearchPage() {
 
           {/* Tabs Navigation */}
           <div className="mb-8">
-            <div className="flex overflow-x-auto gap-2 pb-4 -mx-4 px-4 no-scrollbar scroll-smooth">
+            <div className="flex overflow-x-auto gap-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:justify-center md:flex-wrap md:overflow-visible no-scrollbar scroll-smooth">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;

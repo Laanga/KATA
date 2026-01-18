@@ -31,10 +31,13 @@ export function FadeIn({
   className,
   scrollTrigger = false
 }: FadeInProps) {
+  /* eslint-disable react-hooks/set-state-in-effect */
+
   const ref = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
 
   // Asegurarse de que estamos en el cliente antes de animar
+   
   useEffect(() => {
     setIsClient(true);
   }, []);

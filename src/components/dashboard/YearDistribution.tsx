@@ -5,6 +5,72 @@ import { useMediaStore } from "@/lib/store";
 import { getYearDistribution } from "@/lib/utils/analytics";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+interface ChartData {
+  name: string;
+  value: number;
+  percentage: number;
+  [key: string]: string | number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: ChartData; value: number; name: string }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
+        <p className="text-white font-medium">{data.name}</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {data.value} items ({data.percentage}%)
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+interface CustomLabelProps {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+}
+
+const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: CustomLabelProps) => {
+  const RADIAN = Math.PI / 180;
+  const radius = (innerRadius || 0) + ((outerRadius || 0) - (innerRadius || 0)) * 0.5;
+  const x = (cx || 0) + radius * Math.cos(-(midAngle || 0) * RADIAN);
+  const y = (cy || 0) + radius * Math.sin(-(midAngle || 0) * RADIAN);
+
+  if ((percent || 0) < 0.05) return null;
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > (cx || 0) ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="text-xs font-medium"
+    >
+      {`${((percent || 0) * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
+const getColor = (decade: string, maxDecade: string) => {
+  const decadeNum = parseInt(decade);
+  const maxDecadeNum = parseInt(maxDecade);
+  const ratio = (decadeNum - (maxDecadeNum - 50)) / 50;
+  const hue = 150 + (ratio * 30);
+  return `hsl(${hue}, 70%, 50%)`;
+};
+
 export function YearDistribution() {
   const items = useMediaStore((state) => state.items);
   const yearStats = getYearDistribution(items);
@@ -22,57 +88,11 @@ export function YearDistribution() {
     );
   }
 
-  const data = yearStats.map(stat => ({
+  const data: ChartData[] = yearStats.map(stat => ({
     name: stat.decade,
     value: stat.count,
     percentage: stat.percentage,
   }));
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
-          <p className="text-white font-medium">{data.name}</p>
-          <p className="text-sm text-[var(--text-secondary)]">
-            {data.value} items ({data.percentage}%)
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (percent < 0.05) return null;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-xs font-medium"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
-
-  // Color gradient: más reciente = más verde
-  const getColor = (decade: string, maxDecade: string, index: number, total: number) => {
-    const decadeNum = parseInt(decade);
-    const maxDecadeNum = parseInt(maxDecade);
-    const ratio = (decadeNum - (maxDecadeNum - 50)) / 50;
-    const hue = 150 + (ratio * 30); // Verde a amarillo
-    return `hsl(${hue}, 70%, 50%)`;
-  };
 
   const maxDecade = yearStats[0]?.decade || '2020s';
 
@@ -97,9 +117,9 @@ export function YearDistribution() {
                 dataKey="value"
               >
                 {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={getColor(entry.name, maxDecade, index, data.length)} 
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={getColor(entry.name, maxDecade)}
                   />
                 ))}
               </Pie>
@@ -116,7 +136,7 @@ export function YearDistribution() {
             >
               <div
                 className="w-3 h-3 rounded-full shadow-lg"
-                style={{ backgroundColor: getColor(stat.decade, maxDecade, index, yearStats.length) }}
+                style={{ backgroundColor: getColor(stat.decade, maxDecade) }}
               />
               <span className="text-sm text-[var(--text-secondary)] flex-1">
                 {stat.decade}

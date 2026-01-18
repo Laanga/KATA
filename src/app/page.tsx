@@ -9,8 +9,8 @@ import {
   BookOpen, Gamepad2, Film, Tv, ArrowRight, Sparkles,
   Search, Plus, Star, BarChart3, Check, Zap, Shield, Clock
 } from 'lucide-react';
-import type { Metadata } from "next";
 import { createClient } from '@/lib/supabase/client';
+import { ParticleBackground } from '@/components/ui/ParticleBackground';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -24,7 +24,6 @@ export default function LandingPage() {
   const kanjiContainerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Check session on mount - redirect to /home if logged in
   useEffect(() => {
     const checkSession = async () => {
       const supabase = createClient();
@@ -47,10 +46,8 @@ export default function LandingPage() {
     if (!mounted) return;
 
     const ctx = gsap.context(() => {
-      // Timeline principal del hero
       const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
-      // Animación del kanji con efecto de revelación
       heroTl
         .fromTo(
           kanjiRef.current,
@@ -98,7 +95,6 @@ export default function LandingPage() {
           '-=0.2'
         );
 
-      // Animación continua del kanji (flotando)
       gsap.to(kanjiRef.current, {
         y: -15,
         duration: 3,
@@ -107,7 +103,6 @@ export default function LandingPage() {
         ease: 'sine.inOut',
       });
 
-      // Rotación sutil del glow
       gsap.to('.kanji-glow', {
         rotate: 360,
         duration: 25,
@@ -115,7 +110,6 @@ export default function LandingPage() {
         ease: 'none',
       });
 
-      // Parallax SUTIL del kanji (no desaparece completamente)
       gsap.to(kanjiContainerRef.current, {
         y: 100,
         scale: 0.9,
@@ -127,7 +121,6 @@ export default function LandingPage() {
         },
       });
 
-      // Animación de las secciones con título
       gsap.utils.toArray<HTMLElement>('.section-header').forEach((header) => {
         gsap.fromTo(
           header,
@@ -145,7 +138,6 @@ export default function LandingPage() {
         );
       });
 
-      // Animación de las features
       gsap.utils.toArray<HTMLElement>('.feature-card').forEach((card, i) => {
         gsap.fromTo(
           card,
@@ -169,7 +161,6 @@ export default function LandingPage() {
         );
       });
 
-      // Animación de los pasos "Cómo funciona"
       gsap.utils.toArray<HTMLElement>('.step-card').forEach((card, i) => {
         gsap.fromTo(
           card,
@@ -190,7 +181,6 @@ export default function LandingPage() {
         );
       });
 
-      // Animación de los beneficios
       gsap.utils.toArray<HTMLElement>('.benefit-item').forEach((item, i) => {
         gsap.fromTo(
           item,
@@ -209,7 +199,6 @@ export default function LandingPage() {
         );
       });
 
-      // Animación de stats con contador
       gsap.utils.toArray<HTMLElement>('.stat-number').forEach((stat) => {
         const value = stat.getAttribute('data-value');
         if (value && !isNaN(Number(value))) {
@@ -230,7 +219,6 @@ export default function LandingPage() {
         }
       });
 
-      // Líneas animadas en el fondo
       gsap.utils.toArray<HTMLElement>('.animated-line').forEach((line, i) => {
         gsap.fromTo(
           line,
@@ -249,7 +237,6 @@ export default function LandingPage() {
         );
       });
 
-      // Animación del CTA final
       gsap.fromTo(
         '.final-cta',
         { scale: 0.9, opacity: 0 },
@@ -338,14 +325,14 @@ export default function LandingPage() {
   ];
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-black">
-      {/* Fondo con gradientes animados */}
+    <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-black w-full max-w-full landing-container">
+      <ParticleBackground />
+
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/10 via-transparent to-transparent" />
-        
-        {/* Grid pattern */}
-        <div 
+
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -354,7 +341,6 @@ export default function LandingPage() {
           }}
         />
 
-        {/* Líneas animadas decorativas */}
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
@@ -369,7 +355,6 @@ export default function LandingPage() {
         ))}
       </div>
 
-      {/* Navbar fijo */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -393,18 +378,14 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ===================== HERO SECTION ===================== */}
       <section ref={heroRef} className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 pt-20">
-        {/* Kanji gigante */}
         <div ref={kanjiContainerRef} className="relative mb-6">
           <div ref={kanjiRef} style={{ perspective: '1000px' }}>
-            {/* Glow effect */}
             <div className="kanji-glow absolute inset-0 blur-3xl opacity-40">
               <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 via-emerald-400/40 to-transparent rounded-full" />
             </div>
-            
-            {/* Kanji character */}
-            <span 
+
+            <span
               className="relative block text-[clamp(120px,35vw,280px)] font-bold leading-none select-none"
               style={{
                 background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%)',
@@ -417,20 +398,17 @@ export default function LandingPage() {
               型
             </span>
 
-            {/* Decorative rings */}
             <div className="absolute inset-0 -m-6 border border-emerald-500/20 rounded-full animate-pulse" />
             <div className="absolute inset-0 -m-12 border border-emerald-500/10 rounded-full" />
           </div>
         </div>
 
-        {/* Title */}
         <div className="hero-title text-center mb-4">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter">
             <span className="text-white">Kata</span>
           </h1>
         </div>
 
-        {/* Subtitle */}
         <div className="hero-subtitle text-center max-w-2xl mb-10 px-4">
           <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-3">
             Tu <span className="text-emerald-400 font-semibold">biblioteca personal</span> para organizar
@@ -442,7 +420,6 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* CTA Buttons */}
         <div className="hero-cta flex flex-col sm:flex-row gap-4">
           <Link
             href="/signup"
@@ -463,17 +440,14 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Scroll indicator */}
         <div className="scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
           <span className="text-xs uppercase tracking-widest">Descubre más</span>
           <div className="w-px h-8 bg-gradient-to-b from-emerald-500/50 to-transparent animate-pulse" />
         </div>
       </section>
 
-      {/* ===================== FEATURES SECTION ===================== */}
       <section className="relative z-10 py-32 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
           <div className="section-header text-center mb-16">
             <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
               CARACTERÍSTICAS
@@ -486,7 +460,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
               <div
@@ -494,26 +467,23 @@ export default function LandingPage() {
                 className={`feature-card group relative p-8 rounded-3xl border border-white/5 bg-gradient-to-br ${feature.gradient} backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-white/20 hover:scale-[1.02]`}
                 style={{ transformStyle: 'preserve-3d' }}
               >
-                {/* Glow on hover */}
-                <div 
+                <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
                     background: `radial-gradient(circle at 50% 50%, ${feature.color}15 0%, transparent 70%)`,
                   }}
                 />
 
-                {/* Icon */}
-                <div 
+                <div
                   className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110"
                   style={{ backgroundColor: `${feature.color}15` }}
                 >
-                  <feature.icon 
-                    size={28} 
+                  <feature.icon
+                    size={28}
                     style={{ color: feature.color }}
                   />
                 </div>
 
-                {/* Content */}
                 <h3 className="relative text-xl font-semibold text-white mb-3">
                   {feature.title}
                 </h3>
@@ -521,8 +491,7 @@ export default function LandingPage() {
                   {feature.description}
                 </p>
 
-                {/* Decorative corner */}
-                <div 
+                <div
                   className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-30"
                   style={{ backgroundColor: feature.color }}
                 />
@@ -532,10 +501,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===================== HOW IT WORKS SECTION ===================== */}
       <section className="relative z-10 py-32 px-4 overflow-hidden">
         <div className="max-w-5xl mx-auto">
-          {/* Section Header */}
           <div className="section-header text-center mb-20">
             <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
               CÓMO FUNCIONA
@@ -548,7 +515,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Steps */}
           <div className="space-y-8">
             {steps.map((step, index) => (
               <div
@@ -557,14 +523,12 @@ export default function LandingPage() {
                   index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
                 }`}
               >
-                {/* Number */}
                 <div className="flex-shrink-0">
                   <span className="text-6xl md:text-8xl font-bold text-emerald-500/20">
                     {step.number}
                   </span>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -577,7 +541,6 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                {/* Decorative line */}
                 {index < steps.length - 1 && (
                   <div className="hidden lg:block absolute -bottom-8 left-1/2 w-px h-8 bg-gradient-to-b from-emerald-500/30 to-transparent" />
                 )}
@@ -587,11 +550,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===================== BENEFITS SECTION ===================== */}
       <section className="relative z-10 py-32 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left: Text */}
             <div>
               <div className="section-header mb-8">
                 <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
@@ -601,12 +562,11 @@ export default function LandingPage() {
                   Diseñado para ti
                 </h2>
                 <p className="text-lg text-[var(--text-secondary)]">
-                  Kata nace de la filosofía japonesa de la mejora continua. 
+                  Kata nace de la filosofía japonesa de la mejora continua.
                   Cada detalle está pensado para hacer tu experiencia simple y satisfactoria.
                 </p>
               </div>
 
-              {/* Benefits list */}
               <div className="space-y-4">
                 {benefits.map((benefit, i) => (
                   <div key={i} className="benefit-item flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
@@ -619,27 +579,24 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: Visual */}
             <div className="feature-card relative">
               <div className="aspect-square rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/20 to-black p-8 flex items-center justify-center overflow-hidden">
-                {/* Decorative kanji background */}
-                <span 
+                <span
                   className="text-[200px] font-bold opacity-5 select-none absolute"
                   style={{ fontFamily: '"Noto Sans JP", sans-serif' }}
                 >
                   型
                 </span>
-                
-                {/* Content preview */}
+
                 <div className="relative w-full max-w-xs">
                   <div className="space-y-3">
                     {['Libro actual', 'Juego en progreso', 'Serie siguiendo'].map((item, i) => (
-                      <div 
+                      <div
                         key={i}
                         className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
                         style={{ animationDelay: `${i * 0.2}s` }}
                       >
-                        <div 
+                        <div
                           className="w-8 h-10 rounded bg-gradient-to-br from-white/20 to-white/5"
                         />
                         <div className="flex-1">
@@ -657,7 +614,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===================== STATS SECTION ===================== */}
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -685,15 +641,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===================== FINAL CTA SECTION ===================== */}
       <section className="relative z-10 py-32 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="final-cta relative p-12 md:p-20 rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/30 via-emerald-900/10 to-black overflow-hidden text-center">
-            {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
               <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl" />
-              <span 
+              <span
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[300px] font-bold opacity-[0.03] select-none"
                 style={{ fontFamily: '"Noto Sans JP", sans-serif' }}
               >
@@ -703,13 +657,13 @@ export default function LandingPage() {
 
             <div className="relative">
               <Sparkles className="w-12 h-12 mx-auto mb-6 text-emerald-400" />
-              
+
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Empieza tu kata hoy
               </h2>
-              
+
               <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
-                Únete a Kata y comienza a organizar tu biblioteca personal de medios. 
+                Únete a Kata y comienza a organizar tu biblioteca personal de medios.
                 Gratis para siempre. Sin anuncios. Sin límites.
               </p>
 
@@ -720,7 +674,7 @@ export default function LandingPage() {
                 Crear cuenta gratis
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
-              
+
               <p className="mt-6 text-sm text-[var(--text-tertiary)]">
                 Configuración en 30 segundos
               </p>
@@ -729,14 +683,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===================== FOOTER ===================== */}
       <footer className="relative z-10 py-12 px-4 border-t border-white/5">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl text-emerald-400">型</span>
             <span className="text-lg font-semibold text-white">Kata</span>
           </div>
-          
+
           <p className="text-sm text-[var(--text-tertiary)]">
             © {new Date().getFullYear()} Kata. Hecho con 💚 para amantes de los medios.
           </p>

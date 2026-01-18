@@ -7,8 +7,31 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { isValidEmail, isValidUsername, isValidPassword } from '@/lib/utils/validation';
 
+interface AuthError {
+  message?: string;
+}
+
 interface AuthFormProps {
   mode: 'login' | 'signup';
+}
+
+interface LoginResult {
+  data: { user: { email_confirmed_at?: string | null } | null };
+  error: AuthError | null;
+}
+
+interface User {
+  id: string;
+  email?: string;
+}
+
+interface Session {
+  access_token: string;
+}
+
+interface SignupResult {
+  data: { user: User | null; session: Session | null };
+  error: AuthError | null;
 }
 
 export const AuthForm = ({ mode }: AuthFormProps) => {
@@ -31,10 +54,10 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       });
 
       if (error) throw error;
-      // El usuario será redirigido automáticamente a Google
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error con Google OAuth:', error);
-      toast.error(error.message || 'Error al iniciar sesión con Google');
+      const authError = error as AuthError;
+      toast.error(authError.message || 'Error al iniciar sesión con Google');
       setIsGoogleLoading(false);
     }
   };
@@ -82,7 +105,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           setTimeout(() => reject(new Error('La solicitud está tardando demasiado. Por favor intenta de nuevo.')), 10000)
         );
 
-        const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
+        const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as LoginResult;
 
         if (error) throw error;
 
@@ -120,7 +143,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           setTimeout(() => reject(new Error('La solicitud está tardando demasiado. Por favor intenta de nuevo.')), 10000)
         );
 
-        const { data, error } = await Promise.race([signupPromise, timeoutPromise]) as any;
+        const { data, error } = await Promise.race([signupPromise, timeoutPromise]) as SignupResult;
 
         if (error) throw error;
 
@@ -140,15 +163,16 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           }, 1000);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error de autenticación:', error);
-      
-      if (error.message?.includes('Invalid login credentials')) {
+      const authError = error as AuthError;
+
+      if (authError.message?.includes('Invalid login credentials')) {
         toast.error('Credenciales incorrectas');
-      } else if (error.message?.includes('User already registered')) {
+      } else if (authError.message?.includes('User already registered')) {
         toast.error('Este email ya está registrado');
       } else {
-        toast.error(error.message || 'Error en la autenticación');
+        toast.error(authError.message || 'Error en la autenticación');
       }
     } finally {
       setIsLoading(false);

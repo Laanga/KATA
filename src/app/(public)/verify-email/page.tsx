@@ -21,7 +21,7 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+  }, []);  
 
   useEffect(() => {
     const getUser = async () => {

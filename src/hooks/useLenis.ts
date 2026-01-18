@@ -8,12 +8,15 @@ import Lenis from 'lenis';
  * Only activates on desktop (>768px) to preserve native mobile scroll
  */
 export function useLenis() {
+  /* eslint-disable react-hooks/set-state-in-effect */
+
   const [isClient, setIsClient] = useState(false);
 
   // Asegurarse de que estamos en el cliente
+
   useEffect(() => {
     setIsClient(true);
-  }, []);
+  }, []);  
 
   useEffect(() => {
     if (!isClient) return;
