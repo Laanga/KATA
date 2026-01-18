@@ -12,7 +12,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Tailwind](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
-[Demo en vivo](#) · [Reportar Bug](../../issues) · [Solicitar Feature](../../issues)
+[Demo en vivo](https://katalibrary.vercel.app/)
 
 </div>
 
@@ -23,7 +23,7 @@
 **Kata** (型 - "forma" en japonés) es una aplicación web que te permite crear tu **biblioteca personal multimedia**. Busca contenido real usando APIs profesionales, organiza tu colección y lleva un registro de todo lo que has visto, leído o jugado.
 
 <div align="center">
-  <img src="https://placehold.co/800x450/1a1a2e/fff?text=Coming+Soon..." alt="Preview" width="80%">
+  <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/landing.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9sYW5kaW5nLnBuZyIsImlhdCI6MTc2ODc1MTc1NywiZXhwIjoxODAwMjg3NzU3fQ.pNoZVn0OJ_IZMNa_61iAMcjiKdBTR_qu-EireMN0nCo" alt="Preview" width="80%">
 </div>
 
 ---
@@ -179,13 +179,13 @@ src/
 
 <div align="center">
 
-| Landing Page | Dashboard |
+| Home | Perfil |
 |:------------:|:---------:|
-| <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Landing"> | <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Dashboard"> |
+| <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/home.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ob21lLnBuZyIsImlhdCI6MTc2ODc1MTc5MywiZXhwIjoxODAwMjg3NzkzfQ.oo7Vwj-QXkQT19ssFIsWH50QSaUKE-vLuFT_LIT1V0Q" alt="Landing"> | <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/perfil.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9wZXJmaWwucG5nIiwiaWF0IjoxNzY4NzUxODEwLCJleHAiOjE4MDAyODc4MTB9.29svb_ik8t-gRHUhQvpZ94OfQuzDvk8UQ73LrRqSlGg" alt="Dashboard"> |
 
 | Búsqueda | Biblioteca |
 |:--------:|:----------:|
-| <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Search"> | <img src="https://placehold.co/400x250/1a1a2e/fff?text=Coming+Soon..." alt="Library"> |
+| <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/busqueda.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9idXNxdWVkYS5wbmciLCJpYXQiOjE3Njg3NTE4MjMsImV4cCI6MTgwMDI4NzgyM30.mJYXmKw25IkoUhHk84UiMQtvIWp6Nq7XV-RBQFfVhoM" alt="Search"> | <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/biblio.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9iaWJsaW8ucG5nIiwiaWF0IjoxNzY4NzUxODQyLCJleHAiOjE4MDAyODc4NDJ9.7kEYeu1UjWH5V9kQc8xyWL3CM3LOQLumbG-MD0bO31M" alt="Library"> |
 
 </div>
 
