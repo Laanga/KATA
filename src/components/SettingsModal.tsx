@@ -7,6 +7,7 @@ import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import type { MediaItem, MediaType, MediaStatus } from '@/types/media';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -27,6 +28,10 @@ interface ImportedItem {
   platform?: string;
   genres?: string;
   coverUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  releaseYear?: string | number;
+  id?: string;
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
@@ -240,8 +245,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return { valid: false, errors };
     }
 
-    data.forEach((item: ImportedItem, index) => {
-      const itemNum = index + 1;
+    data.forEach((item: ImportedItem, _index) => {
+      const itemNum = _index + 1;
 
       if (!item.title || typeof item.title !== 'string') {
         errors.push(`Item #${itemNum}: El título es requerido`);
@@ -257,8 +262,180 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       if (item.rating !== null && item.rating !== undefined) {
         const rating = Number(item.rating);
-        if (isNaN(rating) || rating < 0 || rating > 10) {
-          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 10`);
+        if (isNaN(rating) || rating < 0 || rating > 5) {
+          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 5`);
+        }
+      }
+    });
+
+    return { valid: errors.length === 0, errors };
+  };
+
+  const detectFileType = (fileName: string): 'json' | 'csv' => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    if (extension === 'json') return 'json';
+    if (extension === 'csv') return 'csv';
+    return 'json';
+  };
+
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    result.push(current.trim());
+    return result;
+  };
+
+  const parseCSVValue = (value: string): string => {
+    if (!value) return '';
+    return value.replace(/^"|"$/g, '').replace(/""/g, '"');
+  };
+
+  const parseRating = (value: string): number | null => {
+    if (!value || value.trim() === '') return null;
+
+    const rating = Number(value);
+
+    if (isNaN(rating) || rating < 0 || rating > 5) {
+      return null;
+    }
+
+    return rating;
+  };
+
+  const parseYear = (value: string): number | undefined => {
+    if (!value || value.trim() === '') return undefined;
+
+    const year = Number(value);
+    if (isNaN(year) || year < 1900 || year > 2100) return undefined;
+
+    return year;
+  };
+
+  const parseGenres = (value: string): string[] | undefined => {
+    if (!value || value.trim() === '') return undefined;
+
+    const genres = parseCSVValue(value);
+    if (!genres) return undefined;
+
+    return genres.split(',').map((g) => g.trim()).filter(Boolean);
+  };
+
+  const parseCSVToMediaItems = (csvContent: string): MediaItem[] => {
+    const cleanContent = csvContent.replace(/^\ufeff/, '');
+
+    const lines = cleanContent.split('\n');
+
+    if (lines.length < 2) {
+      throw new Error('El CSV debe tener al menos headers y una fila de datos');
+    }
+
+    const headersLine = lines[0].split(',');
+    const expectedHeaders = [
+      'ID', 'Título', 'Tipo', 'Estado', 'Valoración',
+      'Autor', 'Plataforma', 'Año', 'Géneros', 'Reseña',
+      'Fecha Creación', 'Fecha Actualización'
+    ];
+
+    const columnIndex = expectedHeaders.reduce((acc, header, _index) => {
+      acc[header] = headersLine.findIndex((h) => h.trim() === header);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mediaItems: MediaItem[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = parseCSVLine(line);
+
+      if (values.length < 2) continue;
+
+      const mediaItem: MediaItem = {
+        id: values[columnIndex['ID']] || crypto.randomUUID(),
+        title: parseCSVValue(values[columnIndex['Título']]),
+        type: values[columnIndex['Tipo']]?.trim() as MediaType,
+        coverUrl: '',
+        status: values[columnIndex['Estado']]?.trim() as MediaStatus || 'WANT_TO_WATCH',
+        rating: parseRating(values[columnIndex['Valoración']]),
+        author: parseCSVValue(values[columnIndex['Autor']]),
+        platform: parseCSVValue(values[columnIndex['Plataforma']]),
+        releaseYear: parseYear(values[columnIndex['Año']]),
+        genres: parseGenres(values[columnIndex['Géneros']]),
+        review: parseCSVValue(values[columnIndex['Reseña']]),
+        createdAt: values[columnIndex['Fecha Creación']] || new Date().toISOString(),
+        updatedAt: values[columnIndex['Fecha Actualización']] || undefined,
+      };
+
+      mediaItems.push(mediaItem);
+    }
+
+    return mediaItems;
+  };
+
+  const parseJSONToMediaItems = (data: unknown): MediaItem[] => {
+    if (!Array.isArray(data)) {
+      throw new Error('El archivo JSON debe ser un array de elementos');
+    }
+
+    return data.map((item) => {
+      const importedItem = item as ImportedItem;
+      return {
+        id: importedItem.id || crypto.randomUUID(),
+        title: importedItem.title || '',
+        type: importedItem.type as MediaType,
+        coverUrl: importedItem.coverUrl || '',
+        rating: importedItem.rating ? Number(importedItem.rating) : null,
+        status: importedItem.status as MediaStatus,
+        author: importedItem.author,
+        platform: importedItem.platform,
+        releaseYear: importedItem.releaseYear ? Number(importedItem.releaseYear) : undefined,
+        genres: Array.isArray(importedItem.genres) ? importedItem.genres : (importedItem.genres ? [importedItem.genres] : undefined),
+        review: importedItem.review,
+        createdAt: importedItem.createdAt || new Date().toISOString(),
+        updatedAt: importedItem.updatedAt,
+      };
+    });
+  };
+
+  const validateCSVItems = (items: MediaItem[]): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    items.forEach((item, index) => {
+      const itemNum = index + 1;
+
+      if (!item.title || typeof item.title !== 'string') {
+        errors.push(`Item #${itemNum}: El título es requerido`);
+      }
+
+      if (!['BOOK', 'GAME', 'MOVIE', 'SERIES'].includes(item.type)) {
+        errors.push(`Item #${itemNum}: El tipo debe ser BOOK, GAME, MOVIE o SERIES`);
+      }
+
+      if (item.rating !== null && item.rating !== undefined) {
+        if (isNaN(item.rating) || item.rating < 0 || item.rating > 5) {
+          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 5`);
+        }
+      }
+
+      if (item.releaseYear !== undefined) {
+        if (isNaN(item.releaseYear) || item.releaseYear < 1900 || item.releaseYear > 2100) {
+          errors.push(`Item #${itemNum}: El año debe estar entre 1900 y 2100`);
         }
       }
     });
@@ -273,22 +450,43 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target?.result as string);
+        const content = event.target?.result as string;
 
-        const validation = validateImportData(data);
+        const fileType = detectFileType(file.name);
 
-        if (!validation.valid) {
-          toast.error(validation.errors[0]);
+        let importedItems: MediaItem[];
+
+        if (fileType === 'json') {
+          const data = JSON.parse(content);
+          importedItems = parseJSONToMediaItems(data);
+
+          const jsonValidation = validateImportData(data);
+          if (!jsonValidation.valid) {
+            toast.error(jsonValidation.errors[0]);
+            return;
+          }
+        } else {
+          importedItems = parseCSVToMediaItems(content);
+
+          const csvValidation = validateCSVItems(importedItems);
+          if (!csvValidation.valid) {
+            toast.error(csvValidation.errors[0]);
+            return;
+          }
+        }
+
+        if (importedItems.length === 0) {
+          toast.error('El archivo no contiene elementos válidos');
           return;
         }
 
-        if (Array.isArray(data)) {
-          setItems(data);
-          toast.success(`${data.length} elementos importados`);
-          onClose();
-        }
-      } catch {
-        toast.error('Error al importar el archivo. Asegúrate de que sea un JSON válido.');
+        setItems(importedItems);
+        toast.success(`${importedItems.length} elementos importados desde ${fileType.toUpperCase()}`);
+        onClose();
+      } catch (error) {
+        console.error('Import failed:', error);
+        const fileType = detectFileType(file.name);
+        toast.error(`Error al importar el archivo ${fileType.toUpperCase()}. Asegúrate de que sea un formato válido.`);
       }
     };
     reader.readAsText(file);
@@ -640,12 +838,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white sm:text-sm">Importar Biblioteca</p>
                 <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
-                  Restaurar desde una exportación anterior
+                  Restaurar desde una exportación JSON o CSV
                 </p>
               </div>
               <input
                 type="file"
-                accept=".json"
+                accept=".json,.csv"
                 onChange={handleImport}
                 className="hidden"
               />

@@ -127,7 +127,7 @@ export default function LibraryPage() {
                         </span>
                         {item.rating && (
                           <span className="text-xs text-[var(--accent-warning)]">
-                            {item.rating}/10
+                            {item.rating}/5
                           </span>
                         )}
                       </div>
