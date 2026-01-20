@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Loader2, Plus, CheckCircle } from 'lucide-react';
-import { MediaType } from '@/types/media';
+import { MediaType, MediaItem } from '@/types/media';
 import toast from 'react-hot-toast';
 import { AddItemModal } from './AddItemModal';
+import { EditItemModal } from './EditItemModal';
 import { FadeIn } from '@/components/FadeIn';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useMediaStore } from '@/lib/store';
@@ -84,6 +85,7 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     const [isSearching, setIsSearching] = useState(false);
     const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [editItem, setEditItem] = useState<MediaItem | null>(null);
     const [searchCache, setSearchCache] = useState<Map<string, SearchResult[]>>(new Map());
 
     const isInLibrary = useCallback((resultTitle: string): boolean => {
@@ -214,7 +216,14 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
 
     const handleSelectResult = (result: SearchResult) => {
         if (isInLibrary(result.title)) {
-            toast.error('Este elemento ya está en tu biblioteca');
+            const existingItem = items.find(item =>
+                item.type === type &&
+                item.title.trim().toLowerCase() === result.title.trim().toLowerCase()
+            );
+
+            if (existingItem) {
+                setEditItem(existingItem);
+            }
             return;
         }
         setSelectedResult(result);
@@ -325,7 +334,7 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
             )}
 
             {/* Add Modal populated with selection */}
-            {selectedResult && (
+            {selectedResult && !editItem && (
                 <AddItemModal
                     isOpen={isAddModalOpen}
                     onClose={() => {
@@ -339,6 +348,16 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                         releaseYear: selectedResult.year,
                         author: selectedResult.author,
                         genres: selectedResult.genres || [],
+                    }}
+                />
+            )}
+
+            {editItem && (
+                <EditItemModal
+                    item={editItem}
+                    isOpen={true}
+                    onClose={() => {
+                        setEditItem(null);
                     }}
                 />
             )}

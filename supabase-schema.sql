@@ -38,6 +38,14 @@ CREATE INDEX IF NOT EXISTS idx_media_items_status ON public.media_items(status);
 CREATE INDEX IF NOT EXISTS idx_media_items_rating ON public.media_items(rating DESC);
 CREATE INDEX IF NOT EXISTS idx_media_items_created_at ON public.media_items(created_at DESC);
 
+-- Índice único para prevenir items duplicados por usuario, tipo y título normalizado
+CREATE UNIQUE INDEX IF NOT EXISTS idx_media_items_unique_per_user
+ON public.media_items (
+    user_id,
+    type,
+    LOWER(TRIM(title))
+);
+
 -- Índice GIN para búsquedas eficientes en metadata (incluyendo géneros)
 CREATE INDEX IF NOT EXISTS idx_media_items_metadata_gin ON public.media_items USING GIN (metadata);
 
