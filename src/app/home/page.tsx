@@ -8,7 +8,6 @@ import { YearDistribution } from "@/components/dashboard/YearDistribution";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import BottomNavigation from "@/components/layout/BottomNavigation";
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMediaStore } from "@/lib/store";
@@ -267,7 +266,6 @@ export default function HomePage() {
         )}
       </main>
       </div>
-      <BottomNavigation />
     </>
   );
 }

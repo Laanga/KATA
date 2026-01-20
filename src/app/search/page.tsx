@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
-import BottomNavigation from "@/components/layout/BottomNavigation";
 import { MediaSearchSection } from "@/components/media/MediaSearchSection";
 import { FadeIn } from "@/components/FadeIn";
 import { BookOpen, Gamepad2, Film, Tv, Search } from 'lucide-react';
@@ -83,7 +82,6 @@ export default function SearchPage() {
           </FadeIn>
         </main>
       </div>
-      <BottomNavigation />
 
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {

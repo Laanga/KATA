@@ -4,8 +4,23 @@ import { Home, Library, Search, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
+const allowedRoutes = [
+  '/home',
+  '/library',
+  '/books',
+  '/movies',
+  '/series',
+  '/games',
+  '/search',
+  '/profile',
+];
+
 export default function BottomNavigation() {
   const pathname = usePathname();
+
+  if (!allowedRoutes.includes(pathname)) {
+    return null;
+  }
 
   const navItems = [
     { href: '/home', label: 'Home', icon: Home },
@@ -15,9 +30,6 @@ export default function BottomNavigation() {
   ];
 
   const isActive = (href: string) => {
-    if (href === '/library' && pathname === '/library') return true;
-    if (href === '/search' && pathname === '/search') return true;
-    if (href === '/home') return pathname === '/home';
     return pathname === href;
   };
 

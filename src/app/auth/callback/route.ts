@@ -22,6 +22,31 @@ export async function GET(request: Request) {
     const emailConfirmed = user?.email_confirmed_at !== null;
     const hasUsername = user?.user_metadata?.username;
 
+    // Handle Google avatar - only if user signed up with Google
+    if (user && user.identities?.some(id => id.provider === 'google')) {
+      const googleIdentity = user.identities.find(id => id.provider === 'google');
+      const googleAvatar = googleIdentity?.identity_data?.avatar_url;
+
+      // Validar que sea una URL de imagen válida
+      const isValidImageUrl = (url: string | undefined | null) => {
+        if (!url || !url.startsWith('https://')) return false;
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
+        return validExtensions.some(ext => url.toLowerCase().includes(ext));
+      };
+
+      // Si hay una URL válida de Google, usarla
+      if (isValidImageUrl(googleAvatar)) {
+        await supabase.auth.updateUser({
+          data: { avatar_url: googleAvatar }
+        });
+      } else {
+        // No hay avatar válido de Google, establecer null para mostrar ícono por defecto
+        await supabase.auth.updateUser({
+          data: { avatar_url: null }
+        });
+      }
+    }
+
     // Determine redirect based on user state
     let redirectUrl = next;
 

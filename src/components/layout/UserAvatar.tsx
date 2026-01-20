@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 
 export function UserAvatar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,17 +23,18 @@ export function UserAvatar() {
   }, []);
 
   return (
-    <Link 
-      href="/profile" 
+    <Link
+      href="/profile"
       className="h-8 w-8 rounded-full bg-gradient-to-tr from-[var(--accent-primary)] to-emerald-900 flex items-center justify-center border border-white/10 hover:border-[var(--accent-primary)] transition-colors overflow-hidden"
     >
       {isLoading ? (
         <div className="w-full h-full bg-white/10 animate-pulse" />
-      ) : avatarUrl ? (
-        <img 
-          src={avatarUrl} 
-          alt="Avatar" 
+      ) : avatarUrl && !imageError ? (
+        <img
+          src={avatarUrl}
+          alt="Avatar"
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
       ) : (
         <User size={16} className="text-white" />

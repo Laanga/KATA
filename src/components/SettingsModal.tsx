@@ -36,6 +36,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -162,6 +163,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       if (error) throw error;
 
       setAvatarUrl(null);
+      setImageError(false);
       toast.success('Foto de perfil eliminada');
       window.location.reload();
     } catch (error) {
@@ -380,11 +382,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {/* Avatar preview */}
                 <div className="relative group flex-shrink-0">
                   <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
-                    {avatarUrl ? (
+                    {avatarUrl && !imageError ? (
                       <img
                         src={avatarUrl}
                         alt="Avatar"
                         className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
                       />
                     ) : (
                       <User size={28} className="text-white/70 sm:size-[32]" />

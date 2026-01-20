@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
-import BottomNavigation from "@/components/layout/BottomNavigation";
 import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
 import { useMediaStore } from "@/lib/store";
@@ -24,6 +23,7 @@ export default function ProfilePage() {
   const [userName, setUserName] = useState<string>('Usuario');
   const [userEmail, setUserEmail] = useState<string>('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const router = useRouter();
 
   const [emptyDayData] = useState(() => {
@@ -115,7 +115,6 @@ export default function ProfilePage() {
       <>
         <div className="min-h-screen pb-24 md:pb-0">
           <Navbar />
-          <BottomNavigation />
           <main className="container mx-auto px-4 pt-32 max-w-5xl">
             <ProfileSkeleton />
           </main>
@@ -135,11 +134,12 @@ export default function ProfilePage() {
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
                   <div className="flex items-center gap-6">
                     <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
-                      {avatarUrl ? (
+                      {avatarUrl && !imageError ? (
                         <img
                           src={avatarUrl}
                           alt={userName}
                           className="w-full h-full object-cover"
+                          onError={() => setImageError(true)}
                         />
                       ) : (
                         <User size={48} className="text-white" />
@@ -443,10 +443,9 @@ export default function ProfilePage() {
                   </div>
                  </div>
                )}
-             </>
+              </>
          </main>
       </div>
-      <BottomNavigation />
 
       <SettingsModal
         isOpen={isSettingsOpen}

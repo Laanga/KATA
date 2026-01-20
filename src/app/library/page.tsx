@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Navbar } from "@/components/layout/Navbar";
-import BottomNavigation from "@/components/layout/BottomNavigation";
 import { KataCard } from "@/components/media/KataCard";
 import { FilterBar } from "@/components/library/FilterBar";
 import { EditItemModal } from "@/components/media/EditItemModal";
@@ -147,7 +146,6 @@ export default function LibraryPage() {
          </div>
        </main>
       </div>
-      <BottomNavigation />
       {editingItem && (
         <EditItemModal
           item={editingItem}

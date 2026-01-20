@@ -1,7 +1,6 @@
 'use client';
 
 import { Navbar } from "@/components/layout/Navbar";
-import BottomNavigation from "@/components/layout/BottomNavigation";
 import { MediaSearchSection } from "@/components/media/MediaSearchSection";
 import { FadeIn } from "@/components/FadeIn";
 
@@ -20,7 +19,6 @@ export default function SeriesPage() {
                     </FadeIn>
                 </main>
             </div>
-            <BottomNavigation />
         </>
     );
 }
