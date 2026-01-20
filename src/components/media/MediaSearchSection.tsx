@@ -88,7 +88,11 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     const [editItem, setEditItem] = useState<MediaItem | null>(null);
     const [searchCache, setSearchCache] = useState<Map<string, SearchResult[]>>(new Map());
 
-    const isInLibrary = useCallback((resultTitle: string): boolean => {
+    const isInLibrary = useCallback((resultTitle: string | undefined | null): boolean => {
+        if (!resultTitle || typeof resultTitle !== 'string') {
+            return false;
+        }
+
         const normalizedTitle = resultTitle.trim().toLowerCase();
         return items.some(item =>
             item.type === type &&
@@ -215,6 +219,10 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     }, [searchQuery, debouncedSearch]);
 
     const handleSelectResult = (result: SearchResult) => {
+        if (!result || !result.title) {
+            return;
+        }
+
         if (isInLibrary(result.title)) {
             const existingItem = items.find(item =>
                 item.type === type &&
@@ -268,10 +276,10 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                             >
                                 {result.coverUrl ? (
                                     <img
-                                        src={result.coverUrl}
-                                        alt={result.title}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
+                                         src={result.coverUrl}
+                                         alt={result.title || 'Resultado de búsqueda'}
+                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                     />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
                                         <span className="text-4xl mb-2">?</span>
@@ -283,13 +291,13 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1">
-                                            <h3 className="font-bold text-white leading-tight line-clamp-2">{result.title}</h3>
+                                             <h3 className="font-bold text-white leading-tight line-clamp-2">{result.title || 'Sin título'}</h3>
                                             <p className="text-sm text-[var(--accent-primary)] mt-1">
                                                 {result.year}
                                                 {result.author && ` • ${result.author}`}
                                             </p>
                                         </div>
-                                        {isInLibrary(result.title) && (
+                                         {result.title && isInLibrary(result.title) && (
                                             <div className="bg-[var(--accent-primary)] rounded-full p-1.5 shadow-lg">
                                                 <CheckCircle size={16} className="text-white" />
                                             </div>
@@ -312,13 +320,13 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                                             )}
                                         </div>
                                     )}
-                                    <div className={`mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider ${isInLibrary(result.title) ? 'text-[var(--accent-primary)]' : 'text-white/80'}`}>
-                                        {isInLibrary(result.title) ? (
+                                    <div className={`mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider ${result.title && isInLibrary(result.title) ? 'text-[var(--accent-primary)]' : 'text-white/80'}`}>
+                                        {result.title && isInLibrary(result.title) ? (
                                             <CheckCircle size={14} />
                                         ) : (
                                             <Plus size={14} />
                                         )}
-                                        {isInLibrary(result.title) ? 'En tu biblioteca' : 'Añadir a Biblioteca'}
+                                        {result.title && isInLibrary(result.title) ? 'En tu biblioteca' : 'Añadir a Biblioteca'}
                                     </div>
                                 </div>
                             </button>
