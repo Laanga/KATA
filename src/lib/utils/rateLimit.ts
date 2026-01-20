@@ -19,7 +19,7 @@ interface RateLimitOptions {
 
 export function rateLimit(
   identifier: string,
-  options: RateLimitOptions = { windowMs: 60000, maxRequests: 10 }
+  options: RateLimitOptions = { windowMs: 60000, maxRequests: 100 }
 ): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
   const key = identifier;

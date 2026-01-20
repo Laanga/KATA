@@ -6,6 +6,7 @@ import { MediaType } from '@/types/media';
 import toast from 'react-hot-toast';
 import { AddItemModal } from './AddItemModal';
 import { FadeIn } from '@/components/FadeIn';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchResult {
     id: string | number;
@@ -81,9 +82,39 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     const [isSearching, setIsSearching] = useState(false);
     const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [searchCache, setSearchCache] = useState<Map<string, SearchResult[]>>(new Map());
 
-    const handleSearch = useCallback(async () => {
-        if (!searchQuery.trim()) return;
+    const checkCache = useCallback((query: string): SearchResult[] | null => {
+        const cached = searchCache.get(query.toLowerCase());
+        if (cached) return cached;
+        return null;
+    }, [searchCache]);
+
+    const addToCache = useCallback((query: string, results: SearchResult[]) => {
+        const newCache = new Map(searchCache);
+        newCache.set(query.toLowerCase(), results);
+        setSearchCache(newCache);
+
+        setTimeout(() => {
+            setSearchCache((prev) => {
+                const updatedCache = new Map(prev);
+                updatedCache.delete(query.toLowerCase());
+                return updatedCache;
+            });
+        }, 5 * 60 * 1000);
+    }, [searchCache]);
+
+    const handleSearch = useCallback(async (query: string) => {
+        if (!query.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        const cached = checkCache(query);
+        if (cached) {
+            setSearchResults(cached);
+            return;
+        }
 
         setIsSearching(true);
         setSearchResults([]);
@@ -97,10 +128,15 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                 case 'BOOK': endpoint = '/api/search/books'; break;
             }
 
-            const res = await fetch(`${endpoint}?q=${encodeURIComponent(searchQuery)}`);
+            const res = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
             const data = await res.json();
 
             if (data.error) {
+                if (data.error.includes('Too many requests')) {
+                    const retryAfter = data.retryAfter || 60;
+                    toast.error(`Demasiadas búsquedas. Espera ${retryAfter} segundos.`);
+                    return;
+                }
                 console.warn('Search API error:', data.error);
                 return;
             }
@@ -147,24 +183,24 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
             }
 
             setSearchResults(mappedResults.slice(0, 12));
+            addToCache(query, mappedResults.slice(0, 12));
         } catch (error) {
             console.error('Search failed', error);
             toast.error('Error al buscar elementos');
         } finally {
             setIsSearching(false);
         }
-    }, [searchQuery, type]);
+    }, [type, checkCache, addToCache]);
 
-    // Debounce search
+    const debouncedSearch = useDebounce((query: string) => {
+        if (query.length >= 2) {
+            handleSearch(query);
+        }
+    }, 500);
+
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery.length >= 2) {
-                handleSearch();
-            }
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery, handleSearch]);
+        debouncedSearch(searchQuery);
+    }, [searchQuery, debouncedSearch]);
 
     const handleSelectResult = (result: SearchResult) => {
         setSelectedResult(result);
