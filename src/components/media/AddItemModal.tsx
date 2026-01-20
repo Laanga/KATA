@@ -29,6 +29,7 @@ interface AddItemModalProps {
 
 export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: AddItemModalProps) {
   const addItem = useMediaStore((state) => state.addItem);
+  const items = useMediaStore((state) => state.items);
 
   const [formData, setFormData] = useState({
     // Read-only data from API
@@ -84,6 +85,18 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
     const reviewValidation = isValidReview(formData.review);
     if (!reviewValidation.valid) {
       toast.error(reviewValidation.message || 'Reseña inválida');
+      return;
+    }
+
+    // Check for duplicates in library
+    const normalizedTitle = titleValidation.sanitized!.trim().toLowerCase();
+    const existingItem = items.find(item =>
+      item.type === formData.type &&
+      item.title.trim().toLowerCase() === normalizedTitle
+    );
+
+    if (existingItem) {
+      toast.error('Este elemento ya existe en tu biblioteca');
       return;
     }
 

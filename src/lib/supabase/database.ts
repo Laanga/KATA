@@ -1,5 +1,5 @@
 import { createClient } from './client';
-import type { MediaItem } from '@/types/media';
+import type { MediaItem, MediaType } from '@/types/media';
 import { dbRowToMediaItem, mediaItemToDbInsert, mediaItemToDbUpdate, type MediaMetadata } from '@/types/supabase';
 
 class MediaDatabase {
@@ -53,14 +53,38 @@ class MediaDatabase {
   }
 
   /**
+   * Verifica si existe un item duplicado
+   */
+  async checkDuplicate(userId: string, type: MediaType, title: string): Promise<boolean> {
+    const supabase = this.getClient();
+
+    const { data, error } = await supabase
+      .from('media_items')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .eq('title', title.trim())
+      .limit(1);
+
+    if (error) throw error;
+
+    return data && data.length > 0;
+  }
+
+  /**
    * Crea un nuevo media item
    */
   async create(item: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<MediaItem> {
     const supabase = this.getClient();
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para crear items');
+    }
+
+    const isDuplicate = await this.checkDuplicate(user.id, item.type, item.title);
+    if (isDuplicate) {
+      throw new Error('Este elemento ya existe en tu biblioteca');
     }
 
     const dbItem = mediaItemToDbInsert(item, user.id);
@@ -72,8 +96,13 @@ class MediaDatabase {
       .select()
       .single();
 
-    if (error) throw error;
-    
+    if (error) {
+      if (error.code === '23505' || error.message?.includes('unique constraint')) {
+        throw new Error('Este elemento ya existe en tu biblioteca');
+      }
+      throw error;
+    }
+
     return dbRowToMediaItem(data);
   }
 

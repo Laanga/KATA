@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Loader2, Plus } from 'lucide-react';
+import { Search, Loader2, Plus, CheckCircle } from 'lucide-react';
 import { MediaType } from '@/types/media';
 import toast from 'react-hot-toast';
 import { AddItemModal } from './AddItemModal';
 import { FadeIn } from '@/components/FadeIn';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useMediaStore } from '@/lib/store';
 
 interface SearchResult {
     id: string | number;
@@ -77,12 +78,21 @@ const TYPE_SEARCH_LABELS: Record<MediaType, string> = {
 };
 
 export function MediaSearchSection({ type, title, description, showSearchHint = false }: MediaSearchSectionProps) {
+    const items = useMediaStore((state) => state.items);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchCache, setSearchCache] = useState<Map<string, SearchResult[]>>(new Map());
+
+    const isInLibrary = useCallback((resultTitle: string): boolean => {
+        const normalizedTitle = resultTitle.trim().toLowerCase();
+        return items.some(item =>
+            item.type === type &&
+            item.title.trim().toLowerCase() === normalizedTitle
+        );
+    }, [items, type]);
 
     const checkCache = useCallback((query: string): SearchResult[] | null => {
         const cached = searchCache.get(query.toLowerCase());
@@ -258,11 +268,20 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
 
                                 {/* Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                    <h3 className="font-bold text-white leading-tight line-clamp-2">{result.title}</h3>
-                                    <p className="text-sm text-[var(--accent-primary)] mt-1">
-                                        {result.year}
-                                        {result.author && ` • ${result.author}`}
-                                    </p>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-white leading-tight line-clamp-2">{result.title}</h3>
+                                            <p className="text-sm text-[var(--accent-primary)] mt-1">
+                                                {result.year}
+                                                {result.author && ` • ${result.author}`}
+                                            </p>
+                                        </div>
+                                        {isInLibrary(result.title) && (
+                                            <div className="bg-[var(--accent-primary)] rounded-full p-1.5 shadow-lg">
+                                                <CheckCircle size={16} className="text-white" />
+                                            </div>
+                                        )}
+                                    </div>
                                     {result.genres && result.genres.length > 0 && (
                                         <div className="mt-2 flex flex-wrap gap-1">
                                             {result.genres.slice(0, 2).map((genre, idx) => (
