@@ -213,6 +213,10 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     }, [searchQuery, debouncedSearch]);
 
     const handleSelectResult = (result: SearchResult) => {
+        if (isInLibrary(result.title)) {
+            toast.error('Este elemento ya está en tu biblioteca');
+            return;
+        }
         setSelectedResult(result);
         setIsAddModalOpen(true);
     };
@@ -299,9 +303,13 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                                             )}
                                         </div>
                                     )}
-                                    <div className="mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/80">
-                                        <Plus size={14} />
-                                        Añadir a Biblioteca
+                                    <div className={`mt-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider ${isInLibrary(result.title) ? 'text-[var(--accent-primary)]' : 'text-white/80'}`}>
+                                        {isInLibrary(result.title) ? (
+                                            <CheckCircle size={14} />
+                                        ) : (
+                                            <Plus size={14} />
+                                        )}
+                                        {isInLibrary(result.title) ? 'En tu biblioteca' : 'Añadir a Biblioteca'}
                                     </div>
                                 </div>
                             </button>
