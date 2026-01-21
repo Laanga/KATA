@@ -13,6 +13,7 @@ export function Navbar() {
         { href: '/movies', label: 'Películas' },
         { href: '/games', label: 'Juegos' },
         { href: '/library', label: 'Biblioteca' },
+        { href: '/discover', label: 'Descubrir' },
     ];
 
     return (
@@ -37,7 +38,9 @@ export function Navbar() {
                             <NavLink key={link.href} href={link.href} label={link.label} pathname={pathname} />
                         ))}
                         <div className="h-4 w-px bg-white/10 mx-2"></div>
-                        <NavLink href={navLinks[4].href} label={navLinks[4].label} pathname={pathname} />
+                        {navLinks.slice(4).map((link) => (
+                            <NavLink key={link.href} href={link.href} label={link.label} pathname={pathname} />
+                        ))}
                     </div>
 
                     {/* Right Actions */}

@@ -14,7 +14,7 @@ export interface MediaMetadata {
   platform?: string;
   release_year?: number;
   genres?: string[];
-  [key: string]: unknown; // Permite campos adicionales
+  [key: string]: unknown;
 }
 
 export interface Database {
@@ -28,7 +28,7 @@ export interface Database {
           title: string;
           cover_url: string | null;
           status: MediaStatus;
-          rating: number | null; // DECIMAL(2,1) -> 0-5
+          rating: number | null;
           review: string | null;
           metadata: MediaMetadata;
           created_at: string;
@@ -59,6 +59,58 @@ export interface Database {
           metadata?: MediaMetadata;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      collections: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          color: string | null;
+          icon: string | null;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          color?: string | null;
+          icon?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          color?: string | null;
+          icon?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+      };
+      media_items_collections: {
+        Row: {
+          id: string;
+          media_item_id: string;
+          collection_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          media_item_id: string;
+          collection_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          media_item_id?: string;
+          collection_id?: string;
+          created_at?: string;
         };
       };
     };
@@ -100,7 +152,6 @@ export const mediaItemToDbInsert = (
   item: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>,
   userId: string
 ): Database['public']['Tables']['media_items']['Insert'] => {
-  // Construir metadata solo con campos definidos
   const metadata: MediaMetadata = {};
   if (item.author) metadata.author = item.author;
   if (item.platform) metadata.platform = item.platform;
@@ -133,7 +184,6 @@ export const mediaItemToDbUpdate = (
   if (updates.status !== undefined) dbUpdate.status = updates.status;
   if (updates.review !== undefined) dbUpdate.review = updates.review || null;
   
-  // Actualizar metadata solo si hay cambios
   const hasMetadataUpdates = 
     updates.author !== undefined ||
     updates.platform !== undefined ||
