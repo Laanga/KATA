@@ -70,3 +70,8 @@ migracion-*.sql
 .idea/
 *.swp
 *.swo
+
+# Documentation files
+AGENTS.md
+MVP.md
+MVP_TODO.md
