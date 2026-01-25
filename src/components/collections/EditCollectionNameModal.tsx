@@ -31,7 +31,6 @@ export function EditCollectionNameModal({ collection, isOpen, onClose, onUpdate 
     try {
       await onUpdate(collection.id, name.trim());
       toast.success('Nombre actualizado');
-      setName('');
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al actualizar nombre');

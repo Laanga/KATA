@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { FadeIn } from '@/components/FadeIn';
 import { useMediaStore } from '@/lib/store';
@@ -8,6 +8,7 @@ import { Film, Tv, BookOpen, Gamepad2, Sparkles, Clock, ChevronDown } from 'luci
 import { MediaType } from '@/types/media';
 import type { MediaItem } from '@/types/media';
 import { DiscoverCard } from '@/components/media/DiscoverCard';
+import { HorizontalScroll } from '@/components/ui/HorizontalScroll';
 import { toast } from 'react-hot-toast';
 
 type PeriodType = 'week' | 'month' | 'quarter';
@@ -34,6 +35,11 @@ const TMDB_GENRE_MAP: Record<string, number> = {
   'Western': 37,
 };
 
+// Mapeo de géneros de TMDB (IDs numéricos) para películas y series
+const TMDB_GENRE_IDS: Record<string, string> = Object.fromEntries(
+  Object.entries(TMDB_GENRE_MAP).map(([k, v]) => [k, v.toString()])
+);
+
 const TYPE_COLORS: Record<MediaType, string> = {
   MOVIE: 'var(--color-movie)',
   SERIES: 'var(--color-series)',
@@ -52,6 +58,15 @@ export default function DiscoverPage() {
   const [availableGenres, setAvailableGenres] = useState<{ id: string | number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
+  const [recsLastUpdate, setRecsLastUpdate] = useState<number | null>(null);
+
+  // Cache para evitar llamadas repetidas
+  const upcomingCache = useRef<Map<string, { data: any[]; genres: any[]; timestamp: number }>>(new Map());
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos de cache
+  
+  // Ref para cancelar peticiones pendientes (debounce)
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const periods = [
     { value: 'week', label: '7 días', shortLabel: '7d' },
@@ -71,6 +86,61 @@ export default function DiscoverPage() {
     SERIES: 'series',
     BOOK: 'books',
     GAME: 'games',
+  };
+
+  const getDayOfYear = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  };
+
+  const getTimeUntilMidnight = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const diff = tomorrow.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
+
+  const formatLastUpdate = (timestamp: number) => {
+    const diff = Date.now() - timestamp;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 1) return 'hace menos de 1h';
+    if (hours < 24) return `hace ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `hace ${days}d`;
+  };
+
+  const getCachedRecommendations = (type: MediaType) => {
+    const key = `recommendations_${type}`;
+    const cached = localStorage.getItem(key);
+    
+    if (!cached) return null;
+    
+    const { data, timestamp, daySeed } = JSON.parse(cached);
+    const today = getDayOfYear();
+    
+    if (daySeed !== today) {
+      return null;
+    }
+    
+    return { data, timestamp };
+  };
+
+  const setCachedRecommendations = (type: MediaType, data: any[]) => {
+    const key = `recommendations_${type}`;
+    const cache = {
+      data,
+      timestamp: Date.now(),
+      daySeed: getDayOfYear(),
+    };
+    localStorage.setItem(key, JSON.stringify(cache));
+    setRecsLastUpdate(cache.timestamp);
   };
 
   // Formatear fecha exacta
@@ -135,11 +205,6 @@ export default function DiscoverPage() {
   const getFilteredUpcoming = (): any[] => {
     return upcoming
       .filter((item: any) => !isInLibrary(getItemTitle(item)))
-      .filter((item: any) => {
-        if (selectedGenre === 'ALL') return true;
-        const itemGenres = item.genre_ids || item.volumeInfo?.categories || item.genres?.map((g: any) => g.id || g.name) || [];
-        return itemGenres.some((g: any) => String(g) === String(selectedGenre));
-      })
       .sort((a: any, b: any) => {
         const getTimestamp = (item: any): number => {
           if (item.first_release_date && typeof item.first_release_date === 'number') {
@@ -154,48 +219,79 @@ export default function DiscoverPage() {
       });
   };
 
-  const addToWantList = async (item: any) => {
+  const addToWantList = async (item: any): Promise<void> => {
+    const statusMap: Record<MediaType, MediaItem['status']> = {
+      BOOK: 'WANT_TO_READ',
+      GAME: 'WANT_TO_PLAY',
+      MOVIE: 'WANT_TO_WATCH',
+      SERIES: 'WANT_TO_WATCH',
+    };
+
+    const title = getItemTitle(item);
+    
+    if (isInLibrary(title)) {
+      toast.error('Ya tienes este título en tu biblioteca');
+      throw new Error('Already in library');
+    }
+
+    const genres = item.genre_ids?.map((id: number) => {
+      const genre = availableGenres.find(g => Number(g.id) === id);
+      return genre?.name || '';
+    }).filter(Boolean) || item.volumeInfo?.categories || item.genres?.map((g: any) => g.name) || [];
+
+    const newItem: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'> = {
+      type: selectedType,
+      title,
+      coverUrl: getItemImage(item),
+      status: statusMap[selectedType],
+      rating: null,
+      review: undefined,
+      genres,
+    };
+
     try {
-      const statusMap: Record<MediaType, MediaItem['status']> = {
-        BOOK: 'WANT_TO_READ',
-        GAME: 'WANT_TO_PLAY',
-        MOVIE: 'WANT_TO_WATCH',
-        SERIES: 'WANT_TO_WATCH',
-      };
-
-      const title = getItemTitle(item);
-      
-      if (isInLibrary(title)) {
-        toast.error('Ya tienes este título en tu biblioteca');
-        return;
-      }
-
-      const genres = item.genre_ids?.map((id: number) => {
-        const genre = availableGenres.find(g => Number(g.id) === id);
-        return genre?.name || '';
-      }).filter(Boolean) || item.volumeInfo?.categories || item.genres?.map((g: any) => g.name) || [];
-
-      const newItem: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'> = {
-        type: selectedType,
-        title,
-        coverUrl: getItemImage(item),
-        status: statusMap[selectedType],
-        rating: null,
-        review: undefined,
-        genres,
-      };
-
       await addItem(newItem);
       toast.success(`"${title}" añadido a tu lista`);
     } catch (error) {
       console.error('Error al añadir a lista:', error);
       toast.error('Error al añadir a la lista');
+      throw error;
     }
   };
 
   const getUserFavoriteGenres = (): string[] => {
-    const typeItems = items.filter((item) => item.type === selectedType && item.rating && item.rating >= 4);
-    if (typeItems.length === 0) return [];
+    // Para libros y juegos, ser más flexible con el rating mínimo
+    const minRating = (selectedType === 'BOOK' || selectedType === 'GAME') ? 3 : 4;
+    
+    const typeItems = items.filter((item) => 
+      item.type === selectedType && 
+      item.rating && 
+      item.rating >= minRating
+    );
+    
+    if (typeItems.length === 0) {
+      // Si no hay items con rating, usar todos los items del tipo que tengan géneros
+      const allTypeItems = items.filter((item) => 
+        item.type === selectedType && 
+        item.genres && 
+        item.genres.length > 0
+      );
+      
+      if (allTypeItems.length === 0) return [];
+      
+      // Usar los géneros de todos los items
+      const genreCounts = new Map<string, number>();
+      allTypeItems.forEach((item) => {
+        item.genres?.forEach((genre) => {
+          genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+        });
+      });
+      
+      return Array.from(genreCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([genre]) => genre);
+    }
 
     const genreCounts = new Map<string, number>();
     typeItems.forEach((item) => {
@@ -212,79 +308,178 @@ export default function DiscoverPage() {
       .map(([genre]) => genre);
   };
 
+  // Resetear género cuando cambia el tipo
   useEffect(() => {
-    const fetchUpcoming = async () => {
+    setSelectedGenre('ALL');
+  }, [selectedType]);
+
+  // Generar clave de cache
+  const getCacheKey = useCallback((type: MediaType, period: PeriodType, genre: GenreFilter) => {
+    return `${type}-${period}-${genre}`;
+  }, []);
+
+  // Fetch de próximos lanzamientos con debounce y cache
+  useEffect(() => {
+    const cacheKey = getCacheKey(selectedType, selectedPeriod, selectedGenre);
+    
+    // Verificar si tenemos datos en cache válidos
+    const cached = upcomingCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setUpcoming(cached.data);
+      if (selectedGenre === 'ALL') {
+        setAvailableGenres(cached.genres);
+      }
+      return;
+    }
+
+    // Cancelar timeout anterior si existe (debounce)
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Debounce: esperar 300ms antes de hacer la petición
+    // Esto evita múltiples llamadas si el usuario cambia rápido de género
+    fetchTimeoutRef.current = setTimeout(async () => {
       setIsLoading(true);
-      setSelectedGenre('ALL');
+      
+      // Crear nuevo AbortController para esta petición
+      abortControllerRef.current = new AbortController();
       
       try {
         const endpoint = typeEndpoints[selectedType];
-        const response = await fetch(`/api/upcoming/${endpoint}?period=${selectedPeriod}`);
+        const genreParam = selectedGenre !== 'ALL' ? `&genre=${selectedGenre}` : '';
+        const response = await fetch(
+          `/api/upcoming/${endpoint}?period=${selectedPeriod}${genreParam}`,
+          { signal: abortControllerRef.current.signal }
+        );
         const data = await response.json();
 
         if (data.error) {
           setUpcoming([]);
-          setAvailableGenres([]);
+          if (selectedGenre === 'ALL') {
+            setAvailableGenres([]);
+          }
           return;
         }
 
-        setUpcoming(data.results || []);
-        setAvailableGenres(data.availableGenres || []);
-      } catch (error) {
+        const results = data.results || [];
+        const genres = data.availableGenres || [];
+
+        // Guardar en cache
+        upcomingCache.current.set(cacheKey, {
+          data: results,
+          genres: genres,
+          timestamp: Date.now(),
+        });
+
+        setUpcoming(results);
+        if (selectedGenre === 'ALL') {
+          setAvailableGenres(genres);
+        }
+      } catch (error: any) {
+        // Ignorar errores de abort (son intencionales)
+        if (error.name === 'AbortError') {
+          return;
+        }
+        console.error('Error fetching upcoming:', error);
         setUpcoming([]);
-        setAvailableGenres([]);
+        if (selectedGenre === 'ALL') {
+          setAvailableGenres([]);
+        }
       } finally {
         setIsLoading(false);
       }
+    }, 300); // 300ms de debounce
+
+    // Cleanup: cancelar timeout y petición al desmontar o cambiar dependencias
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
+  }, [selectedPeriod, selectedType, selectedGenre, getCacheKey]);
 
-    fetchUpcoming();
-  }, [selectedPeriod, selectedType]);
+  const fetchRecommendations = async () => {
+    const favoriteGenres = getUserFavoriteGenres();
+    
+    if (favoriteGenres.length === 0) {
+      setRecommendations([]);
+      setRecsLastUpdate(null);
+      return;
+    }
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (selectedType !== 'MOVIE' && selectedType !== 'SERIES') {
-        setRecommendations([]);
-        return;
-      }
+    const daySeed = getDayOfYear();
+    
+    const cached = getCachedRecommendations(selectedType);
+    if (cached) {
+      setRecommendations(cached.data);
+      setRecsLastUpdate(cached.timestamp);
+      return;
+    }
 
-      const favoriteGenres = getUserFavoriteGenres();
-      if (favoriteGenres.length === 0) {
-        setRecommendations([]);
-        return;
-      }
+    setIsLoadingRecs(true);
 
-      setIsLoadingRecs(true);
-
-      try {
-        const genreIds = favoriteGenres
-          .map(genre => TMDB_GENRE_MAP[genre])
+    try {
+      let genreValues: string;
+      
+      // Para películas y series, usar el mapeo de TMDB (IDs numéricos)
+      if (selectedType === 'MOVIE' || selectedType === 'SERIES') {
+        genreValues = favoriteGenres
+          .map(genre => TMDB_GENRE_IDS[genre])
           .filter(Boolean)
           .join(',');
-
-        if (!genreIds) {
-          setRecommendations([]);
-          return;
-        }
-
-        const excludeTitles = items
-          .filter(i => i.type === selectedType)
-          .map(i => i.title)
-          .join(',');
-
-        const type = selectedType === 'SERIES' ? 'tv' : 'movie';
-        const response = await fetch(
-          `/api/recommendations?type=${type}&genres=${genreIds}&exclude=${encodeURIComponent(excludeTitles)}`
-        );
-        const data = await response.json();
-        setRecommendations(data.results || []);
-      } catch (error) {
-        setRecommendations([]);
-      } finally {
-        setIsLoadingRecs(false);
+      } else {
+        // Para libros y juegos, pasar los géneros directamente
+        genreValues = favoriteGenres.join(',');
       }
-    };
 
+      if (!genreValues) {
+        setRecommendations([]);
+        setRecsLastUpdate(null);
+        return;
+      }
+
+      const excludeTitles = items
+        .filter(i => i.type === selectedType)
+        .map(i => i.title)
+        .join(',');
+
+      // Determinar el tipo para la API
+      const typeMap: Record<MediaType, string> = {
+        MOVIE: 'movie',
+        SERIES: 'tv',
+        GAME: 'game',
+        BOOK: 'book',
+      };
+
+      const response = await fetch(
+        `/api/recommendations?type=${typeMap[selectedType]}&genres=${encodeURIComponent(genreValues)}&exclude=${encodeURIComponent(excludeTitles)}&daySeed=${daySeed}`
+      );
+      const data = await response.json();
+      
+      if (data.results && data.results.length > 0) {
+        setRecommendations(data.results);
+        setCachedRecommendations(selectedType, data.results);
+      } else {
+        setRecommendations([]);
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      setRecommendations([]);
+    } finally {
+      setIsLoadingRecs(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRecommendations();
   }, [selectedType, items]);
 
@@ -415,24 +610,21 @@ export default function DiscoverPage() {
                     </div>
 
                     {getFilteredUpcoming().length > 0 ? (
-                      <div className="relative -mx-4 px-4">
-                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                          {getFilteredUpcoming().map((item, index) => (
-                            <DiscoverCard
-                              key={item.id || index}
-                              item={item}
-                              type={selectedType}
-                              onAdd={() => addToWantList(item)}
-                              getImage={getItemImage}
-                              getTitle={getItemTitle}
-                              releaseDate={formatExactDate(item)}
-                              rating={item.vote_average}
-                            />
-                          ))}
-                        </div>
-                        <div className="absolute left-0 top-0 bottom-4 w-8 bg-gradient-to-r from-[var(--bg-primary)] to-transparent pointer-events-none" />
-                        <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-[var(--bg-primary)] to-transparent pointer-events-none" />
-                      </div>
+                      <HorizontalScroll>
+                        {getFilteredUpcoming().map((item, index) => (
+                          <DiscoverCard
+                            key={item.id || index}
+                            item={item}
+                            type={selectedType}
+                            onAdd={() => addToWantList(item)}
+                            getImage={getItemImage}
+                            getTitle={getItemTitle}
+                            releaseDate={formatExactDate(item)}
+                            rating={item.vote_average}
+                            isInLibrary={isInLibrary(getItemTitle(item))}
+                          />
+                        ))}
+                      </HorizontalScroll>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-white/5 bg-[var(--bg-secondary)]/50">
                         <div 
@@ -452,14 +644,21 @@ export default function DiscoverPage() {
                   </section>
                 </FadeIn>
 
-                {/* Recomendaciones */}
-                {(selectedType === 'MOVIE' || selectedType === 'SERIES') && (
-                  <FadeIn direction="up" delay={0.3}>
-                    <section className="mb-12">
+                {/* Recomendaciones - Para todos los tipos */}
+                <FadeIn direction="up" delay={0.3}>
+                  <section className="mb-12">
                       <div className="flex items-center gap-3 mb-5">
                         <div className="w-1 h-6 rounded-full bg-[var(--accent-primary)]" />
                         <Sparkles size={20} className="text-[var(--accent-primary)]" />
                         <h2 className="text-xl font-bold">Para ti</h2>
+                        {recsLastUpdate && (
+                          <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
+                            <Clock size={12} />
+                            <span>
+                              {formatLastUpdate(recsLastUpdate)} • Actualiza en {getTimeUntilMidnight()}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {isLoadingRecs ? (
@@ -467,23 +666,20 @@ export default function DiscoverPage() {
                           <div className="w-6 h-6 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin" />
                         </div>
                       ) : recommendations.length > 0 ? (
-                        <div className="relative -mx-4 px-4">
-                          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                            {recommendations.map((item, index) => (
-                              <DiscoverCard
-                                key={item.id || index}
-                                item={item}
-                                type={selectedType}
-                                onAdd={() => addToWantList(item)}
-                                getImage={getItemImage}
-                                getTitle={getItemTitle}
-                                rating={item.vote_average}
-                              />
-                            ))}
-                          </div>
-                          <div className="absolute left-0 top-0 bottom-4 w-8 bg-gradient-to-r from-[var(--bg-primary)] to-transparent pointer-events-none" />
-                          <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-[var(--bg-primary)] to-transparent pointer-events-none" />
-                        </div>
+                        <HorizontalScroll>
+                          {recommendations.map((item, index) => (
+                            <DiscoverCard
+                              key={item.id || index}
+                              item={item}
+                              type={selectedType}
+                              onAdd={() => addToWantList(item)}
+                              getImage={getItemImage}
+                              getTitle={getItemTitle}
+                              rating={item.vote_average}
+                              isInLibrary={isInLibrary(getItemTitle(item))}
+                            />
+                          ))}
+                        </HorizontalScroll>
                       ) : (
                         <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-white/5 bg-[var(--bg-secondary)]/50">
                           <div className="w-16 h-16 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center mb-4">
@@ -497,9 +693,8 @@ export default function DiscoverPage() {
                           </p>
                         </div>
                       )}
-                    </section>
-                  </FadeIn>
-                )}
+                  </section>
+                </FadeIn>
               </>
             )}
           </div>

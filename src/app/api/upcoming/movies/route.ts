@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
   const searchParams = request.nextUrl.searchParams;
   const period = searchParams.get('period') || 'month';
+  const genre = searchParams.get('genre');
 
   const now = new Date();
   let daysToAdd: number;
@@ -50,6 +51,11 @@ export async function GET(request: NextRequest) {
     discoverUrl.searchParams.set('primary_release_date.lte', dateTo.toISOString().split('T')[0]);
     discoverUrl.searchParams.set('sort_by', 'primary_release_date.asc');
     discoverUrl.searchParams.set('page', '1');
+    
+    // Filtrar por género si se especifica
+    if (genre && genre !== 'ALL') {
+      discoverUrl.searchParams.set('with_genres', genre);
+    }
 
     const response = await fetch(discoverUrl.toString());
     
@@ -76,7 +82,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({
-      results: data.results || [],
+      results: (data.results || []).filter((item: any) => item.poster_path),
       availableGenres,
     });
   } catch (error) {

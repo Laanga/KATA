@@ -8,8 +8,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('AuthProvider: Auth state changed', { event, hasSession: !!session });
+      (_event, _session) => {
+        // Auth state listener activo
+        // Se puede usar para sincronizar estado si es necesario
       }
     );
 

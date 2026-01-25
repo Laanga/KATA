@@ -1,62 +1,347 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIdentifier } from '@/lib/utils/rateLimit';
 
+// Cache para el token de IGDB
+let igdbTokenCache: { token: string; expiresAt: number } | null = null;
+
+async function getIGDBToken(): Promise<string | null> {
+  const clientId = process.env.IGDB_CLIENT_ID;
+  const clientSecret = process.env.IGDB_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) return null;
+
+  if (igdbTokenCache && Date.now() < igdbTokenCache.expiresAt) {
+    return igdbTokenCache.token;
+  }
+
+  try {
+    const response = await fetch(
+      `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`,
+      { method: 'POST' }
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    igdbTokenCache = {
+      token: data.access_token,
+      expiresAt: Date.now() + (data.expires_in - 3600) * 1000,
+    };
+
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const identifier = getClientIdentifier(request);
   const limitResult = rateLimit(identifier, { windowMs: 60000, maxRequests: 20 });
 
   if (!limitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Too many requests' },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
+  const searchParams = request.nextUrl.searchParams;
+  const type = searchParams.get('type') || 'movie'; // movie, tv, game, book
+  const genres = searchParams.get('genres') || '';
+  const exclude = searchParams.get('exclude') || '';
+  const daySeed = parseInt(searchParams.get('daySeed') || '1');
+
+  const excludeTitles = exclude.split(',').filter(Boolean).map(t => t.toLowerCase().trim());
+
+  // Redirigir según el tipo
+  switch (type) {
+    case 'movie':
+    case 'tv':
+      return await fetchTMDBRecommendations(type, genres, excludeTitles, daySeed);
+    case 'game':
+      return await fetchGameRecommendations(genres, excludeTitles, daySeed);
+    case 'book':
+      return await fetchBookRecommendations(genres, excludeTitles, daySeed);
+    default:
+      return NextResponse.json({ results: [] });
+  }
+}
+
+// ============ TMDB (Películas y Series) ============
+async function fetchTMDBRecommendations(
+  type: string,
+  genres: string,
+  excludeTitles: string[],
+  daySeed: number
+) {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ results: [] });
   }
-
-  const searchParams = request.nextUrl.searchParams;
-  const type = searchParams.get('type') || 'movie'; // movie o tv
-  const genres = searchParams.get('genres') || ''; // IDs separados por coma
-  const exclude = searchParams.get('exclude') || ''; // Títulos a excluir separados por coma
-
-  const excludeTitles = exclude.split(',').filter(Boolean).map(t => t.toLowerCase().trim());
 
   try {
     const endpoint = type === 'tv' ? 'discover/tv' : 'discover/movie';
     const discoverUrl = new URL(`https://api.themoviedb.org/3/${endpoint}`);
     discoverUrl.searchParams.set('api_key', apiKey);
     discoverUrl.searchParams.set('language', 'es-ES');
-    discoverUrl.searchParams.set('sort_by', 'popularity.desc');
+
+    const sortOptions = ['popularity.desc', 'vote_average.desc', 'vote_count.desc'];
+    const sortIndex = Math.floor((daySeed - 1) / 91) % sortOptions.length;
+    discoverUrl.searchParams.set('sort_by', sortOptions[sortIndex]);
+
     discoverUrl.searchParams.set('vote_average.gte', '7');
     discoverUrl.searchParams.set('vote_count.gte', '100');
-    discoverUrl.searchParams.set('page', '1');
-    
+
+    const page = ((daySeed - 1) % 10) + 1;
+    discoverUrl.searchParams.set('page', page.toString());
+
     if (genres) {
       discoverUrl.searchParams.set('with_genres', genres);
     }
 
     const response = await fetch(discoverUrl.toString());
-    
-    if (!response.ok) {
-      return NextResponse.json({ results: [] });
-    }
+    if (!response.ok) return NextResponse.json({ results: [] });
 
     const data = await response.json();
     
-    // Filtrar títulos que el usuario ya tiene
-    const filteredResults = (data.results || []).filter((item: any) => {
-      const title = (item.title || item.name || '').toLowerCase();
-      return !excludeTitles.some(excluded => title.includes(excluded) || excluded.includes(title));
-    }).slice(0, 10);
+    const filteredResults = (data.results || [])
+      .filter((item: any) => {
+        const title = (item.title || item.name || '').toLowerCase();
+        return !excludeTitles.some(excluded => 
+          title.includes(excluded) || excluded.includes(title)
+        );
+      })
+      .filter((item: any) => item.poster_path)
+      .slice(0, 12);
 
     return NextResponse.json({
       results: filteredResults,
+      updatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error fetching recommendations:', error);
+    console.error('Error fetching TMDB recommendations:', error);
+    return NextResponse.json({ results: [] });
+  }
+}
+
+// ============ IGDB/RAWG (Juegos) ============
+async function fetchGameRecommendations(
+  genres: string,
+  excludeTitles: string[],
+  daySeed: number
+) {
+  // Intentar IGDB primero
+  const igdbResults = await fetchIGDBRecommendations(genres, excludeTitles, daySeed);
+  if (igdbResults.length > 0) {
+    return NextResponse.json({
+      results: igdbResults,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  // Fallback a RAWG
+  const rawgResults = await fetchRAWGRecommendations(genres, excludeTitles, daySeed);
+  return NextResponse.json({
+    results: rawgResults,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+async function fetchIGDBRecommendations(
+  genres: string,
+  excludeTitles: string[],
+  daySeed: number
+): Promise<any[]> {
+  const clientId = process.env.IGDB_CLIENT_ID;
+  const accessToken = await getIGDBToken();
+
+  if (!clientId || !accessToken) return [];
+
+  // Mapeo de géneros
+  const genreMap: Record<string, number> = {
+    'Acción': 4, 'Aventura': 31, 'RPG': 12, 'Shooter': 5,
+    'Estrategia': 15, 'Puzzle': 9, 'Deportes': 14, 'Simulación': 13,
+    'Carreras': 10, 'Terror': 32, 'Plataformas': 8, 'Lucha': 6,
+  };
+
+  const genreIds = genres.split(',')
+    .map(g => genreMap[g.trim()])
+    .filter(Boolean);
+
+  let genreCondition = '';
+  if (genreIds.length > 0) {
+    genreCondition = `& genres = (${genreIds.join(',')})`;
+  }
+
+  // Variar los resultados según el día
+  const offset = ((daySeed - 1) % 5) * 12;
+
+  const query = `
+    fields id,name,cover.url,total_rating,genres.name,platforms.name,summary;
+    where total_rating >= 75 
+      & total_rating_count >= 50 
+      & cover != null
+      ${genreCondition};
+    sort total_rating desc;
+    offset ${offset};
+    limit 20;
+  `;
+
+  try {
+    const response = await fetch('https://api.igdb.com/v4/games', {
+      method: 'POST',
+      headers: {
+        'Client-ID': clientId,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'text/plain',
+      },
+      body: query.trim(),
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    
+    return (data || [])
+      .filter((game: any) => {
+        const title = (game.name || '').toLowerCase();
+        return !excludeTitles.some(excluded => 
+          title.includes(excluded) || excluded.includes(title)
+        );
+      })
+      .slice(0, 12);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchRAWGRecommendations(
+  genres: string,
+  excludeTitles: string[],
+  daySeed: number
+): Promise<any[]> {
+  const apiKey = process.env.RAWG_API_KEY;
+
+  // Mapeo de géneros para RAWG (slugs)
+  const genreMap: Record<string, string> = {
+    'Acción': 'action', 'Aventura': 'adventure', 'RPG': 'role-playing-games-rpg',
+    'Shooter': 'shooter', 'Estrategia': 'strategy', 'Puzzle': 'puzzle',
+    'Deportes': 'sports', 'Simulación': 'simulation', 'Carreras': 'racing',
+    'Terror': 'horror', 'Plataformas': 'platformer', 'Lucha': 'fighting',
+  };
+
+  const genreSlugs = genres.split(',')
+    .map(g => genreMap[g.trim()])
+    .filter(Boolean)
+    .join(',');
+
+  const page = ((daySeed - 1) % 5) + 1;
+
+  try {
+    let url = `https://api.rawg.io/api/games?ordering=-rating&page_size=20&page=${page}`;
+    if (apiKey) url += `&key=${apiKey}`;
+    if (genreSlugs) url += `&genres=${genreSlugs}`;
+
+    const response = await fetch(url);
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    
+    return (data.results || [])
+      .filter((game: any) => game.background_image)
+      .filter((game: any) => {
+        const title = (game.name || '').toLowerCase();
+        return !excludeTitles.some(excluded => 
+          title.includes(excluded) || excluded.includes(title)
+        );
+      })
+      .map((game: any) => ({
+        id: game.id,
+        name: game.name,
+        cover: { url: game.background_image },
+        total_rating: game.rating ? game.rating * 20 : null,
+        genres: game.genres?.map((g: any) => ({ name: g.name })) || [],
+        platforms: game.platforms?.map((p: any) => ({ name: p.platform.name })) || [],
+      }))
+      .slice(0, 12);
+  } catch {
+    return [];
+  }
+}
+
+// ============ Google Books (Libros) ============
+async function fetchBookRecommendations(
+  genres: string,
+  excludeTitles: string[],
+  daySeed: number
+) {
+  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+
+  // Los géneros vienen directamente de la biblioteca del usuario
+  // Pueden estar en inglés (de Google Books) o español
+  // Convertimos a queries de Google Books
+  const genreList = genres.split(',').map(g => g.trim()).filter(Boolean);
+
+  // Crear queries para Google Books
+  // Google Books usa "subject:" para buscar por género/categoría
+  const queries = genreList.length > 0 
+    ? genreList.slice(0, 3).map(g => {
+        // Limpiar el género para usarlo como query
+        const cleanGenre = g.toLowerCase()
+          .replace(/\s+/g, '+')  // espacios a +
+          .replace(/[^a-z0-9+]/g, ''); // quitar caracteres especiales
+        return `subject:${cleanGenre}`;
+      })
+    : ['subject:fiction', 'subject:thriller', 'subject:fantasy'];
+
+  const startIndex = ((daySeed - 1) % 5) * 10;
+
+  try {
+    const allResults: any[] = [];
+
+    for (const query of queries.slice(0, 2)) { // Max 2 queries para no saturar
+      const googleUrl = new URL('https://www.googleapis.com/books/v1/volumes');
+      googleUrl.searchParams.set('q', query);
+      googleUrl.searchParams.set('orderBy', 'relevance');
+      googleUrl.searchParams.set('printType', 'books');
+      googleUrl.searchParams.set('maxResults', '15');
+      googleUrl.searchParams.set('startIndex', startIndex.toString());
+      
+      if (apiKey) {
+        googleUrl.searchParams.set('key', apiKey);
+      }
+
+      const response = await fetch(googleUrl.toString());
+      if (response.ok) {
+        const data = await response.json();
+        allResults.push(...(data.items || []));
+      }
+    }
+
+    // Filtrar y formatear
+    const filteredResults = allResults
+      .filter((book: any) => {
+        const title = (book.volumeInfo?.title || '').toLowerCase();
+        return !excludeTitles.some(excluded => 
+          title.includes(excluded) || excluded.includes(title)
+        );
+      })
+      .filter((book: any) => 
+        book.volumeInfo?.imageLinks?.thumbnail || 
+        book.volumeInfo?.imageLinks?.smallThumbnail
+      )
+      .filter((book: any, index: number, self: any[]) => 
+        index === self.findIndex(b => b.id === book.id)
+      )
+      .slice(0, 12)
+      .map((book: any) => ({
+        id: book.id,
+        volumeInfo: book.volumeInfo,
+      }));
+
+    return NextResponse.json({
+      results: filteredResults,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error fetching book recommendations:', error);
     return NextResponse.json({ results: [] });
   }
 }

@@ -1,26 +1,29 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar, Plus, Check } from 'lucide-react';
 import { MediaType } from '@/types/media';
 
 interface DiscoverCardProps {
   item: any;
   type: MediaType;
-  onAdd: () => void;
+  onAdd: () => Promise<void> | void;
   getImage: (item: any) => string;
   getTitle: (item: any) => string;
   releaseDate?: string;
   rating?: number;
+  isInLibrary?: boolean;
 }
 
-export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDate, rating }: DiscoverCardProps) {
+export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDate, rating, isInLibrary = false }: DiscoverCardProps) {
   const container = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const [isAdded, setIsAdded] = useState(isInLibrary);
+  const [isAdding, setIsAdding] = useState(false);
 
   useGSAP(() => {
     const card = container.current;
@@ -103,8 +106,13 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
     };
   }, { scope: container });
 
-  const handleAddClick = (e: React.MouseEvent) => {
+  const handleAddClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Si ya está añadido o está añadiendo, no hacer nada
+    if (isAdded || isAdding) return;
+    
+    setIsAdding(true);
     
     // Animación de confirmación
     gsap.to(container.current, {
@@ -120,7 +128,15 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
       }
     });
     
-    onAdd();
+    try {
+      await onAdd();
+      setIsAdded(true);
+    } catch (error) {
+      // Si hay error, no marcamos como añadido
+      console.error('Error adding item:', error);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const title = getTitle(item);
@@ -183,10 +199,33 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
         {/* Botón añadir */}
         <button
           onClick={handleAddClick}
-          className="discover-card-btn w-full flex items-center justify-center gap-2 rounded-lg bg-[var(--accent-primary)] py-2 text-black text-xs font-semibold hover:bg-[var(--accent-primary)]/90 transition-all translate-y-2 opacity-0 active:scale-95"
+          disabled={isAdded || isAdding}
+          className={`
+            discover-card-btn w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all translate-y-2 opacity-0
+            ${isAdded 
+              ? 'bg-green-500/20 text-green-400 cursor-default border border-green-500/30' 
+              : isAdding
+                ? 'bg-[var(--accent-primary)]/50 text-black/50 cursor-wait'
+                : 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-primary)]/90 active:scale-95'
+            }
+          `}
         >
-          <Plus size={14} />
-          Añadir
+          {isAdded ? (
+            <>
+              <Check size={14} />
+              Añadido
+            </>
+          ) : isAdding ? (
+            <>
+              <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              Añadiendo...
+            </>
+          ) : (
+            <>
+              <Plus size={14} />
+              Añadir
+            </>
+          )}
         </button>
       </div>
 

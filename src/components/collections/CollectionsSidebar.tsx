@@ -1,7 +1,7 @@
 'use client';
 
 import { useMediaStore } from '@/lib/store';
-import { Plus, Folder, Menu, MoreVertical } from 'lucide-react';
+import { Plus, Folder, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { useState, useRef } from 'react';
 import CreateCollectionModal from './CreateCollectionModal';
 import { CollectionActionMenu } from './CollectionActionMenu';
@@ -19,72 +19,75 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
   const deleteCollection = useMediaStore((state) => state.deleteCollection);
   const updateCollection = useMediaStore((state) => state.updateCollection);
   const getItemsByCollection = useMediaStore((state) => state.getItemsByCollection);
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
-  const [actionMenuPosition, setActionMenuPosition] = useState<{ top: number; right: number } | undefined>();
+  const [menuCollection, setMenuCollection] = useState<Collection | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | undefined>();
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  
   const menuButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
-  const handleDeleteCollection = async (collectionId: string) => {
-    const collection = collections.find(c => c.id === collectionId);
-    if (!collection) return;
-
-    try {
-      await deleteCollection(collectionId);
-      toast.success(`"${collection.name}" eliminada`);
-      setActionMenuOpen(null);
-    } catch {
-      toast.error('Error al eliminar colección');
+  const handleOpenMenu = (collection: Collection, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const button = menuButtonRefs.current[collection.id];
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
     }
+    setMenuCollection(collection);
   };
 
-  const handleEditName = (collection: Collection) => {
-    setEditingCollection(collection);
-    setActionMenuOpen(null);
+  const handleCloseMenu = () => {
+    setMenuCollection(null);
+    setMenuPosition(undefined);
+  };
+
+  const handleDeleteCollection = async () => {
+    if (!menuCollection) return;
+
+    try {
+      await deleteCollection(menuCollection.id);
+      toast.success(`"${menuCollection.name}" eliminada`);
+      if (selectedCollection === menuCollection.id) {
+        onCollectionSelect('ALL');
+      }
+    } catch (error) {
+      toast.error('Error al eliminar colección');
+    }
+    handleCloseMenu();
+  };
+
+  const handleChangeColor = async (color: string) => {
+    if (!menuCollection) return;
+
+    try {
+      await updateCollection(menuCollection.id, { color });
+    } catch (error) {
+      toast.error('Error al cambiar color');
+    }
   };
 
   const handleUpdateName = async (id: string, name: string) => {
-    try {
-      await updateCollection(id, { name });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const handleChangeColor = async (collectionId: string, color: string) => {
-    try {
-      await updateCollection(collectionId, { color });
-      toast.success('Color actualizado');
-    } catch {
-      toast.error('Error al actualizar color');
-    }
-  };
-
-  const handleMoreClick = (e: React.MouseEvent, collectionId: string) => {
-    e.stopPropagation();
-    const button = e.currentTarget;
-    const rect = button.getBoundingClientRect();
-    setActionMenuPosition({
-      top: rect.bottom + window.scrollY + 4,
-      right: window.innerWidth - rect.right + window.scrollX,
-    });
-    setActionMenuOpen(actionMenuOpen === collectionId ? null : collectionId);
+    await updateCollection(id, { name });
   };
 
   return (
-    <div className={`relative bg-card/50 backdrop-blur-sm transition-all duration-300 ${
+    <div className={`relative bg-card/50 backdrop-blur-sm border-r border-border/50 transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-full lg:w-64'
     }`}>
       <button
         onClick={() => {
           setIsCollapsed(!isCollapsed);
-          setActionMenuOpen(null);
+          handleCloseMenu();
         }}
-        className="absolute -top-4 left-3 z-20 p-1.5 rounded-lg bg-accent/20 hover:bg-accent/30 text-accent-foreground transition-colors"
+        className="absolute -top-2.5 left-3 z-20 p-1.5 rounded-lg bg-accent/20 hover:bg-accent/30 text-accent-foreground transition-colors"
         title={isCollapsed ? 'Expandir' : 'Colapsar'}
       >
-        <Menu className="w-4 h-4" />
+        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
       {!isCollapsed && (
@@ -113,7 +116,7 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
           >
             <div className="flex items-center gap-3">
               <Folder className="w-5 h-5" />
-              <span>General</span>
+              <span>Todas las colecciones</span>
             </div>
           </button>
 
@@ -146,8 +149,8 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
                   ref={(el) => {
                     menuButtonRefs.current[collection.id] = el;
                   }}
-                  onClick={(e) => handleMoreClick(e, collection.id)}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
+                  onClick={(e) => handleOpenMenu(collection, e)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
                   title="Más opciones"
                 >
                   <MoreVertical className="w-4 h-4" />
@@ -155,18 +158,6 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
               </div>
             );
           })}
-
-          {actionMenuOpen && (
-            <CollectionActionMenu
-              collection={collections.find(c => c.id === actionMenuOpen)!}
-              isOpen={actionMenuOpen !== null}
-              onClose={() => setActionMenuOpen(null)}
-              onEditName={() => handleEditName(collections.find(c => c.id === actionMenuOpen)!)}
-              onChangeColor={(color) => handleChangeColor(actionMenuOpen!, color)}
-              onDelete={() => handleDeleteCollection(actionMenuOpen!)}
-              position={actionMenuPosition}
-            />
-          )}
         </div>
 
         {collections.length === 0 && (
@@ -178,6 +169,7 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
         )}
       </div>
 
+      {/* Modales */}
       {isCreateModalOpen && (
         <CreateCollectionModal
           isOpen={isCreateModalOpen}
@@ -185,10 +177,25 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
         />
       )}
 
+      {menuCollection && (
+        <CollectionActionMenu
+          collection={menuCollection}
+          isOpen={true}
+          onClose={handleCloseMenu}
+          onEditName={() => {
+            setEditingCollection(menuCollection);
+            handleCloseMenu();
+          }}
+          onChangeColor={handleChangeColor}
+          onDelete={handleDeleteCollection}
+          position={menuPosition}
+        />
+      )}
+
       {editingCollection && (
         <EditCollectionNameModal
           collection={editingCollection}
-          isOpen={editingCollection !== null}
+          isOpen={true}
           onClose={() => setEditingCollection(null)}
           onUpdate={handleUpdateName}
         />

@@ -4,12 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   BookOpen, Gamepad2, Film, Tv, ArrowRight, Sparkles,
   Search, Plus, Star, BarChart3, Check, Zap, Shield, Clock
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { ParticleBackground } from '@/components/ui/ParticleBackground';
 
 if (typeof window !== 'undefined') {
@@ -17,7 +15,6 @@ if (typeof window !== 'undefined') {
 }
 
 export default function LandingPage() {
-  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const kanjiRef = useRef<HTMLDivElement>(null);
@@ -25,22 +22,10 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session) {
-        console.log('Landing: User has active session, redirecting to /home');
-        router.push('/home');
-        return;
-      }
-
-      console.log('Landing: No active session, staying on landing page');
-      setMounted(true);
-    };
-
-    checkSession();
-  }, [router]);
+    // El middleware ya maneja la redirección si hay sesión activa
+    // Solo marcamos como montado para iniciar animaciones
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
