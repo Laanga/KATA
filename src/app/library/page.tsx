@@ -14,6 +14,7 @@ import { AnimatedGrid } from "@/components/AnimatedGrid";
 import { FadeIn } from "@/components/FadeIn";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import CollectionsSidebar from "@/components/collections/CollectionsSidebar";
+import CollectionsFilter from "@/components/collections/CollectionsFilter";
 import type { MediaItem } from "@/types/media";
 
 export default function LibraryPage() {
@@ -49,6 +50,10 @@ export default function LibraryPage() {
     <>
       <div className="min-h-screen pb-24 md:pb-0">
         <Navbar />
+        <CollectionsFilter
+          selectedCollection={selectedCollection}
+          onCollectionSelect={setSelectedCollection}
+        />
 
         <div className="flex pt-14 sm:pt-16">
           {/* Sidebar de Colecciones */}

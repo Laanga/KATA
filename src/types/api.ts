@@ -71,3 +71,27 @@ export interface IGDBGame {
 export interface IGDBResponse {
   data: IGDBGame[];
 }
+
+export interface RAWGGame {
+  id: number;
+  name: string;
+  background_image: string | null;
+  rating: number | null;
+  genres?: Array<{
+    id: number;
+    name: string;
+  }>;
+  platforms?: Array<{
+    platform: {
+      id: number;
+      name: string;
+    };
+  }>;
+}
+
+export interface RAWGResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: RAWGGame[];
+}

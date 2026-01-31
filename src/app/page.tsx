@@ -19,17 +19,8 @@ export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const kanjiRef = useRef<HTMLDivElement>(null);
   const kanjiContainerRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // El middleware ya maneja la redirección si hay sesión activa
-    // Solo marcamos como montado para iniciar animaciones
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
     const ctx = gsap.context(() => {
       const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
@@ -240,9 +231,7 @@ export default function LandingPage() {
     }, containerRef);
 
     return () => ctx.revert();
-  }, [mounted]);
-
-  if (!mounted) return null;
+  }, []);
 
   const features = [
     {

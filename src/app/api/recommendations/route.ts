@@ -1,35 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIdentifier } from '@/lib/utils/rateLimit';
+import type { TMDBMovie, TMDBSeries, IGDBGame, RAWGGame, GoogleBookVolume } from '@/types/api';
 
-// Cache para el token de IGDB
-let igdbTokenCache: { token: string; expiresAt: number } | null = null;
+let igdbTokenCache: { token: string; expiresAt: number; fetchedAt: number } | null = null;
+let tokenPromise: Promise<string | null> | null = null;
 
 async function getIGDBToken(): Promise<string | null> {
   const clientId = process.env.IGDB_CLIENT_ID;
   const clientSecret = process.env.IGDB_CLIENT_SECRET;
 
-  if (!clientId || !clientSecret) return null;
+  if (!clientId || !clientSecret) {
+    console.error('[IGDB] Missing credentials');
+    return null;
+  }
 
-  if (igdbTokenCache && Date.now() < igdbTokenCache.expiresAt) {
+  const now = Date.now();
+
+  if (igdbTokenCache && now < igdbTokenCache.expiresAt - 300000) {
     return igdbTokenCache.token;
   }
 
+  if (tokenPromise) {
+    return tokenPromise;
+  }
+
+  tokenPromise = fetchNewToken(clientId, clientSecret, now);
+
+  try {
+    const token = await tokenPromise;
+    return token;
+  } finally {
+    tokenPromise = null;
+  }
+}
+
+async function fetchNewToken(
+  clientId: string,
+  clientSecret: string,
+  now: number
+): Promise<string | null> {
   try {
     const response = await fetch(
       `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`,
-      { method: 'POST' }
+      {
+        method: 'POST',
+        signal: AbortSignal.timeout(10000),
+      }
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error(`[IGDB] Token fetch failed: ${response.status} ${response.statusText}`);
+      return null;
+    }
 
     const data = await response.json();
+    const expiresAt = now + (data.expires_in - 300) * 1000;
+
     igdbTokenCache = {
       token: data.access_token,
-      expiresAt: Date.now() + (data.expires_in - 3600) * 1000,
+      expiresAt,
+      fetchedAt: now,
     };
 
+    console.log(`[IGDB] New token cached, expires at ${new Date(expiresAt).toISOString()}`);
+
     return data.access_token;
-  } catch {
+  } catch (error) {
+    console.error('[IGDB] Error fetching token:', error);
     return null;
   }
 }
@@ -102,13 +139,14 @@ async function fetchTMDBRecommendations(
     const data = await response.json();
     
     const filteredResults = (data.results || [])
-      .filter((item: any) => {
-        const title = (item.title || item.name || '').toLowerCase();
-        return !excludeTitles.some(excluded => 
-          title.includes(excluded) || excluded.includes(title)
+      .filter((item: TMDBMovie | TMDBSeries) => {
+        const title = 'title' in item ? item.title : item.name;
+        const lowerTitle = (title || '').toLowerCase();
+        return !excludeTitles.some(excluded =>
+          lowerTitle.includes(excluded) || excluded.includes(lowerTitle)
         );
       })
-      .filter((item: any) => item.poster_path)
+      .filter((item: TMDBMovie | TMDBSeries) => item.poster_path !== null)
       .slice(0, 12);
 
     return NextResponse.json({
@@ -148,7 +186,7 @@ async function fetchIGDBRecommendations(
   genres: string,
   excludeTitles: string[],
   daySeed: number
-): Promise<any[]> {
+): Promise<IGDBGame[]> {
   const clientId = process.env.IGDB_CLIENT_ID;
   const accessToken = await getIGDBToken();
 
@@ -200,9 +238,9 @@ async function fetchIGDBRecommendations(
     const data = await response.json();
     
     return (data || [])
-      .filter((game: any) => {
+      .filter((game: IGDBGame) => {
         const title = (game.name || '').toLowerCase();
-        return !excludeTitles.some(excluded => 
+        return !excludeTitles.some(excluded =>
           title.includes(excluded) || excluded.includes(title)
         );
       })
@@ -216,7 +254,7 @@ async function fetchRAWGRecommendations(
   genres: string,
   excludeTitles: string[],
   daySeed: number
-): Promise<any[]> {
+): Promise<RAWGGame[]> {
   const apiKey = process.env.RAWG_API_KEY;
 
   // Mapeo de géneros para RAWG (slugs)
@@ -245,21 +283,13 @@ async function fetchRAWGRecommendations(
     const data = await response.json();
     
     return (data.results || [])
-      .filter((game: any) => game.background_image)
-      .filter((game: any) => {
+      .filter((game: RAWGGame) => game.background_image !== null)
+      .filter((game: RAWGGame) => {
         const title = (game.name || '').toLowerCase();
-        return !excludeTitles.some(excluded => 
+        return !excludeTitles.some(excluded =>
           title.includes(excluded) || excluded.includes(title)
         );
       })
-      .map((game: any) => ({
-        id: game.id,
-        name: game.name,
-        cover: { url: game.background_image },
-        total_rating: game.rating ? game.rating * 20 : null,
-        genres: game.genres?.map((g: any) => ({ name: g.name })) || [],
-        platforms: game.platforms?.map((p: any) => ({ name: p.platform.name })) || [],
-      }))
       .slice(0, 12);
   } catch {
     return [];
@@ -317,24 +347,20 @@ async function fetchBookRecommendations(
 
     // Filtrar y formatear
     const filteredResults = allResults
-      .filter((book: any) => {
+      .filter((book: GoogleBookVolume) => {
         const title = (book.volumeInfo?.title || '').toLowerCase();
-        return !excludeTitles.some(excluded => 
+        return !excludeTitles.some(excluded =>
           title.includes(excluded) || excluded.includes(title)
         );
       })
-      .filter((book: any) => 
-        book.volumeInfo?.imageLinks?.thumbnail || 
+      .filter((book: GoogleBookVolume) =>
+        book.volumeInfo?.imageLinks?.thumbnail ||
         book.volumeInfo?.imageLinks?.smallThumbnail
       )
-      .filter((book: any, index: number, self: any[]) => 
+      .filter((book: GoogleBookVolume, index: number, self: GoogleBookVolume[]) =>
         index === self.findIndex(b => b.id === book.id)
       )
-      .slice(0, 12)
-      .map((book: any) => ({
-        id: book.id,
-        volumeInfo: book.volumeInfo,
-      }));
+      .slice(0, 12);
 
     return NextResponse.json({
       results: filteredResults,

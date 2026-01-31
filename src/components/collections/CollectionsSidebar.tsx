@@ -150,7 +150,7 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
                     menuButtonRefs.current[collection.id] = el;
                   }}
                   onClick={(e) => handleOpenMenu(collection, e)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
                   title="Más opciones"
                 >
                   <MoreVertical className="w-4 h-4" />
