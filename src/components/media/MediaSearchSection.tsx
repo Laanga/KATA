@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Loader2, Plus, CheckCircle } from 'lucide-react';
 import { MediaType, MediaItem } from '@/types/media';
 import toast from 'react-hot-toast';
@@ -86,7 +86,8 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editItem, setEditItem] = useState<MediaItem | null>(null);
-    const [searchCache, setSearchCache] = useState<Map<string, SearchResult[]>>(new Map());
+    const searchCacheRef = useRef<Map<string, SearchResult[]>>(new Map());
+    const lastSearchQueryRef = useRef<string>('');
 
     const isInLibrary = useCallback((resultTitle: string | undefined | null): boolean => {
         if (!resultTitle || typeof resultTitle !== 'string') {
@@ -101,32 +102,35 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     }, [items, type]);
 
     const checkCache = useCallback((query: string): SearchResult[] | null => {
-        const cached = searchCache.get(query.toLowerCase());
+        const cached = searchCacheRef.current.get(query.toLowerCase());
         if (cached) return cached;
         return null;
-    }, [searchCache]);
+    }, []);
 
     const addToCache = useCallback((query: string, results: SearchResult[]) => {
-        const newCache = new Map(searchCache);
-        newCache.set(query.toLowerCase(), results);
-        setSearchCache(newCache);
+        const queryLower = query.toLowerCase();
+        searchCacheRef.current.set(queryLower, results);
 
         setTimeout(() => {
-            setSearchCache((prev) => {
-                const updatedCache = new Map(prev);
-                updatedCache.delete(query.toLowerCase());
-                return updatedCache;
-            });
+            searchCacheRef.current.delete(queryLower);
         }, 5 * 60 * 1000);
-    }, [searchCache]);
+    }, []);
 
     const handleSearch = useCallback(async (query: string) => {
-        if (!query.trim()) {
+        const trimmedQuery = query.trim();
+        if (!trimmedQuery) {
             setSearchResults([]);
+            lastSearchQueryRef.current = '';
             return;
         }
 
-        const cached = checkCache(query);
+        if (trimmedQuery === lastSearchQueryRef.current) {
+            return;
+        }
+
+        lastSearchQueryRef.current = trimmedQuery;
+
+        const cached = checkCache(trimmedQuery);
         if (cached) {
             setSearchResults(cached);
             return;
@@ -144,7 +148,14 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                 case 'BOOK': endpoint = '/api/search/books'; break;
             }
 
-            const res = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            const res = await fetch(`${endpoint}?q=${encodeURIComponent(trimmedQuery)}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
             const data = await res.json();
 
             if (data.error) {
@@ -198,9 +209,14 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                 }));
             }
 
-            setSearchResults(mappedResults.slice(0, 12));
-            addToCache(query, mappedResults.slice(0, 12));
+            const finalResults = mappedResults.slice(0, 12);
+            setSearchResults(finalResults);
+            addToCache(trimmedQuery, finalResults);
         } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                console.warn('Search request timed out');
+                return;
+            }
             console.error('Search failed', error);
             toast.error('Error al buscar elementos');
         } finally {
@@ -211,12 +227,15 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
     const debouncedSearch = useDebounce((query: string) => {
         if (query.length >= 2) {
             handleSearch(query);
+        } else if (query.length === 0) {
+            setSearchResults([]);
+            lastSearchQueryRef.current = '';
         }
     }, 500);
 
     useEffect(() => {
         debouncedSearch(searchQuery);
-    }, [searchQuery, debouncedSearch]);
+    }, [searchQuery]);
 
     const handleSelectResult = (result: SearchResult) => {
         if (!result || !result.title) {
@@ -279,6 +298,7 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                                          src={result.coverUrl}
                                          alt={result.title || 'Resultado de búsqueda'}
                                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                         crossOrigin="anonymous"
                                      />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">

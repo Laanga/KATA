@@ -14,7 +14,11 @@ export async function GET(request: NextRequest) {
         { next: { revalidate: 3600 } }
       );
 
-      if (!response.ok) throw new Error('Google Books API request failed');
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error(`Google Books API error (${response.status}):`, errorText);
+        throw new Error(`Google Books API request failed: ${response.status}`);
+      }
 
       const data = await response.json();
 

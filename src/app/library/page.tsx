@@ -146,6 +146,7 @@ export default function LibraryPage() {
                           src={item.coverUrl}
                           alt={item.title}
                           className="h-24 w-16 rounded object-cover"
+                          crossOrigin="anonymous"
                         />
                         <div className="flex-1">
                           <h3 className="font-bold text-white mb-1">{item.title}</h3>
