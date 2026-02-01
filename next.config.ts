@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } from "next/constants";
+import withPWA from "@ducanh2912/next-pwa";
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
+  turbopack: {}, // Silenciar warning de Turbopack, usamos webpack para PWA
   images: {
     remotePatterns: [
       // APIs de medios
@@ -31,8 +34,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: isDevelopment 
-              ? 'max-age=300' 
+            value: isDevelopment
+              ? 'max-age=300'
               : 'max-age=63072000; includeSubDomains; preload'
           },
           {
@@ -68,6 +71,7 @@ const nextConfig: NextConfig = {
               "form-action 'self'",
               "base-uri 'self'",
               "manifest-src 'self'",
+              "worker-src 'self' blob:",
             ].join('; ')
           },
         ],
@@ -76,4 +80,62 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// PWA configuration
+export default (phase: string) => {
+  // Only enable PWA in production builds
+  if (phase === PHASE_DEVELOPMENT_SERVER) {
+    return nextConfig;
+  }
+
+  const pwaConfig = withPWA({
+    dest: "public",
+    disable: false,
+    register: true,
+    extendDefaultRuntimeCaching: true,
+    workboxOptions: {
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
+          handler: "NetworkOnly",
+          options: {
+            cacheName: "tmdb-images",
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 60 * 24, // 24 hours
+            },
+          },
+        },
+        {
+          urlPattern: /^https:\/\/images\.igdb\.com\/.*/i,
+          handler: "NetworkOnly",
+          options: {
+            cacheName: "igdb-images",
+          },
+        },
+        {
+          urlPattern: /^https:\/\/media\.rawg\.io\/.*/i,
+          handler: "NetworkOnly",
+          options: {
+            cacheName: "rawg-images",
+          },
+        },
+        {
+          urlPattern: /^https:\/\/books\.google\.com\/.*/i,
+          handler: "NetworkOnly",
+          options: {
+            cacheName: "google-books-images",
+          },
+        },
+        {
+          urlPattern: /^https:\/\/covers\.openlibrary\.org\/.*/i,
+          handler: "NetworkOnly",
+          options: {
+            cacheName: "openlibrary-images",
+          },
+        },
+      ],
+    },
+  })(nextConfig);
+
+  return pwaConfig;
+};

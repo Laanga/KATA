@@ -72,6 +72,17 @@ migracion-*.sql
 *.swo
 
 # Documentation files
-AGENTS.md
+# AGENTS.md - Keep in repo for coding agents
 MVP.md
 MVP_TODO.md
+
+# PWA Documentation (optional - comment out to keep in repo)
+PWA_*.md
+PRODUCTION_READY_STATUS.md
+
+# PWA Generated files
+/public/sw.js
+/public/workbox-*.js
+
+# Temporary/Agent files
+/agents/
