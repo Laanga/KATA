@@ -33,7 +33,6 @@ export function ActivityFeed() {
                     src={item.coverUrl}
                     alt={item.title}
                     className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-300"
-                    crossOrigin="anonymous"
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-xs">?</div>

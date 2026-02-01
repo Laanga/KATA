@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images-na.ssl-images-amazon.com' },
       { protocol: 'https', hostname: 'm.media-amazon.com' },
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      // Google user content (avatares de Google OAuth)
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
 
@@ -64,7 +66,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://*.supabase.co https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org",
+              "img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://*.supabase.co https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org https://lh3.googleusercontent.com",
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://api.rawg.io https://api.igdb.com https://openlibrary.org https://*.vercel-analytics.com",
               "frame-src 'none'",

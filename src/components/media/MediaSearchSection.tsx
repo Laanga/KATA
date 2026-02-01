@@ -298,7 +298,6 @@ export function MediaSearchSection({ type, title, description, showSearchHint = 
                                          src={result.coverUrl}
                                          alt={result.title || 'Resultado de búsqueda'}
                                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                         crossOrigin="anonymous"
                                      />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
