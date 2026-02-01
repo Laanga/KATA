@@ -324,6 +324,7 @@ export default function ProfilePage() {
                             src={item.coverUrl}
                             alt={item.title}
                             className="h-16 w-12 rounded object-cover"
+                            crossOrigin="anonymous"
                           />
                           <div className="flex-1">
                             <h3 className="font-semibold text-white">{item.title}</h3>
@@ -360,6 +361,7 @@ export default function ProfilePage() {
                                 src={item.coverUrl}
                                 alt={item.title}
                                 className="h-20 w-14 rounded object-cover"
+                                crossOrigin="anonymous"
                               />
                               <div className="flex-1">
                                 <h3 className="font-bold text-white mb-1">{item.title}</h3>

@@ -108,6 +108,9 @@ export default (phase: string) => {
             cacheableResponse: {
               statuses: [0, 200],
             },
+            fetchOptions: {
+              credentials: "omit",
+            },
           },
         },
         {
@@ -121,6 +124,9 @@ export default (phase: string) => {
             },
             cacheableResponse: {
               statuses: [0, 200],
+            },
+            fetchOptions: {
+              credentials: "omit",
             },
           },
         },
@@ -136,6 +142,9 @@ export default (phase: string) => {
             cacheableResponse: {
               statuses: [0, 200],
             },
+            fetchOptions: {
+              credentials: "omit",
+            },
           },
         },
         {
@@ -150,6 +159,9 @@ export default (phase: string) => {
             cacheableResponse: {
               statuses: [0, 200],
             },
+            fetchOptions: {
+              credentials: "omit",
+            },
           },
         },
         {
@@ -163,6 +175,9 @@ export default (phase: string) => {
             },
             cacheableResponse: {
               statuses: [0, 200],
+            },
+            fetchOptions: {
+              credentials: "omit",
             },
           },
         },
