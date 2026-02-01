@@ -158,7 +158,6 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
             className="object-cover"
             sizes="176px"
             unoptimized={image.includes('rawg.io') || image.includes('igdb.com') || image.includes('openlibrary.org')}
-            crossOrigin="anonymous"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-secondary)] flex items-center justify-center">

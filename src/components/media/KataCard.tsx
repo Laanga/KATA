@@ -148,7 +148,6 @@ export function KataCard({ item }: KataCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            crossOrigin="anonymous"
           />
         </div>
 
