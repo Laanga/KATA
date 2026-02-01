@@ -93,44 +93,77 @@ export default (phase: string) => {
     register: true,
     extendDefaultRuntimeCaching: true,
     workboxOptions: {
+      skipWaiting: true,
+      clientsClaim: true,
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
-          handler: "NetworkOnly",
+          handler: "StaleWhileRevalidate",
           options: {
             cacheName: "tmdb-images",
             expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 48,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
             },
           },
         },
         {
           urlPattern: /^https:\/\/images\.igdb\.com\/.*/i,
-          handler: "NetworkOnly",
+          handler: "StaleWhileRevalidate",
           options: {
             cacheName: "igdb-images",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 48,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
           },
         },
         {
           urlPattern: /^https:\/\/media\.rawg\.io\/.*/i,
-          handler: "NetworkOnly",
+          handler: "StaleWhileRevalidate",
           options: {
             cacheName: "rawg-images",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 48,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
           },
         },
         {
           urlPattern: /^https:\/\/books\.google\.com\/.*/i,
-          handler: "NetworkOnly",
+          handler: "StaleWhileRevalidate",
           options: {
             cacheName: "google-books-images",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 48,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
           },
         },
         {
           urlPattern: /^https:\/\/covers\.openlibrary\.org\/.*/i,
-          handler: "NetworkOnly",
+          handler: "StaleWhileRevalidate",
           options: {
             cacheName: "openlibrary-images",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 48,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
           },
         },
       ],
