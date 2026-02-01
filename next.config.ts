@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://*.supabase.co https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org https://lh3.googleusercontent.com",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://api.rawg.io https://api.igdb.com https://openlibrary.org https://*.vercel-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://api.rawg.io https://api.igdb.com https://openlibrary.org https://*.vercel-analytics.com https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://lh3.googleusercontent.com",
               "frame-src 'none'",
               "form-action 'self'",
               "base-uri 'self'",
