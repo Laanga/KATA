@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/next";
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto",
   weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
   display: 'swap',
 });
 
@@ -73,7 +74,13 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  manifest: "/manifest.json", // Opcional: para PWA
+  manifest: "/manifest.json",
+};
+
+export const viewport = {
+  themeColor: "#10b981",
+  width: "device-width" as const,
+  initialScale: 1,
 };
 
 export default function RootLayout({

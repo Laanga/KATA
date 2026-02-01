@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams, origin: requestOrigin } = new URL(request.url);
   const code = searchParams.get('code');
   const type = searchParams.get('type');
   const next = searchParams.get('next') ?? '/home';
@@ -10,77 +10,83 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
 
-    // Exchange code for session - this is ONLY Supabase call we make
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
+      console.error('[Auth] Code exchange failed:', error);
+      return NextResponse.redirect(`${requestOrigin}/login?error=${encodeURIComponent(error.message)}`);
     }
 
-    // Get user info from session data (no additional Supabase call!)
     const user = data.user;
     const emailConfirmed = user?.email_confirmed_at !== null;
     const hasUsername = user?.user_metadata?.username;
 
-    // Handle Google avatar - only if user signed up with Google
     if (user && user.identities?.some(id => id.provider === 'google')) {
       const googleIdentity = user.identities.find(id => id.provider === 'google');
       const googleAvatar = googleIdentity?.identity_data?.avatar_url;
 
-      // Validar que sea una URL de imagen válida
       const isValidImageUrl = (url: string | undefined | null) => {
-        if (!url || !url.startsWith('https://')) return false;
-        const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
-        return validExtensions.some(ext => url.toLowerCase().includes(ext));
+        if (!url) return false;
+        return url.startsWith('https://') || url.startsWith('http://');
       };
 
-      // Si hay una URL válida de Google, usarla
       if (isValidImageUrl(googleAvatar)) {
         await supabase.auth.updateUser({
           data: { avatar_url: googleAvatar }
         });
-      } else {
-        // No hay avatar válido de Google, establecer null para mostrar ícono por defecto
-        await supabase.auth.updateUser({
-          data: { avatar_url: null }
-        });
       }
     }
 
-    // Determine redirect based on user state
     let redirectUrl = next;
 
     if (!emailConfirmed) {
-      // Email not confirmed -> go to verify-email
       redirectUrl = '/verify-email';
     } else if (!hasUsername) {
-      // Email confirmed but no username -> go to choose-username
       redirectUrl = '/choose-username';
     } else if (type === 'recovery') {
-      // Password recovery -> go to reset-password
       redirectUrl = '/reset-password';
     } else if (type === 'signup' && emailConfirmed && hasUsername) {
-      // Completed signup -> go to dashboard
       redirectUrl = '/home';
     }
 
-    // Determine correct origin for redirect
-    const forwardedHost = request.headers.get('x-forwarded-host');
-    const isLocalEnv = process.env.NODE_ENV === 'development';
+    const fullRedirectUrl = buildRedirectUrl(request, redirectUrl);
 
-    let fullRedirectUrl: string;
-
-    if (isLocalEnv) {
-      fullRedirectUrl = `${origin}${redirectUrl}`;
-    } else if (forwardedHost) {
-      fullRedirectUrl = `https://${forwardedHost}${redirectUrl}`;
-    } else {
-      fullRedirectUrl = `${origin}${redirectUrl}`;
-    }
+    console.log(`[Auth] Redirecting to: ${fullRedirectUrl}`);
 
     return NextResponse.redirect(fullRedirectUrl);
   }
 
-  // No code parameter - shouldn't happen, but handle gracefully
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
+  return NextResponse.redirect(`${requestOrigin}/login?error=no_code`);
+}
+
+function buildRedirectUrl(request: Request, path: string): string {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (isDevelopment) {
+    const origin = new URL(request.url).origin;
+    return `${origin}${path}`;
+  }
+
+  if (siteUrl) {
+    const baseUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${cleanPath}`;
+  }
+
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+
+  if (forwardedHost) {
+    const protocol = forwardedProto || 'https';
+    return `${protocol}://${forwardedHost}${path}`;
+  }
+
+  console.warn(
+    '[Auth] Missing NEXT_PUBLIC_SITE_URL and x-forwarded-host. ' +
+    'Redirects may fail. Please configure NEXT_PUBLIC_SITE_URL.'
+  );
+
+  const origin = new URL(request.url).origin;
+  return `${origin}${path}`;
 }
