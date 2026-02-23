@@ -4,6 +4,24 @@ import withPWA from "@ducanh2912/next-pwa";
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+function getHostnameFromUrl(value?: string): string | null {
+  if (!value) return null;
+
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const supabaseHostname = getHostnameFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const supabaseRemotePattern = supabaseHostname
+  ? { protocol: 'https' as const, hostname: supabaseHostname }
+  : { protocol: 'https' as const, hostname: '*.supabase.co' };
+const supabaseCspOrigin = supabaseHostname
+  ? `https://${supabaseHostname}`
+  : 'https://*.supabase.co';
+
 const nextConfig: NextConfig = {
   turbopack: {}, // Silenciar warning de Turbopack, usamos webpack para PWA
   images: {
@@ -15,7 +33,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'covers.openlibrary.org' },
       { protocol: 'https', hostname: 'media.rawg.io' },
       // Supabase Storage (para avatares)
-      { protocol: 'https', hostname: '*.supabase.co' },
+      supabaseRemotePattern,
       // Otras fuentes de imágenes
       { protocol: 'https', hostname: 'images-na.ssl-images-amazon.com' },
       { protocol: 'https', hostname: 'm.media-amazon.com' },
@@ -66,9 +84,9 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://*.supabase.co https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org https://lh3.googleusercontent.com",
+              `img-src 'self' data: https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io ${supabaseCspOrigin} https://images-na.ssl-images-amazon.com https://m.media-amazon.com https://upload.wikimedia.org https://lh3.googleusercontent.com`,
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://api.rawg.io https://api.igdb.com https://openlibrary.org https://*.vercel-analytics.com https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://lh3.googleusercontent.com",
+              `connect-src 'self' ${supabaseCspOrigin} https://api.themoviedb.org https://api.rawg.io https://api.igdb.com https://openlibrary.org https://*.vercel-analytics.com https://image.tmdb.org https://images.igdb.com https://books.google.com https://covers.openlibrary.org https://media.rawg.io https://lh3.googleusercontent.com`,
               "frame-src 'none'",
               "form-action 'self'",
               "base-uri 'self'",
