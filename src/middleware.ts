@@ -3,18 +3,22 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 function validateEnvVars(): {
   supabaseUrl: string;
-  supabaseAnonKey: string;
+  supabasePublicKey: string;
   isValid: boolean;
 } {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabasePublicKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublicKey) {
     if (process.env.NODE_ENV === 'production') {
       console.error(
         '[CRITICAL] Missing required environment variables:',
         !supabaseUrl ? '- NEXT_PUBLIC_SUPABASE_URL' : null,
-        !supabaseAnonKey ? '- NEXT_PUBLIC_SUPABASE_ANON_KEY' : null,
+        !supabasePublicKey
+          ? '- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY fallback)'
+          : null,
       );
       throw new Error(
         'Server misconfigured: Missing Supabase environment variables. ' +
@@ -31,8 +35,8 @@ function validateEnvVars(): {
 
   return {
     supabaseUrl: supabaseUrl || '',
-    supabaseAnonKey: supabaseAnonKey || '',
-    isValid: !!(supabaseUrl && supabaseAnonKey),
+    supabasePublicKey: supabasePublicKey || '',
+    isValid: !!(supabaseUrl && supabasePublicKey),
   };
 }
 
@@ -67,7 +71,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(
     envConfig.supabaseUrl,
-    envConfig.supabaseAnonKey,
+    envConfig.supabasePublicKey,
     {
       cookies: {
         getAll() {
