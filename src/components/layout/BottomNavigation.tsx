@@ -8,10 +8,6 @@ import { useState } from 'react';
 const allowedRoutes = [
   '/home',
   '/library',
-  '/books',
-  '/movies',
-  '/series',
-  '/games',
   '/search',
   '/discover',
   '/profile',

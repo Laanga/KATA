@@ -106,7 +106,7 @@ export function CollectionActionMenu({
   const menuContent = (
     <div
       ref={containerRef}
-      className="fixed w-64 bg-[var(--bg-secondary)] rounded-xl border border-white/10 shadow-2xl z-[100] overflow-hidden backdrop-blur-xl"
+      className="liquid-glass fixed w-64 rounded-2xl border border-white/10 z-[100] overflow-hidden"
       style={{
         top: position?.top ? `${position.top}px` : 'auto',
         left: position?.right ? `calc(100vw - ${position.right}px + 12px)` : 'auto',
@@ -194,7 +194,7 @@ export function CollectionActionMenu({
 
   const colorPickerContent = isColorPickerOpen && colorPickerPosition ? (
     <div
-      className="fixed w-44 bg-[var(--bg-tertiary)] rounded-lg border border-white/5 shadow-2xl z-[150] p-2 animate-in fade-in duration-200"
+      className="liquid-glass-soft fixed w-44 rounded-xl border border-white/10 z-[150] p-2 animate-in fade-in duration-200"
       style={{
         top: `${colorPickerPosition.top}px`,
         left: `${colorPickerPosition.left}px`,

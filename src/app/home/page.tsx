@@ -1,6 +1,5 @@
 'use client';
 
-import { Navbar } from "@/components/layout/Navbar";
 import { TypeComparison } from "@/components/dashboard/TypeComparison";
 import { RatingDistribution } from "@/components/dashboard/RatingDistribution";
 import { TopRatedItems } from "@/components/dashboard/TopRatedItems";
@@ -175,7 +174,6 @@ export default function HomePage() {
   if (!isInitialized) {
     return (
       <>
-        <Navbar />
         {initError ? (
           <div className="min-h-screen flex items-center justify-center px-4">
             <div className="text-center max-w-md">
@@ -208,8 +206,6 @@ export default function HomePage() {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
-
-        <Navbar />
 
         <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 max-w-7xl relative z-10">
         <header ref={headerRef} className="mb-8 sm:mb-12 md:mb-16">

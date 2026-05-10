@@ -75,7 +75,7 @@ export function FilterBar() {
         value={filters.genre}
         onChange={(e) => setFilters({ genre: e.target.value })}
         className="
-          h-8 appearance-none rounded-lg border border-white/10 bg-[var(--bg-secondary)] 
+          liquid-glass-soft h-8 appearance-none rounded-full border border-white/10
           pl-3 pr-8 text-xs text-[var(--text-primary)] transition-all
           hover:border-white/20 focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]
           cursor-pointer
@@ -89,7 +89,7 @@ export function FilterBar() {
       <ChevronDown size={14} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
     </div>
   ) : (
-    <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-lg">
+    <div className="liquid-glass-soft flex gap-1 p-1 rounded-full border border-white/10">
       {[
         { value: 'ALL', label: 'Todos' },
         ...allGenres.map(genre => ({ value: genre, label: genre }))
@@ -98,10 +98,10 @@ export function FilterBar() {
           key={option.value}
           onClick={() => setFilters({ genre: option.value })}
           className={`
-            px-3 py-1.5 rounded-md text-xs font-medium transition-all
+            px-3 py-1.5 rounded-full text-xs font-medium transition-all
             ${filters.genre === option.value
-              ? 'bg-white/10 text-white'
-              : 'text-[var(--text-tertiary)] hover:text-white'
+              ? 'liquid-glass-active text-[var(--accent-primary)]'
+              : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
             }
           `}
         >
@@ -116,20 +116,23 @@ export function FilterBar() {
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium text-[var(--text-secondary)]">Filtros:</span>
 
-        <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-lg">
+        <div className="liquid-glass-soft flex gap-1 p-1 rounded-full border border-white/10">
           {(['ALL', 'MOVIE', 'SERIES', 'BOOK', 'GAME'] as (MediaType | 'ALL')[]).map((type) => (
             <button
               key={type}
               onClick={() => setFilters({ type: type as MediaType | 'ALL' })}
               className={`
-                relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
-                ${filters.type === type 
-                  ? 'text-white shadow-lg' 
-                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                ${filters.type === type
+                  ? 'text-white shadow-lg'
+                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-white/5'
                 }
               `}
               style={{
-                backgroundColor: filters.type === type && type !== 'ALL' ? TYPE_COLORS[type as MediaType] : 'transparent',
+                backgroundColor: filters.type === type && type !== 'ALL' ? TYPE_COLORS[type as MediaType] : undefined,
+                boxShadow: filters.type === type && type !== 'ALL'
+                  ? `inset 0 1px 0 rgba(255,255,255,0.18), 0 0 18px ${TYPE_COLORS[type as MediaType]}55`
+                  : undefined,
               }}
             >
               {typeConfig[type].icon}
@@ -138,16 +141,16 @@ export function FilterBar() {
           ))}
         </div>
 
-        <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-lg">
+        <div className="liquid-glass-soft flex gap-1 p-1 rounded-full border border-white/10">
           {statusConfig.map((option) => (
             <button
               key={option.value}
               onClick={() => setFilters({ status: option.value as GroupedStatus | 'ALL' })}
               className={`
-                px-3 py-1.5 rounded-md text-xs font-medium transition-all
+                px-3 py-1.5 rounded-full text-xs font-medium transition-all
                 ${filters.status === option.value
-                  ? 'bg-white/10 text-white'
-                  : 'text-[var(--text-tertiary)] hover:text-white'
+                  ? 'liquid-glass-active text-[var(--accent-primary)]'
+                  : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
                 }
               `}
             >
@@ -156,16 +159,16 @@ export function FilterBar() {
           ))}
         </div>
 
-        <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-lg">
+        <div className="liquid-glass-soft flex gap-1 p-1 rounded-full border border-white/10">
           {ratingConfig.map((option) => (
             <button
               key={option.value}
               onClick={() => setFilters({ rating: option.value as 'ALL' | 'HIGH' | 'MID' | 'LOW' })}
               className={`
-                flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all
+                flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all
                 ${filters.rating === option.value
-                  ? 'bg-white/10 text-white'
-                  : 'text-[var(--text-tertiary)] hover:text-white'
+                  ? 'liquid-glass-active text-[var(--accent-primary)]'
+                  : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
                 }
               `}
             >
@@ -180,7 +183,7 @@ export function FilterBar() {
         {hasActiveFilters && (
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[var(--bg-secondary)] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-white"
+            className="liquid-glass-soft flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-white"
           >
             <X size={12} />
             Restablecer

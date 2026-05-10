@@ -107,7 +107,7 @@ export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
 // Card skeleton for media items
 export function MediaCardSkeleton() {
   return (
-    <div className="aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] border border-white/5 relative">
+    <div className="liquid-glass-soft aspect-[2/3] w-full overflow-hidden rounded-lg border border-white/10 relative">
       <Skeleton className="h-full w-full" variant="kanji" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
     </div>
@@ -151,7 +151,7 @@ export function DashboardMetricsSkeleton() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden">
+        <div key={i} className="liquid-glass-soft border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <Skeleton variant="kanji" className="h-full w-full" />
           </div>
@@ -294,26 +294,34 @@ export function DashboardSkeleton() {
 // Library Page Skeleton
 export function LibrarySkeleton() {
   return (
-    <div className="min-h-screen pb-20">
-      <div className="container mx-auto px-4 pt-24">
+    <div className="min-h-screen pb-20 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
+      </div>
+
+      <div className="container mx-auto px-4 pt-24 relative z-10">
         {/* Header Skeleton */}
-        <div className="mb-8">
-          <Skeleton className="h-8 w-48 mb-2" variant="text" />
-          <Skeleton className="h-5 w-32 mb-6" variant="text" />
-          <DashboardMetricsSkeleton />
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <Skeleton className="h-12 w-56 mb-3" variant="text" />
+            <Skeleton className="h-4 w-44" variant="text" />
+          </div>
+          <Skeleton className="h-9 w-28 rounded-full" variant="rectangular" />
         </div>
 
-        {/* Actions Skeleton */}
-        <div className="flex justify-end gap-2 mb-6">
-          <Skeleton className="h-10 w-24" variant="rectangular" />
-          <Skeleton className="h-10 w-10 rounded-lg" variant="rectangular" />
-          <Skeleton className="h-10 w-10 rounded-lg" variant="rectangular" />
+        {/* Metrics */}
+        <DashboardMetricsSkeleton />
+
+        {/* Toolbar Skeleton */}
+        <div className="flex justify-end mb-4">
+          <Skeleton className="h-9 w-44 rounded-full" variant="rectangular" />
         </div>
 
         {/* Filter Bar Skeleton */}
-        <div className="flex flex-wrap gap-4 mb-8 pb-4 border-b border-white/10">
+        <div className="flex flex-wrap gap-3 mb-8 pb-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-32 rounded-md" variant="rectangular" />
+            <Skeleton key={i} className="h-10 w-36 rounded-full" variant="rectangular" />
           ))}
         </div>
 

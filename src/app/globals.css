@@ -154,6 +154,42 @@ body {
   text-wrap: balance;
 }
 
+/* ============================================
+   Liquid Glass Design Language
+   ============================================
+   Sistema de superficies translúcidas tipo iOS/macOS.
+   - liquid-glass: superficies prominentes (navbar, search input, modal).
+   - liquid-glass-soft: superficies secundarias (filter groups, pills).
+   - liquid-glass-active: estado activo con glow esmeralda.
+   Pensadas para usarse junto a `border border-white/10` y `rounded-*`.
+*/
+@utility liquid-glass {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.55) 0%, rgba(10, 10, 10, 0.45) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+@utility liquid-glass-soft {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(10, 10, 10, 0.3) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@utility liquid-glass-active {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.08) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 185, 129, 0.28),
+    0 0 18px rgba(16, 185, 129, 0.18);
+}
+
 /* Prevent horizontal overflow on landing */
 .landing-container {
   overflow-x: hidden;

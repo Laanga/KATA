@@ -152,10 +152,10 @@ export function KataCard({ item }: KataCardProps) {
         </div>
 
         <div
-          className="absolute top-2 right-2 h-2 w-2 rounded-full shadow-lg animate-pulse"
-          style={{ 
+          className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full animate-pulse"
+          style={{
             backgroundColor: TYPE_COLORS[item.type],
-            boxShadow: `0 0 10px ${TYPE_COLORS[item.type]}`
+            boxShadow: `0 0 0 4px ${TYPE_COLORS[item.type]}26, 0 0 14px ${TYPE_COLORS[item.type]}`,
           }}
         />
 
@@ -188,14 +188,14 @@ export function KataCard({ item }: KataCardProps) {
 
           <div className="flex items-center justify-between card-actions translate-y-2 opacity-0">
             <button
-              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
+              className="liquid-glass-soft rounded-full border border-white/15 p-2 text-white hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] transition-all hover:scale-110 active:scale-95 touch-target-mobile"
               onClick={handleEdit}
               aria-label="Editar"
             >
               <Edit size={16} />
             </button>
             <button
-              className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
+              className="liquid-glass-soft rounded-full border border-white/15 p-2 text-white hover:border-white/30 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
               onClick={() => setShowActions(!showActions)}
               aria-label="Más opciones"
             >
@@ -204,10 +204,10 @@ export function KataCard({ item }: KataCardProps) {
           </div>
 
           {showActions && (
-            <div className="absolute bottom-12 right-4 rounded-lg border border-white/10 bg-[var(--bg-primary)] p-2 shadow-xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="liquid-glass absolute bottom-12 right-4 rounded-xl border border-white/10 p-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
               <button
                 onClick={handleDeleteClick}
-                className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors touch-target-mobile"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors touch-target-mobile"
               >
                 <Trash2 size={16} />
                 Eliminar

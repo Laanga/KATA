@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Navbar } from "@/components/layout/Navbar";
 import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
 import { KataCard } from "@/components/media/KataCard";
 import { useMediaStore } from "@/lib/store";
@@ -114,7 +113,6 @@ export default function ProfilePage() {
     return (
       <>
         <div className="min-h-screen pb-24 md:pb-0">
-          <Navbar />
           <main className="container mx-auto px-4 pt-32 max-w-5xl">
             <ProfileSkeleton />
           </main>
@@ -126,8 +124,6 @@ export default function ProfilePage() {
    return (
     <>
       <div className="min-h-screen pb-24 md:pb-0">
-        <Navbar />
-
         <main className="container mx-auto px-4 pt-32 max-w-5xl">
           <>
               <FadeIn direction="up" delay={0.1}>

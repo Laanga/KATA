@@ -19,13 +19,13 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
   const deleteCollection = useMediaStore((state) => state.deleteCollection);
   const updateCollection = useMediaStore((state) => state.updateCollection);
   const getItemsByCollection = useMediaStore((state) => state.getItemsByCollection);
-  
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [menuCollection, setMenuCollection] = useState<Collection | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | undefined>();
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
-  
+
   const menuButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
   const handleOpenMenu = (collection: Collection, e: React.MouseEvent) => {
@@ -55,7 +55,7 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
       if (selectedCollection === menuCollection.id) {
         onCollectionSelect('ALL');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar colección');
     }
     handleCloseMenu();
@@ -66,7 +66,7 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
 
     try {
       await updateCollection(menuCollection.id, { color });
-    } catch (error) {
+    } catch {
       toast.error('Error al cambiar color');
     }
   };
@@ -76,72 +76,77 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
   };
 
   return (
-    <div className={`relative bg-card/50 backdrop-blur-sm border-r border-border/50 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-full lg:w-64'
-    }`}>
+    <div
+      className={`liquid-glass-soft relative rounded-2xl border border-white/10 transition-all duration-300 ${
+        isCollapsed ? 'w-16' : 'w-full lg:w-64'
+      }`}
+    >
       <button
         onClick={() => {
           setIsCollapsed(!isCollapsed);
           handleCloseMenu();
         }}
-        className="absolute -top-2.5 left-3 z-20 p-1.5 rounded-lg bg-accent/20 hover:bg-accent/30 text-accent-foreground transition-colors"
+        className="liquid-glass-soft absolute -top-3 -right-3 z-20 p-1.5 rounded-full border border-white/10 text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 transition-colors"
         title={isCollapsed ? 'Expandir' : 'Colapsar'}
       >
         {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
-      {!isCollapsed && (
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="absolute top-4 right-3 z-10 p-2 rounded-lg hover:bg-accent/20 text-accent-foreground transition-colors"
-          title="Crear colección"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-      )}
-
       <div className={`p-4 transition-all duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">Colecciones</h2>
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+            Colecciones
+          </h2>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="p-1.5 rounded-full hover:bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] transition-colors"
+            title="Crear colección"
+            aria-label="Crear colección"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
 
         <div className="space-y-1">
           <button
             onClick={() => onCollectionSelect('ALL')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
               selectedCollection === 'ALL'
-                ? 'bg-accent text-accent-foreground'
-                : 'hover:bg-accent/10 text-muted-foreground hover:text-foreground'
+                ? 'liquid-glass-active text-[var(--accent-primary)]'
+                : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
             }`}
           >
             <div className="flex items-center gap-3">
               <Folder className="w-5 h-5" />
-              <span>Todas las colecciones</span>
+              <span className="text-sm">Todas las colecciones</span>
             </div>
           </button>
 
           {collections.map((collection) => {
             const itemCount = getItemsByCollection(collection.id).length;
+            const isActive = selectedCollection === collection.id;
 
             return (
               <div key={collection.id} className="relative group">
                 <button
                   onClick={() => onCollectionSelect(collection.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                    selectedCollection === collection.id
-                      ? 'bg-accent text-accent-foreground'
-                      : 'hover:bg-accent/10 text-muted-foreground hover:text-foreground'
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
+                    isActive
+                      ? 'liquid-glass-active text-[var(--accent-primary)]'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <Folder
-                      className="w-5 h-5"
+                      className="w-5 h-5 flex-shrink-0"
                       style={{ color: collection.color || 'var(--text-secondary)' }}
                     />
-                    <span className="truncate">{collection.name}</span>
+                    <span className="text-sm truncate">{collection.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">{itemCount}</span>
+                    <span className="text-xs text-[var(--text-tertiary)] group-hover:opacity-0 transition-opacity">
+                      {itemCount}
+                    </span>
                   </div>
                 </button>
 
@@ -150,8 +155,9 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
                     menuButtonRefs.current[collection.id] = el;
                   }}
                   onClick={(e) => handleOpenMenu(collection, e)}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
                   title="Más opciones"
+                  aria-label="Más opciones"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>
@@ -161,10 +167,10 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
         </div>
 
         {collections.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Folder className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <div className="text-center py-8 text-[var(--text-tertiary)]">
+            <Folder className="w-10 h-10 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No tienes colecciones</p>
-            <p className="text-xs mt-1">Crea una para organizar tus items</p>
+            <p className="text-xs mt-1 opacity-70">Crea una para organizar tus items</p>
           </div>
         )}
       </div>
