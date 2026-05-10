@@ -22,10 +22,10 @@ export default function CollectionsFilter({ selectedCollection, onCollectionSele
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => onCollectionSelect('ALL')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap border border-white/10 transition-all ${
                 selectedCollection === 'ALL'
                   ? 'bg-[var(--accent-primary)] text-black font-semibold'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
+                  : 'liquid-glass-soft text-[var(--text-secondary)] hover:text-white'
               }`}
             >
               <Folder className="w-4 h-4" />
@@ -37,29 +37,30 @@ export default function CollectionsFilter({ selectedCollection, onCollectionSele
 
             {collections.map((collection) => {
               const itemCount = getItemsByCollection(collection.id).length;
+              const isActive = selectedCollection === collection.id;
 
               return (
                 <button
                   key={collection.id}
                   onClick={() => onCollectionSelect(collection.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                    selectedCollection === collection.id
+                    isActive
                       ? 'bg-[var(--accent-primary)] text-black font-semibold'
-                      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
+                      : 'liquid-glass-soft text-[var(--text-secondary)] hover:text-white'
                   }`}
                   style={{
-                    border: selectedCollection === collection.id 
-                      ? '2px solid transparent' 
-                      : `2px solid ${collection.color || 'var(--text-secondary)'}40`
+                    border: isActive
+                      ? '2px solid transparent'
+                      : `1px solid ${collection.color || 'var(--text-secondary)'}40`
                   }}
                 >
-                  <Folder 
-                    className="w-4 h-4" 
-                    style={{ 
-                      color: selectedCollection === collection.id 
-                        ? 'black' 
-                        : collection.color || 'var(--text-secondary)' 
-                    }} 
+                  <Folder
+                    className="w-4 h-4"
+                    style={{
+                      color: isActive
+                        ? 'black'
+                        : collection.color || 'var(--text-secondary)'
+                    }}
                   />
                   <span className="truncate max-w-[120px]">{collection.name}</span>
                   <span className="text-xs opacity-70">{itemCount}</span>
@@ -69,7 +70,7 @@ export default function CollectionsFilter({ selectedCollection, onCollectionSele
 
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--bg-secondary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-black transition-all flex-shrink-0"
+              className="liquid-glass-soft flex items-center justify-center w-10 h-10 rounded-full border border-white/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-black transition-all flex-shrink-0"
               aria-label="Crear colección"
             >
               <Plus className="w-5 h-5" />

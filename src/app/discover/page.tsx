@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
 import { FadeIn } from '@/components/FadeIn';
 import { useMediaStore } from '@/lib/store';
 import { Film, Tv, BookOpen, Gamepad2, Sparkles, Clock, ChevronDown } from 'lucide-react';
@@ -486,8 +485,6 @@ export default function DiscoverPage() {
   return (
     <>
       <div className="min-h-screen pb-24 md:pb-0">
-        <Navbar />
-        
         <main className="container mx-auto px-4 pt-24 sm:pt-28">
           {/* Header */}
           <FadeIn direction="up" delay={0.1}>

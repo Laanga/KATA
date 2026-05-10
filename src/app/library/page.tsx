@@ -1,20 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Navbar } from "@/components/layout/Navbar";
 import { KataCard } from "@/components/media/KataCard";
 import { FilterBar } from "@/components/library/FilterBar";
 import { EditItemModal } from "@/components/media/EditItemModal";
 import { useMediaStore, useFilteredItems } from "@/lib/store";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LibrarySkeleton } from "@/components/ui/Skeleton";
-import { BookOpen, Grid3x3, List } from "lucide-react";
+import { BookOpen, Grid3x3, List, Star, Edit } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
 import { FadeIn } from "@/components/FadeIn";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import CollectionsSidebar from "@/components/collections/CollectionsSidebar";
 import CollectionsFilter from "@/components/collections/CollectionsFilter";
+import { TYPE_COLORS, TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/utils/constants";
 import type { MediaItem } from "@/types/media";
 
 export default function LibraryPage() {
@@ -29,33 +29,34 @@ export default function LibraryPage() {
 
   const stats = getStats();
 
-  // Filtrar por colección si hay una seleccionada
-  const displayItems = selectedCollection === 'ALL' 
-    ? filteredItems 
-    : filteredItems.filter(item => 
-        getItemsByCollection(selectedCollection).some(collectionItem => collectionItem.id === item.id)
-      );
-
-  // Show skeleton while loading
-  if (!isInitialized) {
-    return (
-      <>
-        <Navbar />
-        <LibrarySkeleton />
-      </>
+  const displayItems = selectedCollection === 'ALL'
+    ? filteredItems
+    : filteredItems.filter(item =>
+      getItemsByCollection(selectedCollection).some(collectionItem => collectionItem.id === item.id)
     );
+
+  if (!isInitialized) {
+    return <LibrarySkeleton />;
   }
 
   return (
     <>
-      <div className="min-h-screen pb-24 md:pb-0">
-        <Navbar />
+      <div className="min-h-screen pb-24 md:pb-0 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: '1s' }}
+          />
+        </div>
+
         <CollectionsFilter
           selectedCollection={selectedCollection}
           onCollectionSelect={setSelectedCollection}
         />
 
-        <div className="flex pt-14 sm:pt-16">
+        <div className="flex pt-14 sm:pt-16 relative z-10">
           {/* Sidebar de Colecciones */}
           <aside className="hidden lg:block sticky top-14 sm:top-16 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] pt-8 pl-4">
             <CollectionsSidebar
@@ -66,54 +67,82 @@ export default function LibraryPage() {
 
           {/* Contenido principal */}
           <main className="flex-1 container mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+            {/* Header */}
             <FadeIn direction="up" delay={0.1}>
-              <div className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Tu Biblioteca</h1>
-                <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-4 sm:mb-6">
-                  {displayItems.length} de {stats.total} elementos
-                  {selectedCollection !== 'ALL' && ' en esta colección'}
-                </p>
+              <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none mb-3">
+                    Tu Biblioteca
+                  </h1>
+                  <p className="text-sm sm:text-base text-[var(--text-secondary)]">
+                    Tu colección personal de medios
+                  </p>
+                </div>
 
-                {/* Métricas */}
-                <DashboardMetrics />
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="up" delay={0.2}>
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <div></div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-[var(--accent-primary)] text-black'
-                        : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
-                    }`}
-                    aria-label="Vista de cuadrícula"
-                  >
-                    <Grid3x3 size={20} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-[var(--accent-primary)] text-black'
-                        : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
-                    }`}
-                    aria-label="Vista de lista"
-                  >
-                    <List size={20} />
-                  </button>
+                <div className="liquid-glass-soft inline-flex items-center gap-2 self-start sm:self-end px-4 py-2 rounded-full border border-white/10 text-sm">
+                  <span className="text-white font-semibold">{displayItems.length}</span>
+                  <span className="text-[var(--text-tertiary)]">de</span>
+                  <span className="text-[var(--text-secondary)]">{stats.total}</span>
+                  {selectedCollection !== 'ALL' && (
+                    <span className="text-[var(--text-tertiary)] text-xs ml-1">en colección</span>
+                  )}
                 </div>
               </div>
             </FadeIn>
 
-            <FadeIn direction="up" delay={0.3}>
-              <FilterBar />
+            {/* Métricas */}
+            <FadeIn direction="up" delay={0.15}>
+              <DashboardMetrics />
             </FadeIn>
 
+            {/* Sticky filter row */}
+            <div className="sticky top-20 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 backdrop-blur-md">
+              <FadeIn direction="up" delay={0.2}>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div></div>
+
+                  {/* Segmented Grid/List toggle */}
+                  <div
+                    className="liquid-glass-soft inline-flex items-center gap-1 p-1 rounded-full border border-white/10"
+                    role="group"
+                    aria-label="Modo de vista"
+                  >
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                        viewMode === 'grid'
+                          ? 'liquid-glass-active text-[var(--accent-primary)]'
+                          : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
+                      }`}
+                      aria-label="Vista de cuadrícula"
+                      aria-pressed={viewMode === 'grid'}
+                    >
+                      <Grid3x3 size={14} />
+                      <span className="hidden sm:inline">Cuadrícula</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                        viewMode === 'list'
+                          ? 'liquid-glass-active text-[var(--accent-primary)]'
+                          : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
+                      }`}
+                      aria-label="Vista de lista"
+                      aria-pressed={viewMode === 'list'}
+                    >
+                      <List size={14} />
+                      <span className="hidden sm:inline">Lista</span>
+                    </button>
+                  </div>
+                </div>
+              </FadeIn>
+
+              <FadeIn direction="up" delay={0.25}>
+                <FilterBar />
+              </FadeIn>
+            </div>
+
+            {/* Results */}
             <div className="mt-8">
               {displayItems.length === 0 ? (
                 <FadeIn delay={0.3}>
@@ -140,34 +169,54 @@ export default function LibraryPage() {
               ) : (
                 <div className="space-y-3">
                   {displayItems.map((item, index) => (
-                    <FadeIn key={item.id} delay={index * 0.02}>
-                      <div className="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-all hover:scale-[1.01]">
+                    <FadeIn key={item.id} delay={Math.min(index * 0.02, 0.4)}>
+                      <div className="liquid-glass-soft group flex items-center gap-4 p-3 sm:p-4 rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:scale-[1.005]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.coverUrl}
                           alt={item.title}
-                          className="h-24 w-16 rounded object-cover"
+                          className="h-20 w-14 sm:h-24 sm:w-16 rounded-lg object-cover flex-shrink-0 ring-1 ring-white/10"
                         />
-                        <div className="flex-1">
-                          <h3 className="font-bold text-white mb-1">{item.title}</h3>
-                          <p className="text-sm text-[var(--text-secondary)] mb-2">
-                            {item.author || item.platform || item.releaseYear}
-                          </p>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs px-2 py-1 rounded-full bg-white/5">
-                              {item.type}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: `${TYPE_COLORS[item.type]}1f`,
+                                color: TYPE_COLORS[item.type],
+                                boxShadow: `inset 0 0 0 1px ${TYPE_COLORS[item.type]}40`,
+                              }}
+                            >
+                              {TYPE_LABELS[item.type]}
                             </span>
-                            {item.rating && (
-                              <span className="text-xs text-[var(--accent-warning)]">
-                                {item.rating}/5
-                              </span>
-                            )}
+                            <span
+                              className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                              style={{
+                                color: STATUS_COLORS[item.status],
+                                backgroundColor: 'rgba(255,255,255,0.04)',
+                              }}
+                            >
+                              {STATUS_LABELS[item.status]}
+                            </span>
                           </div>
+                          <h3 className="font-bold text-white mb-0.5 truncate">{item.title}</h3>
+                          <p className="text-xs sm:text-sm text-[var(--text-tertiary)] truncate">
+                            {[item.author, item.platform, item.releaseYear].filter(Boolean).join(' · ')}
+                          </p>
                         </div>
+                        {item.rating !== null && (
+                          <div className="hidden sm:flex items-center gap-1 text-[var(--accent-warning)] text-sm font-medium px-3">
+                            <Star size={14} fill="currentColor" />
+                            {item.rating.toFixed(1)}
+                          </div>
+                        )}
                         <button
                           onClick={() => setEditingItem(item)}
-                          className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-sm"
+                          className="liquid-glass-soft flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-xs sm:text-sm text-white hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
+                          aria-label={`Editar ${item.title}`}
                         >
-                          Editar
+                          <Edit size={14} />
+                          <span className="hidden sm:inline">Editar</span>
                         </button>
                       </div>
                     </FadeIn>

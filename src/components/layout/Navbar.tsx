@@ -4,67 +4,85 @@ import Link from 'next/link';
 import { UserAvatar } from './UserAvatar';
 import { usePathname } from 'next/navigation';
 
+const ALLOWED_ROUTES = [
+    '/home',
+    '/library',
+    '/search',
+    '/discover',
+    '/profile',
+];
+
 export function Navbar() {
     const pathname = usePathname();
 
+    const isAllowed = ALLOWED_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`)
+    );
+    if (!isAllowed) return null;
+
     const navLinks = [
-        { href: '/books', label: 'Libros' },
-        { href: '/series', label: 'Series' },
-        { href: '/movies', label: 'Películas' },
-        { href: '/games', label: 'Juegos' },
+        { href: '/home', label: 'Inicio' },
+        { href: '/search', label: 'Buscar' },
         { href: '/library', label: 'Biblioteca' },
         { href: '/discover', label: 'Descubrir' },
     ];
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 border-b border-white/10 bg-black/50 backdrop-blur-xl hidden md:flex flex-col">
-                <div className="container mx-auto flex h-full items-center justify-between px-4 sm:px-6">
-                    {/* Logo / Menu Mobile */}
-                    <div className="flex items-center gap-3 sm:gap-4">
+            {/* Logo - top left */}
+            <Link
+                href="/home"
+                aria-label="Kata - Inicio"
+                className="hidden md:flex fixed top-5 left-6 z-50 items-center gap-1.5 text-lg font-bold tracking-tight text-white transition-opacity hover:opacity-80"
+            >
+                <span>Kata</span>
+                <span className="font-serif text-[var(--accent-primary)]">型</span>
+            </Link>
 
-                        <Link
-                            href="/home"
-                            className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-1.5 sm:gap-2"
-                        >
-                            <span>Kata</span>
-                            <span className="font-serif text-[var(--accent-primary)]">型</span>
-                        </Link>
-                    </div>
-
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-6">
-                        {navLinks.slice(0, 4).map((link) => (
-                            <NavLink key={link.href} href={link.href} label={link.label} pathname={pathname} />
-                        ))}
-                        <div className="h-4 w-px bg-white/10 mx-2"></div>
-                        {navLinks.slice(4).map((link) => (
-                            <NavLink key={link.href} href={link.href} label={link.label} pathname={pathname} />
-                        ))}
-                    </div>
-
-                    {/* Right Actions */}
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        <UserAvatar />
-                    </div>
+            {/* Floating pill nav - top center */}
+            <nav
+                aria-label="Navegación principal"
+                className="hidden md:block fixed top-3 left-1/2 -translate-x-1/2 z-50"
+            >
+                <div className="liquid-glass relative flex items-center gap-0.5 px-2 py-1.5 rounded-full border border-white/10">
+                    {navLinks.map((link) => (
+                        <NavLink
+                            key={link.href}
+                            href={link.href}
+                            label={link.label}
+                            isActive={
+                                pathname === link.href ||
+                                pathname.startsWith(`${link.href}/`)
+                            }
+                        />
+                    ))}
                 </div>
             </nav>
 
-
+            {/* Avatar - top right */}
+            <div className="hidden md:block fixed top-4 right-6 z-50">
+                <UserAvatar />
+            </div>
         </>
     );
 }
 
-function NavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
-    const isActive = pathname === href;
-    
+function NavLink({
+    href,
+    label,
+    isActive,
+}: {
+    href: string;
+    label: string;
+    isActive: boolean;
+}) {
     return (
         <Link
             href={href}
-            className={`text-sm font-medium transition-colors ${
+            className={`relative px-3.5 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
                 isActive
-                    ? 'text-[var(--accent-primary)]'
-                    : 'text-[var(--text-secondary)] hover:text-white'
+                    ? 'liquid-glass-active text-[var(--accent-primary)]'
+                    : 'text-[var(--text-secondary)] hover:text-white hover:bg-white/5'
             }`}
         >
             {label}

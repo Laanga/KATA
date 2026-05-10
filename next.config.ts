@@ -23,7 +23,12 @@ const supabaseCspOrigin = supabaseHostname
   : 'https://*.supabase.co';
 
 const nextConfig: NextConfig = {
-  turbopack: {}, // Silenciar warning de Turbopack, usamos webpack para PWA
+  turbopack: {
+    // Anclar la raíz del workspace al directorio del proyecto.
+    // Sin esto, Next detecta el package-lock.json que tienes en /Users/langa/
+    // y resuelve los módulos desde ahí, rompiendo tailwind/etc en dev.
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       // APIs de medios
