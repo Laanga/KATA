@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
@@ -141,7 +141,7 @@ export default function LandingPage() {
         gsap.fromTo(
           card,
           {
-            x: i % 2 === 0 ? -100 : 100,
+            x: i % 2 === 0 ? -60 : 60,
             opacity: 0,
           },
           {
@@ -215,7 +215,7 @@ export default function LandingPage() {
 
       gsap.fromTo(
         '.final-cta',
-        { scale: 0.9, opacity: 0 },
+        { scale: 0.95, opacity: 0 },
         {
           scale: 1,
           opacity: 1,
@@ -239,28 +239,28 @@ export default function LandingPage() {
       title: 'Libros',
       description: 'Organiza tu biblioteca personal. Desde novelas épicas hasta manga y cómics.',
       color: 'var(--color-book)',
-      gradient: 'from-purple-500/20 to-purple-900/10',
+      rgb: '139, 92, 246',
     },
     {
       icon: Gamepad2,
       title: 'Juegos',
       description: 'Tu backlog de videojuegos bajo control. PC, consolas, móvil... todo en uno.',
       color: 'var(--color-game)',
-      gradient: 'from-red-500/20 to-red-900/10',
+      rgb: '239, 68, 68',
     },
     {
       icon: Film,
       title: 'Películas',
       description: 'Organiza tu watchlist cinematográfica. Nunca olvides una recomendación.',
       color: 'var(--color-movie)',
-      gradient: 'from-blue-500/20 to-blue-900/10',
+      rgb: '59, 130, 246',
     },
     {
       icon: Tv,
       title: 'Series',
       description: 'Rastrea cada temporada y episodio. Sabe exactamente dónde lo dejaste.',
       color: 'var(--color-series)',
-      gradient: 'from-emerald-500/20 to-emerald-900/10',
+      rgb: '16, 185, 129',
     },
   ];
 
@@ -302,7 +302,7 @@ export default function LandingPage() {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-black w-full max-w-full landing-container">
       <ParticleBackground />
 
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/10 via-transparent to-transparent" />
 
@@ -352,16 +352,20 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section ref={heroRef} className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 pt-20">
-        <div ref={kanjiContainerRef} className="relative mb-6">
+      <section
+        ref={heroRef}
+        className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-4 pt-28 pb-20 sm:pt-32"
+      >
+        <div ref={kanjiContainerRef} className="relative mb-4 sm:mb-6">
           <div ref={kanjiRef} style={{ perspective: '1000px' }}>
-            <div className="kanji-glow absolute inset-0 blur-3xl opacity-40">
+            <div className="kanji-glow absolute inset-0 blur-3xl opacity-40 pointer-events-none">
               <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 via-emerald-400/40 to-transparent rounded-full" />
             </div>
 
             <span
-              className="relative block text-[clamp(120px,35vw,280px)] font-bold leading-none select-none"
+              className="relative block leading-none select-none font-bold"
               style={{
+                fontSize: 'clamp(140px, 28vw, 260px)',
                 background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -372,32 +376,33 @@ export default function LandingPage() {
               型
             </span>
 
-            <div className="absolute inset-0 -m-6 border border-emerald-500/20 rounded-full animate-pulse" />
-            <div className="absolute inset-0 -m-12 border border-emerald-500/10 rounded-full" />
+            <div className="absolute inset-0 -m-4 sm:-m-6 border border-emerald-500/20 rounded-full animate-pulse pointer-events-none" />
+            <div className="absolute inset-0 -m-8 sm:-m-12 border border-emerald-500/10 rounded-full pointer-events-none" />
           </div>
         </div>
 
-        <div className="hero-title text-center mb-4">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter">
+        <div className="hero-title text-center mb-3 sm:mb-4">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter">
             <span className="text-white">Kata</span>
           </h1>
         </div>
 
-        <div className="hero-subtitle text-center max-w-2xl mb-10 px-4">
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-3">
+        <div className="hero-subtitle text-center max-w-2xl mb-8 sm:mb-10 px-2">
+          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-3">
             Tu <span className="text-emerald-400 font-semibold">biblioteca personal</span> para organizar
             <br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>
             libros, juegos, películas y series.
           </p>
-          <p className="text-sm text-[var(--text-tertiary)] font-light">
+          <p className="text-xs sm:text-sm text-[var(--text-tertiary)] font-light">
             形 (kata) — La forma perfecta a través de la práctica
           </p>
         </div>
 
-        <div className="hero-cta flex flex-col sm:flex-row gap-4">
+        <div className="hero-cta flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
           <Link
             href="/signup"
-            className="group relative px-8 py-4 bg-emerald-500 text-black font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] text-center"
+            className="group relative px-8 py-4 bg-emerald-500 text-black font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] active:scale-95 text-center"
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
               Comenzar Gratis
@@ -408,57 +413,60 @@ export default function LandingPage() {
 
           <Link
             href="/login"
-            className="group px-8 py-4 border border-white/20 text-white font-medium rounded-full transition-all duration-300 hover:bg-white/5 hover:border-white/40 text-center"
+            className="liquid-glass group px-8 py-4 rounded-full border border-white/15 text-white font-medium transition-all duration-300 hover:border-white/30 hover:scale-[1.02] active:scale-95 text-center"
           >
             Ya tengo cuenta
           </Link>
         </div>
 
-        <div className="scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
-          <span className="text-xs uppercase tracking-widest">Descubre más</span>
+        <div className="scroll-indicator absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
+          <span className="text-[10px] sm:text-xs uppercase tracking-widest">Descubre más</span>
           <div className="w-px h-8 bg-gradient-to-b from-emerald-500/50 to-transparent animate-pulse" />
         </div>
       </section>
 
-      <section className="relative z-10 py-32 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="section-header text-center mb-16">
-            <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
+      <section className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="section-header text-center mb-12 sm:mb-16">
+            <span className="liquid-glass-soft inline-block px-4 py-1.5 text-[10px] sm:text-xs font-medium text-emerald-400 rounded-full border border-emerald-400/20 mb-4 tracking-widest">
               CARACTERÍSTICAS
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
               Todo tu entretenimiento,<br />un solo lugar
             </h2>
-            <p className="text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
+            <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl mx-auto px-2">
               Organiza y rastrea todo lo que consumes. Sin complicaciones, con elegancia.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 max-w-md sm:max-w-none mx-auto">
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className={`feature-card group relative p-8 rounded-3xl border border-white/5 bg-gradient-to-br ${feature.gradient} backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-white/20 hover:scale-[1.02]`}
+                className="feature-card liquid-glass-soft group relative p-6 sm:p-7 rounded-3xl border border-white/10 overflow-hidden transition-all duration-500 hover:border-white/20 hover:-translate-y-1"
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{
-                    background: `radial-gradient(circle at 50% 50%, ${feature.color}15 0%, transparent 70%)`,
+                    background: `radial-gradient(circle at 50% 0%, rgba(${feature.rgb}, 0.18) 0%, transparent 70%)`,
                   }}
                 />
 
                 <div
-                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110"
-                  style={{ backgroundColor: `${feature.color}15` }}
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110"
+                  style={{
+                    background: `linear-gradient(180deg, rgba(${feature.rgb}, 0.22) 0%, rgba(${feature.rgb}, 0.10) 100%)`,
+                    boxShadow: `inset 0 0 0 1px rgba(${feature.rgb}, 0.28)`,
+                  }}
                 >
                   <feature.icon
-                    size={28}
+                    size={26}
                     style={{ color: feature.color }}
                   />
                 </div>
 
-                <h3 className="relative text-xl font-semibold text-white mb-3">
+                <h3 className="relative text-lg sm:text-xl font-semibold text-white mb-2.5">
                   {feature.title}
                 </h3>
                 <p className="relative text-sm text-[var(--text-secondary)] leading-relaxed">
@@ -466,7 +474,7 @@ export default function LandingPage() {
                 </p>
 
                 <div
-                  className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-30"
+                  className="absolute -bottom-10 -right-10 w-28 h-28 rounded-full opacity-10 blur-3xl transition-opacity group-hover:opacity-40 pointer-events-none"
                   style={{ backgroundColor: feature.color }}
                 />
               </div>
@@ -475,88 +483,89 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="relative z-10 py-32 px-4 overflow-hidden">
-        <div className="max-w-5xl mx-auto">
-          <div className="section-header text-center mb-20">
-            <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
+      <section className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-8 overflow-hidden">
+        <div className="max-w-3xl mx-auto">
+          <div className="section-header text-center mb-14 sm:mb-20">
+            <span className="liquid-glass-soft inline-block px-4 py-1.5 text-[10px] sm:text-xs font-medium text-emerald-400 rounded-full border border-emerald-400/20 mb-4 tracking-widest">
               CÓMO FUNCIONA
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
               Simple como debe ser
             </h2>
-            <p className="text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
+            <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl mx-auto px-2">
               Cuatro pasos para organizar tu vida de entretenimiento.
             </p>
           </div>
 
-          <div className="space-y-8">
-            {steps.map((step, index) => (
+          <div className="space-y-5 sm:space-y-6">
+            {steps.map((step) => (
               <div
                 key={step.number}
-                className={`step-card relative flex items-start gap-8 p-8 rounded-3xl border border-white/5 bg-white/[0.02] backdrop-blur-sm ${
-                  index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
-                }`}
+                className="step-card liquid-glass-soft relative flex flex-col sm:flex-row items-start gap-4 sm:gap-8 p-6 sm:p-8 rounded-3xl border border-white/10 transition-all hover:border-white/20"
               >
-                <div className="flex-shrink-0">
-                  <span className="text-6xl md:text-8xl font-bold text-emerald-500/20">
+                <div className="flex-shrink-0 flex sm:block items-center gap-4">
+                  <span className="text-5xl sm:text-7xl md:text-8xl font-bold text-emerald-500/20 leading-none">
                     {step.number}
                   </span>
+                  <div className="sm:hidden w-12 h-12 rounded-xl liquid-glass-soft border border-emerald-400/20 flex items-center justify-center">
+                    <step.icon size={22} className="text-emerald-400" />
+                  </div>
                 </div>
 
                 <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                  <div className="hidden sm:flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl liquid-glass-soft border border-emerald-400/20 flex items-center justify-center">
                       <step.icon size={24} className="text-emerald-400" />
                     </div>
                     <h3 className="text-2xl font-bold text-white">{step.title}</h3>
                   </div>
-                  <p className="text-[var(--text-secondary)] leading-relaxed max-w-lg">
+                  <h3 className="sm:hidden text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-lg">
                     {step.description}
                   </p>
                 </div>
-
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute -bottom-8 left-1/2 w-px h-8 bg-gradient-to-b from-emerald-500/30 to-transparent" />
-                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 py-32 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
               <div className="section-header mb-8">
-                <span className="inline-block px-4 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
+                <span className="liquid-glass-soft inline-block px-4 py-1.5 text-[10px] sm:text-xs font-medium text-emerald-400 rounded-full border border-emerald-400/20 mb-4 tracking-widest">
                   ¿POR QUÉ KATA?
                 </span>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
                   Diseñado para ti
                 </h2>
-                <p className="text-lg text-[var(--text-secondary)]">
+                <p className="text-base sm:text-lg text-[var(--text-secondary)]">
                   Kata nace de la filosofía japonesa de la mejora continua.
                   Cada detalle está pensado para hacer tu experiencia simple y satisfactoria.
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {benefits.map((benefit, i) => (
-                  <div key={i} className="benefit-item flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                      <benefit.icon size={20} className="text-emerald-400" />
+                  <div
+                    key={i}
+                    className="benefit-item liquid-glass-soft flex items-center gap-4 p-4 rounded-2xl border border-white/10 transition-all hover:border-white/20 hover:-translate-y-0.5"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon size={18} className="text-emerald-400" />
                     </div>
-                    <span className="text-white font-medium">{benefit.text}</span>
+                    <span className="text-sm sm:text-base text-white font-medium">{benefit.text}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="feature-card relative">
-              <div className="aspect-square rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/20 to-black p-8 flex items-center justify-center overflow-hidden">
+              <div className="liquid-glass aspect-square rounded-3xl border border-white/10 p-6 sm:p-8 flex items-center justify-center overflow-hidden">
                 <span
-                  className="text-[200px] font-bold opacity-5 select-none absolute"
+                  className="text-[200px] sm:text-[260px] font-bold opacity-[0.04] select-none absolute"
                   style={{ fontFamily: '"Noto Sans JP", sans-serif' }}
                 >
                   型
@@ -567,15 +576,13 @@ export default function LandingPage() {
                     {['Libro actual', 'Juego en progreso', 'Serie siguiendo'].map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
-                        style={{ animationDelay: `${i * 0.2}s` }}
+                        className="liquid-glass-soft flex items-center gap-3 p-3 rounded-xl border border-white/10"
                       >
-                        <div
-                          className="w-8 h-10 rounded bg-gradient-to-br from-white/20 to-white/5"
-                        />
+                        <div className="w-8 h-10 rounded bg-gradient-to-br from-white/20 to-white/5" />
                         <div className="flex-1">
                           <div className="h-2 w-24 bg-white/20 rounded mb-1.5" />
                           <div className="h-1.5 w-16 bg-white/10 rounded" />
+                          <div className="sr-only">{item}</div>
                         </div>
                         <Check size={16} className="text-emerald-400" />
                       </div>
@@ -588,17 +595,20 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="relative z-10 py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="relative z-10 py-16 sm:py-20 lg:py-24 px-6 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               { value: '4', label: 'Tipos de media', suffix: '' },
               { value: '∞', label: 'Items ilimitados', suffix: '' },
               { value: '100', label: 'Gratis', suffix: '%' },
               { value: '0', label: 'Anuncios', suffix: '' },
             ].map((stat, i) => (
-              <div key={i} className="feature-card text-center p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">
+              <div
+                key={i}
+                className="feature-card liquid-glass-soft text-center p-5 sm:p-6 rounded-2xl border border-white/10 transition-all hover:border-white/20 hover:-translate-y-0.5"
+              >
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-emerald-400 mb-1.5 sm:mb-2">
                   {stat.value === '∞' ? (
                     <span>∞</span>
                   ) : (
@@ -608,21 +618,21 @@ export default function LandingPage() {
                     </>
                   )}
                 </div>
-                <div className="text-sm text-[var(--text-secondary)]">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-[var(--text-secondary)]">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 py-32 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="final-cta relative p-12 md:p-20 rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/30 via-emerald-900/10 to-black overflow-hidden text-center">
-            <div className="absolute inset-0 overflow-hidden">
+      <section className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="final-cta liquid-glass relative p-8 sm:p-12 md:p-20 rounded-3xl border border-white/10 overflow-hidden text-center">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-              <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl" />
+              <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-3xl" />
               <span
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[300px] font-bold opacity-[0.03] select-none"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[220px] sm:text-[300px] font-bold opacity-[0.04] select-none"
                 style={{ fontFamily: '"Noto Sans JP", sans-serif' }}
               >
                 型
@@ -630,26 +640,28 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <Sparkles className="w-12 h-12 mx-auto mb-6 text-emerald-400" />
+              <div className="liquid-glass-soft mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/20">
+                <Sparkles className="w-6 h-6 text-emerald-400" />
+              </div>
 
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 sm:mb-6 tracking-tight">
                 Empieza tu kata hoy
               </h2>
 
-              <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] mb-8 sm:mb-10 max-w-xl mx-auto px-2">
                 Únete a Kata y comienza a organizar tu biblioteca personal de medios.
                 Gratis para siempre. Sin anuncios. Sin límites.
               </p>
 
               <Link
                 href="/signup"
-                className="group relative inline-flex items-center gap-3 px-10 py-5 bg-white text-black font-semibold text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_rgba(255,255,255,0.2)]"
+                className="group relative inline-flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white text-black font-semibold text-base sm:text-lg rounded-full transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] active:scale-95"
               >
                 Crear cuenta gratis
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
 
-              <p className="mt-6 text-sm text-[var(--text-tertiary)]">
+              <p className="mt-5 sm:mt-6 text-xs sm:text-sm text-[var(--text-tertiary)]">
                 Configuración en 30 segundos
               </p>
             </div>
