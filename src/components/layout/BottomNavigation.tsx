@@ -1,116 +1,101 @@
 'use client';
 
-import { Home, Library, Search, User, Compass, ChevronUp, ChevronDown } from 'lucide-react';
+import { Home, Library, Search, User, Compass } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const allowedRoutes = [
-  '/home',
-  '/library',
-  '/search',
-  '/discover',
-  '/profile',
+/**
+ * Mide cuánto tapa la UI del navegador (toolbar inferior de Brave/Safari,
+ * teclado…) la parte baja del layout viewport. env(safe-area-inset-bottom)
+ * no cubre este caso: las toolbars del navegador no cuentan como safe area.
+ */
+function useBrowserUiOffset() {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const update = () => {
+      const overlap = window.innerHeight - vv.height - vv.offsetTop;
+      setOffset(overlap > 0 ? Math.round(overlap) : 0);
+    };
+
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+
+  return offset;
+}
+
+const navItems = [
+  { href: '/home', label: 'Inicio', icon: Home },
+  { href: '/library', label: 'Biblioteca', icon: Library },
+  { href: '/search', label: 'Buscar', icon: Search },
+  { href: '/discover', label: 'Descubrir', icon: Compass },
+  { href: '/profile', label: 'Perfil', icon: User },
 ];
 
 export default function BottomNavigation() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const browserUiOffset = useBrowserUiOffset();
 
-  if (!allowedRoutes.includes(pathname)) {
-    return null;
-  }
-
-  const navItems = [
-    { href: '/home', label: 'Home', icon: Home },
-    { href: '/library', label: 'Biblioteca', icon: Library },
-    { href: '/search', label: 'Buscar', icon: Search },
-    { href: '/discover', label: 'Descubrir', icon: Compass },
-    { href: '/profile', label: 'Perfil', icon: User },
-  ];
-
-  const isActive = (href: string) => {
-    return pathname === href;
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const isAllowed = navItems.some(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+  );
+  if (!isAllowed) return null;
 
   return (
-    <>
-      <nav 
-        className={`fixed bottom-0 left-0 right-0 z-[9999] md:hidden transition-all duration-300 ease-out ${
-          isCollapsed ? 'translate-y-[52px]' : 'translate-y-0'
-        }`}
-        style={{
-          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }}
-      >
-        <div className="relative">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          
-          <div className={`flex items-center justify-center gap-1 overflow-x-auto scrollbar-hide px-2 transition-all duration-300 ${
-            isCollapsed ? 'h-[60px]' : 'h-[80px]'
-          }`}>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
+    <nav
+      aria-label="Navegación principal"
+      className="fixed left-1/2 -translate-x-1/2 z-[9999] md:hidden transition-[bottom] duration-200"
+      style={{
+        bottom: `calc(0.75rem + env(safe-area-inset-bottom, 0px) + ${browserUiOffset}px)`,
+      }}
+    >
+      <div className="liquid-glass flex items-center gap-0.5 px-1.5 py-1.5 rounded-full border border-white/10">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex flex-col items-center justify-center w-20 flex-shrink-0 h-full relative group active:scale-95 transition-transform duration-150"
-                  aria-label={item.label}
-                >
-                  {active && (
-                    <>
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 bg-[var(--accent-primary)]/20 rounded-full blur-xl -translate-y-4" />
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-[var(--accent-primary)] rounded-full shadow-[0_0_10px_var(--accent-primary)]" />
-                    </>
-                  )}
-                  <div className={`flex items-center justify-center min-h-[48px] min-w-[48px] transition-all duration-300 ease-out ${
-                    active ? 'text-[var(--accent-primary)] scale-110' : 'text-[var(--text-secondary)] group-hover:text-white'
-                  }`}>
-                    <Icon
-                      className={`w-7 h-7 mb-1 transition-all duration-300 ${active ? 'animate-pulse drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : ''}`}
-                      strokeWidth={active ? 2.5 : 2}
-                    />
-                  </div>
-                  {!isCollapsed && (
-                    <span className={`text-[11px] font-medium transition-all duration-300 ${
-                      active ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'
-                    }`}>
-                      {item.label}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={toggleCollapse}
-            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full px-3 py-1 rounded-t-lg bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 backdrop-blur-sm border border-t border-x border-[var(--accent-primary)]/20 border-b-0 transition-all"
-            aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-          >
-            {isCollapsed ? (
-              <ChevronUp className="w-4 h-4 text-[var(--accent-primary)]" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-[var(--text-secondary)]" />
-            )}
-          </button>
-        </div>
-      </nav>
-
-      <div className={`fixed bottom-0 left-0 right-0 z-[9998] md:hidden pointer-events-none transition-opacity duration-300 ${
-        isCollapsed ? 'opacity-0' : 'opacity-100'
-      }`}>
-        <div className="h-[80px] bg-gradient-to-t from-black/20 to-transparent" />
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-label={item.label}
+              aria-current={active ? 'page' : undefined}
+              className={`relative flex flex-col items-center justify-center min-w-[56px] min-h-[52px] px-1 rounded-full transition-all duration-200 active:scale-90 ${
+                active
+                  ? 'liquid-glass-active text-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)]'
+              }`}
+            >
+              <Icon
+                className={`w-[22px] h-[22px] transition-transform duration-200 ${
+                  active ? 'scale-105' : ''
+                }`}
+                strokeWidth={active ? 2.4 : 2}
+              />
+              <span
+                className={`text-[10px] leading-tight mt-0.5 font-medium ${
+                  active
+                    ? 'text-[var(--accent-primary)]'
+                    : 'text-[var(--text-tertiary)]'
+                }`}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
-    </>
+    </nav>
   );
 }

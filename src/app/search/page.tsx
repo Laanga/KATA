@@ -276,13 +276,13 @@ export default function SearchPage() {
   );
 
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
-      <main className="container mx-auto px-4 pt-20 md:pt-24 max-w-7xl">
+    <div className="min-h-screen pb-nav-safe">
+      <main className="container mx-auto px-4 pt-8 md:pt-24 max-w-7xl">
         {/* Header */}
         <FadeIn direction="up" delay={0.1}>
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--accent-primary)]/10 mb-4">
-              <Search size={32} className="text-[var(--accent-primary)]" />
+            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--accent-primary)]/10 mb-4">
+              <Search className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--accent-primary)]" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Buscar</h1>
             <p className="text-[var(--text-secondary)] text-sm sm:text-base">
@@ -303,7 +303,7 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar cualquier cosa..."
-              className="liquid-glass w-full rounded-full border border-white/10 pr-6 py-4 text-lg text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+              className="liquid-glass w-full rounded-full border border-white/10 pr-12 py-3.5 sm:py-4 text-base sm:text-lg text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)]/50 focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
               style={{ paddingLeft: '3.25rem' }}
               autoFocus
             />
@@ -319,7 +319,7 @@ export default function SearchPage() {
         {/* Type filter chips */}
         <FadeIn direction="up" delay={0.2}>
           <div className="mb-8 flex justify-center">
-            <div className="liquid-glass-soft inline-flex items-center gap-1 p-1.5 rounded-full border border-white/10 overflow-x-auto no-scrollbar max-w-full">
+            <div className="liquid-glass-soft inline-flex items-center gap-1 p-1.5 rounded-full border border-white/10 overflow-x-auto scrollbar-hide max-w-full">
               {TYPE_FILTERS.map(({ value, label, Icon }) => {
                 const isActive = activeFilter === value;
                 const count = value === 'ALL' ? results.length : counts[value as MediaType];
@@ -355,7 +355,7 @@ export default function SearchPage() {
 
         {/* Results grid */}
         {visibleResults.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
             {visibleResults.map((result, index) => {
               const TypeIcon = TYPE_ICONS[result.type];
               const inLib = isInLibrary(result.title, result.type);
@@ -398,8 +398,8 @@ export default function SearchPage() {
                       </div>
                     )}
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    {/* Overlay de info: siempre visible en móvil (no hay hover), hover en escritorio */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 sm:p-4">
                       <h3 className="font-bold text-white leading-tight line-clamp-2">
                         {result.title || 'Sin título'}
                       </h3>

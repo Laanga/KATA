@@ -329,7 +329,7 @@ export default function LandingPage() {
         ))}
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/50 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3 sm:py-4 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl text-emerald-400">型</span>
@@ -365,7 +365,7 @@ export default function LandingPage() {
             <span
               className="relative block leading-none select-none font-bold"
               style={{
-                fontSize: 'clamp(140px, 28vw, 260px)',
+                fontSize: 'clamp(96px, 26vw, 260px)',
                 background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',

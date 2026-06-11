@@ -145,7 +145,7 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
   return (
     <div
       ref={container}
-      className="group relative aspect-[2/3] w-44 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform cursor-pointer"
+      className="group relative aspect-[2/3] w-36 sm:w-44 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform cursor-pointer"
       style={{ transformStyle: 'preserve-3d' }}
     >
       {/* Imagen con parallax */}
@@ -180,7 +180,7 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
       {/* Overlay con info */}
       <div
         ref={overlay}
-        className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-3 opacity-0"
+        className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-3 opacity-100 sm:opacity-0"
         style={{ transform: 'translateZ(20px)' }}
       >
         {/* Fecha de lanzamiento */}
@@ -201,7 +201,7 @@ export function DiscoverCard({ item, type, onAdd, getImage, getTitle, releaseDat
           onClick={handleAddClick}
           disabled={isAdded || isAdding}
           className={`
-            discover-card-btn w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all translate-y-2 opacity-0
+            discover-card-btn w-full flex items-center justify-center gap-2 rounded-lg py-2.5 sm:py-2 text-xs font-semibold transition-all translate-y-0 opacity-100 sm:translate-y-2 sm:opacity-0
             ${isAdded 
               ? 'bg-green-500/20 text-green-400 cursor-default border border-green-500/30' 
               : isAdding

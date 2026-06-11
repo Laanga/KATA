@@ -50,7 +50,7 @@ export function EditCollectionNameModal({ collection, isOpen, onClose, onUpdate 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Animes vistos en 2024"
-            className="w-full px-4 py-2 bg-[var(--bg-tertiary)] border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent text-white placeholder-[var(--text-tertiary)] transition-colors"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] text-white placeholder-[var(--text-tertiary)] transition-colors"
             autoFocus
             maxLength={50}
           />
@@ -63,13 +63,13 @@ export function EditCollectionNameModal({ collection, isOpen, onClose, onUpdate 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-white/10 text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors text-sm"
+            className="px-4 py-2 rounded-full border border-white/10 text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors text-sm"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-6 py-2 rounded-lg bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-primary)]/90 transition-opacity text-sm font-medium"
+            className="px-6 py-2 rounded-full bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-primary)]/90 active:scale-95 transition-all text-sm font-semibold"
           >
             Guardar
           </button>

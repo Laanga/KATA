@@ -249,4 +249,26 @@ body {
   }
 }
 
+/* Bottom padding that clears the floating mobile nav dock (dock + safe area).
+   Collapses to 0 on md+ where the dock is hidden. */
+.pb-nav-safe {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .pb-nav-safe {
+    padding-bottom: 0;
+  }
+}
+
+/* iOS Safari auto-zooms when focusing form controls with font-size < 16px.
+   Forcing 16px on mobile prevents the disruptive zoom-on-focus. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 

@@ -651,7 +651,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!isEditingUsername || isSaving}
-                  className={`flex-1 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-xs text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] sm:p-3 sm:text-sm ${
+                  className={`flex-1 rounded-lg border border-white/10 bg-white/5 p-2.5 text-xs text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] sm:p-3 sm:text-sm ${
                     !isEditingUsername ? 'opacity-70' : ''
                   }`}
                   placeholder="Tu nombre"
@@ -706,7 +706,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 type="email"
                 value={email}
                 disabled
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-xs text-white opacity-70 sm:p-3 sm:text-sm"
+                className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 text-xs text-white opacity-70 sm:p-3 sm:text-sm"
               />
               <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 El email no se puede modificar
@@ -723,13 +723,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   !isChangingPassword ? (
                     <button
                       onClick={() => setIsChangingPassword(true)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-3"
+                      className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-3"
                     >
                       <Lock size={16} className="text-[var(--text-tertiary)] sm:size-[18]" />
                       <span className="text-xs text-white sm:text-sm">Cambiar contraseña</span>
                     </button>
                   ) : (
-                    <div className="space-y-2.5 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 sm:space-y-3 sm:p-4">
+                    <div className="space-y-2.5 rounded-lg border border-white/10 bg-white/5 p-3 sm:space-y-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3">
                         <div className="mt-0.5">
                           <Mail size={16} className="text-emerald-400 sm:size-[18]" />
@@ -807,7 +807,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Export JSON */}
             <button
               onClick={handleExportJSON}
-              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4"
+              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
             >
               <FileJson size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
@@ -821,7 +821,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Export CSV */}
             <button
               onClick={handleExportCSV}
-              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 text-left transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4"
+              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
             >
               <FileSpreadsheet size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
@@ -833,7 +833,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </button>
 
             {/* Import */}
-            <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-2.5 transition-colors hover:bg-[var(--bg-tertiary)]/80 sm:gap-3 sm:p-4">
+            <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 transition-colors hover:bg-white/10 sm:gap-3 sm:p-4">
               <Upload size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white sm:text-sm">Importar Biblioteca</p>

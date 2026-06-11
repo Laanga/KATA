@@ -103,23 +103,28 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         onClick={handleOverlayClick}
       />
 
-      {/* Modal Container */}
-      <div className="relative h-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+      {/* Modal Container: bottom-sheet en móvil, centrado en escritorio */}
+      <div className="relative h-full flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden">
         {/* Content */}
         <div
           ref={contentRef}
           className={cn(
-            'relative w-full max-h-[90vh] flex flex-col rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl',
+            'liquid-glass relative w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col rounded-t-3xl rounded-b-none sm:rounded-3xl border border-white/10 shadow-2xl',
             sizeClasses[size]
           )}
         >
-          {/* Header - Sticky */}
+          {/* Asa de bottom-sheet (solo móvil) */}
+          <div className="sm:hidden flex justify-center pt-2.5 flex-shrink-0">
+            <div className="h-1 w-10 rounded-full bg-white/20" />
+          </div>
+
+          {/* Header */}
           {title && (
-            <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3 sm:py-4 sticky top-0 bg-[var(--bg-secondary)] z-10 rounded-t-2xl flex-shrink-0">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
               <h2 className="text-lg sm:text-xl font-bold text-white">{title}</h2>
               <button
                 onClick={handleClose}
-                className="rounded-lg p-1.5 sm:p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
+                className="rounded-full p-1.5 sm:p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/10 hover:text-white"
                 aria-label="Cerrar modal"
               >
                 <X size={18} className="sm:w-5 sm:h-5" />
@@ -130,11 +135,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           {/* Body - Scrollable */}
           <div
             ref={bodyRef}
-            className="px-3 py-3 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain sm:px-6 sm:py-6"
+            className="px-4 py-4 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain sm:px-6 sm:py-6"
             style={{
-              maxHeight: title ? 'calc(90vh - 80px)' : '90vh',
               WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain'
+              overscrollBehavior: 'contain',
+              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)',
             }}
             onWheel={(e) => {
               // Ensure wheel events work on this element
