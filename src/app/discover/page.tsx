@@ -59,6 +59,29 @@ export default function DiscoverPage() {
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
   const [recsLastUpdate, setRecsLastUpdate] = useState<number | null>(null);
 
+  // La barra sticky de filtros solo se pinta como cristal cuando está "pegada"
+  // tapando contenido; en reposo es transparente y se funde con el fondo.
+  const filterBarRef = useRef<HTMLDivElement>(null);
+  const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = filterBarRef.current;
+      if (!el) return;
+      // Offset sticky: top-0 en móvil, top-16 (64px) en md+
+      const offset = window.matchMedia('(min-width: 768px)').matches ? 64 : 0;
+      setIsStuck(el.getBoundingClientRect().top <= offset + 1);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
   // Cache para evitar llamadas repetidas
   const upcomingCache = useRef<Map<string, { data: any[]; genres: any[]; timestamp: number }>>(new Map());
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos de cache
@@ -508,7 +531,14 @@ export default function DiscoverPage() {
           </FadeIn>
 
           {/* Filtros - Sticky */}
-          <div className="sticky top-0 md:top-16 z-40 -mx-4 px-4 py-3 sm:py-4 bg-[var(--bg-primary)]/60 backdrop-blur-xl border-b border-white/10">
+          <div
+            ref={filterBarRef}
+            className={`sticky top-0 md:top-16 z-40 -mx-4 px-4 py-3 sm:py-4 border-b transition-colors duration-300 ${
+              isStuck
+                ? 'bg-[var(--bg-primary)]/60 backdrop-blur-xl border-white/10'
+                : 'bg-transparent border-transparent'
+            }`}
+          >
             <div className="flex flex-col gap-3 sm:gap-4">
               {/* Tipo - Tabs principales (ancho completo en móvil para hit-area cómoda) */}
               <div className="liquid-glass-soft flex w-full sm:w-fit gap-1 p-1 rounded-full border border-white/10">
