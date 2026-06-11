@@ -133,9 +133,9 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Item Preview - Read Only */}
-        <div className="rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-6">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="relative h-32 w-24 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)] border border-white/5">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6">
+          <div className="flex items-start gap-3 sm:gap-4 mb-4">
+            <div className="relative h-28 w-20 sm:h-32 sm:w-24 flex-shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/10">
               {formData.coverUrl ? (
                 <Image
                   src={formData.coverUrl}
@@ -241,7 +241,7 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
             <textarea
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-              className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-colors"
+              className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-colors"
               rows={4}
               placeholder="¿Qué te pareció? (opcional)"
             />
@@ -251,8 +251,8 @@ export function AddItemModal({ isOpen, onClose, prefilledType, initialData }: Ad
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
+        {/* Actions: apilados a ancho completo en móvil */}
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 sm:pt-6 border-t border-white/10">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancelar
           </Button>

@@ -112,8 +112,8 @@ export default function ProfilePage() {
   if (!isInitialized) {
     return (
       <>
-        <div className="min-h-screen pb-24 md:pb-0">
-          <main className="container mx-auto px-4 pt-32 max-w-5xl">
+        <div className="min-h-screen pb-nav-safe">
+          <main className="container mx-auto px-4 pt-10 md:pt-32 max-w-5xl">
             <ProfileSkeleton />
           </main>
         </div>
@@ -123,13 +123,22 @@ export default function ProfilePage() {
 
    return (
     <>
-      <div className="min-h-screen pb-24 md:pb-0">
-        <main className="container mx-auto px-4 pt-32 max-w-5xl">
+      <div className="min-h-screen pb-nav-safe relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: '1s' }}
+          />
+        </div>
+
+        <main className="container mx-auto px-4 pt-10 md:pt-32 max-w-5xl relative z-10">
           <>
               <FadeIn direction="up" delay={0.1}>
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
-                  <div className="flex items-center gap-6">
-                    <div className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 sm:mb-12">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="relative h-20 w-20 sm:h-28 sm:w-28 flex-shrink-0 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
                       {avatarUrl && !imageError ? (
                         <img
                           src={avatarUrl}
@@ -141,8 +150,8 @@ export default function ProfilePage() {
                         <User size={48} className="text-white" />
                       )}
                     </div>
-                    <div>
-                      <h1 className="text-4xl font-bold tracking-tight">{userName}</h1>
+                    <div className="min-w-0">
+                      <h1 className="text-2xl sm:text-4xl font-bold tracking-tight break-words bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent">{userName}</h1>
                       <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
                         <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
                         {stats.total} elementos rastreados
@@ -155,7 +164,7 @@ export default function ProfilePage() {
 
                   <button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
+                    className="liquid-glass-soft px-4 py-2 rounded-full border border-white/10 hover:border-white/20 transition-all text-sm font-medium flex items-center gap-2 hover:scale-105 active:scale-95"
                   >
                     <Settings size={16} />
                     Ajustes
@@ -165,8 +174,8 @@ export default function ProfilePage() {
 
               {stats.total === 0 && (
                 <FadeIn direction="up" delay={0.15}>
-                  <div className="mb-8 p-6 rounded-xl border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5">
-                    <div className="flex items-start justify-between gap-4">
+                  <div className="liquid-glass-soft mb-8 p-6 rounded-2xl border border-[var(--accent-primary)]/20">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start sm:justify-between gap-4">
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-2">
                           Empieza a trackear tu contenido
@@ -184,7 +193,7 @@ export default function ProfilePage() {
               )}
 
               <FadeIn direction="up" delay={0.2}>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-16">
                   <StatCard
                     icon={<BookOpen size={20} />}
                     label="Libros"
@@ -222,7 +231,7 @@ export default function ProfilePage() {
 
               <FadeIn direction="up" delay={0.3}>
                 <div className="border-b border-white/10 mb-8">
-                  <div className="flex gap-8">
+                  <div className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide">
                     <TabItem
                       label="Resumen"
                       active={activeTab === 'overview'}
@@ -248,19 +257,19 @@ export default function ProfilePage() {
               </FadeIn>
 
               {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                  <div className="lg:col-span-2 space-y-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+                  <div className="lg:col-span-2 space-y-8 sm:space-y-12">
                     <section ref={heatmapRef}>
                       <div className="flex items-center gap-3 mb-6">
                         <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
                         <h2 className="text-xl font-semibold">Actividad por Día</h2>
                       </div>
-                      <div className="rounded-2xl border border-white/5 bg-[var(--bg-secondary)] p-8 hover:border-white/10 transition-colors">
-                        <div className="h-32 flex items-end justify-between gap-1">
+                      <div className="liquid-glass rounded-2xl border border-white/10 p-4 sm:p-8 hover:border-white/20 transition-colors">
+                        <div className="h-32 flex items-end justify-between gap-0.5 sm:gap-1">
                           {activityChartData.map((data, i) => (
                             <div
                               key={i}
-                              className="w-full rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
+                              className="w-full min-w-[3px] rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
                               style={{
                                 height: `${data.height}%`,
                                 opacity: data.opacity,
@@ -278,7 +287,7 @@ export default function ProfilePage() {
                     {favoriteItems.length > 0 && (
                       <section ref={favoritesRef}>
                         <h2 className="text-xl font-semibold mb-6">Mejor Valorados</h2>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-3 gap-2 sm:gap-4">
                           {favoriteItems.map((item, index) => (
                             <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
                               <KataCard item={item} />
@@ -315,7 +324,7 @@ export default function ProfilePage() {
                   <div className="space-y-3">
                     {recentActivity.map((item, index) => (
                       <FadeIn key={item.id} delay={index * 0.05}>
-                        <div className="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
+                        <div className="liquid-glass-soft flex items-center gap-4 p-4 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
                           <img
                             src={item.coverUrl}
                             alt={item.title}
@@ -350,7 +359,7 @@ export default function ProfilePage() {
                       .filter((item) => item.review)
                       .map((item, index) => (
                         <FadeIn key={item.id} delay={index * 0.05}>
-                          <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)] hover:border-white/10 transition-colors">
+                          <div className="liquid-glass-soft p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
                             <div className="flex items-start gap-4 mb-4">
                               <img
                                 src={item.coverUrl}
@@ -393,7 +402,7 @@ export default function ProfilePage() {
                   <h2 className="text-xl font-semibold mb-6">Estadísticas Detalladas</h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                    <div className="liquid-glass-soft p-6 rounded-2xl border border-white/10">
                       <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
                         Por Estado
                       </h3>
@@ -411,7 +420,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className="p-6 rounded-lg border border-white/5 bg-[var(--bg-secondary)]">
+                    <div className="liquid-glass-soft p-6 rounded-2xl border border-white/10">
                       <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
                         Distribución de Valoraciones
                       </h3>
@@ -470,9 +479,9 @@ function StatCard({
 
   return (
     <FadeIn delay={delay} direction="up">
-      <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-[var(--bg-secondary)] p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300 hover:scale-105">
-        <div className={`mb-4 ${color} opacity-80 group-hover:scale-110 transition-transform`}>{icon}</div>
-        <div className="text-3xl font-bold text-white mb-1">{value}</div>
+      <div className="liquid-glass group relative overflow-hidden rounded-2xl border border-white/10 p-4 sm:p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300 hover:scale-105">
+        <div className={`mb-3 sm:mb-4 ${color} opacity-80 group-hover:scale-110 transition-transform`}>{icon}</div>
+        <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{value}</div>
         <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
         <div className="mt-4 h-1 w-full rounded-full bg-white/5 overflow-hidden">
           <div
@@ -500,7 +509,7 @@ function TabItem({
   return (
     <button
       onClick={onClick}
-      className={`pb-4 text-sm font-medium transition-all relative ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}
+      className={`pb-4 text-sm font-medium transition-all relative whitespace-nowrap flex-shrink-0 ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}
     >
       {label}
       {active && (
@@ -523,7 +532,7 @@ function TimelineItem({ title, date, type, desc }: { title: string; date: string
 
   return (
     <div className="relative group">
-      <span className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ${getColor(type)} ring-4 ring-black group-hover:scale-125 transition-transform`} />
+      <span className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ${getColor(type)} ring-4 ring-[var(--bg-primary)] group-hover:scale-125 transition-transform`} />
       <h4 className="text-sm font-medium text-white group-hover:text-[var(--accent-primary)] transition-colors">{title}</h4>
       <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{date}</p>
       <p className="text-xs text-[var(--text-secondary)] mt-2 line-clamp-2">{desc}</p>

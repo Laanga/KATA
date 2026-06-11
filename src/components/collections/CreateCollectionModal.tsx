@@ -43,7 +43,7 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
     <Modal isOpen={isOpen} onClose={onClose} title="Nueva Colección" size="md">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <label htmlFor="name" className="block text-sm font-medium text-foreground">
+          <label htmlFor="name" className="block text-sm font-medium text-[var(--text-secondary)]">
             Nombre *
           </label>
           <input
@@ -52,13 +52,13 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Animes vistos en 2024"
-            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-foreground placeholder:text-muted-foreground"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] text-white placeholder-[var(--text-tertiary)] transition-colors"
             autoFocus
           />
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-foreground">
+          <label className="block text-sm font-medium text-[var(--text-secondary)]">
             Color
           </label>
           <div className="flex flex-wrap gap-2">
@@ -67,10 +67,13 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
                 key={color}
                 type="button"
                 onClick={() => setSelectedColor(color)}
-                className={`w-8 h-8 rounded-full transition-transform hover:scale-110 ${
-                  selectedColor === color ? 'ring-2 ring-offset-2 ring-offset-background ring-foreground' : ''
+                className={`w-8 h-8 rounded-full transition-all hover:scale-110 active:scale-95 ${
+                  selectedColor === color ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#141414] scale-110' : ''
                 }`}
-                style={{ backgroundColor: color }}
+                style={{
+                  backgroundColor: color,
+                  boxShadow: selectedColor === color ? `0 0 14px color-mix(in srgb, ${color} 50%, transparent)` : undefined,
+                }}
                 title={color}
               />
             ))}
@@ -81,13 +84,13 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-border text-foreground hover:bg-accent/10 transition-colors"
+            className="px-4 py-2 rounded-full border border-white/10 text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors text-sm"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-6 py-2 rounded-lg bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
+            className="px-6 py-2 rounded-full bg-[var(--accent-primary)] text-black font-semibold hover:bg-[var(--accent-primary)]/90 active:scale-95 transition-all text-sm"
           >
             Crear Colección
           </button>

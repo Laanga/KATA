@@ -16,6 +16,7 @@ interface CollectionsSidebarProps {
 
 export default function CollectionsSidebar({ selectedCollection, onCollectionSelect }: CollectionsSidebarProps) {
   const collections = useMediaStore((state) => state.collections);
+  const totalItems = useMediaStore((state) => state.items.length);
   const deleteCollection = useMediaStore((state) => state.deleteCollection);
   const updateCollection = useMediaStore((state) => state.updateCollection);
   const getItemsByCollection = useMediaStore((state) => state.getItemsByCollection);
@@ -77,103 +78,167 @@ export default function CollectionsSidebar({ selectedCollection, onCollectionSel
 
   return (
     <div
-      className={`liquid-glass-soft relative rounded-2xl border border-white/10 transition-all duration-300 ${
-        isCollapsed ? 'w-16' : 'w-full lg:w-64'
+      className={`liquid-glass-soft relative overflow-hidden rounded-2xl border border-white/10 transition-[width] duration-300 ease-out ${
+        isCollapsed ? 'w-14' : 'w-full lg:w-64'
       }`}
     >
-      <button
-        onClick={() => {
-          setIsCollapsed(!isCollapsed);
-          handleCloseMenu();
-        }}
-        className="liquid-glass-soft absolute -top-3 -right-3 z-20 p-1.5 rounded-full border border-white/10 text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 transition-colors"
-        title={isCollapsed ? 'Expandir' : 'Colapsar'}
-      >
-        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-      </button>
+      {isCollapsed ? (
+        /* Rail contraído: cada colección es un punto de su color */
+        <div className="flex flex-col items-center gap-1.5 p-2">
+          <button
+            onClick={() => {
+              setIsCollapsed(false);
+              handleCloseMenu();
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white transition-colors"
+            title="Expandir colecciones"
+            aria-label="Expandir colecciones"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
 
-      <div className={`p-4 transition-all duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-            Colecciones
-          </h2>
+          <div className="h-px w-6 bg-white/10" />
+
+          <button
+            onClick={() => onCollectionSelect('ALL')}
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+              selectedCollection === 'ALL'
+                ? 'liquid-glass-active text-[var(--accent-primary)]'
+                : 'text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white'
+            }`}
+            title="Todas las colecciones"
+            aria-label="Todas las colecciones"
+          >
+            <Folder className="w-4 h-4" />
+          </button>
+
+          {collections.map((collection) => {
+            const isActive = selectedCollection === collection.id;
+            return (
+              <button
+                key={collection.id}
+                onClick={() => onCollectionSelect(collection.id)}
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                  isActive ? 'liquid-glass-active' : 'hover:bg-white/5'
+                }`}
+                title={collection.name}
+                aria-label={collection.name}
+              >
+                <span
+                  className={`rounded-full transition-all ${isActive ? 'h-3 w-3' : 'h-2.5 w-2.5'}`}
+                  style={{ backgroundColor: collection.color || 'var(--text-tertiary)' }}
+                />
+              </button>
+            );
+          })}
+
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="p-1.5 rounded-full hover:bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/15 transition-colors"
             title="Crear colección"
             aria-label="Crear colección"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
-
-        <div className="space-y-1">
-          <button
-            onClick={() => onCollectionSelect('ALL')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
-              selectedCollection === 'ALL'
-                ? 'liquid-glass-active text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Folder className="w-5 h-5" />
-              <span className="text-sm">Todas las colecciones</span>
+      ) : (
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+              Colecciones
+            </h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="p-1.5 rounded-full hover:bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] transition-colors"
+                title="Crear colección"
+                aria-label="Crear colección"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setIsCollapsed(true);
+                  handleCloseMenu();
+                }}
+                className="p-1.5 rounded-full text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white transition-colors"
+                title="Contraer colecciones"
+                aria-label="Contraer colecciones"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
             </div>
-          </button>
+          </div>
 
-          {collections.map((collection) => {
-            const itemCount = getItemsByCollection(collection.id).length;
-            const isActive = selectedCollection === collection.id;
+          <div className="space-y-1">
+            <button
+              onClick={() => onCollectionSelect('ALL')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-full transition-all ${
+                selectedCollection === 'ALL'
+                  ? 'liquid-glass-active text-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Folder className="w-4 h-4" />
+                <span className="text-sm">Todas</span>
+              </div>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-tertiary)]">
+                {totalItems}
+              </span>
+            </button>
 
-            return (
-              <div key={collection.id} className="relative group">
-                <button
-                  onClick={() => onCollectionSelect(collection.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
-                    isActive
-                      ? 'liquid-glass-active text-[var(--accent-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Folder
-                      className="w-5 h-5 flex-shrink-0"
-                      style={{ color: collection.color || 'var(--text-secondary)' }}
-                    />
-                    <span className="text-sm truncate">{collection.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[var(--text-tertiary)] group-hover:opacity-0 transition-opacity">
+            {collections.map((collection) => {
+              const itemCount = getItemsByCollection(collection.id).length;
+              const isActive = selectedCollection === collection.id;
+
+              return (
+                <div key={collection.id} className="relative group">
+                  <button
+                    onClick={() => onCollectionSelect(collection.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-full transition-all ${
+                      isActive
+                        ? 'liquid-glass-active text-[var(--accent-primary)]'
+                        : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: collection.color || 'var(--text-tertiary)' }}
+                      />
+                      <span className="text-sm truncate">{collection.name}</span>
+                    </div>
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-tertiary)] group-hover:opacity-0 transition-opacity">
                       {itemCount}
                     </span>
-                  </div>
-                </button>
+                  </button>
 
-                <button
-                  ref={(el) => {
-                    menuButtonRefs.current[collection.id] = el;
-                  }}
-                  onClick={(e) => handleOpenMenu(collection, e)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-opacity"
-                  title="Más opciones"
-                  aria-label="Más opciones"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {collections.length === 0 && (
-          <div className="text-center py-8 text-[var(--text-tertiary)]">
-            <Folder className="w-10 h-10 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">No tienes colecciones</p>
-            <p className="text-xs mt-1 opacity-70">Crea una para organizar tus items</p>
+                  <button
+                    ref={(el) => {
+                      menuButtonRefs.current[collection.id] = el;
+                    }}
+                    onClick={(e) => handleOpenMenu(collection, e)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-white/10 transition-opacity"
+                    title="Más opciones"
+                    aria-label="Más opciones"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
+
+          {collections.length === 0 && (
+            <div className="text-center py-8 text-[var(--text-tertiary)]">
+              <Folder className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No tienes colecciones</p>
+              <p className="text-xs mt-1 opacity-70">Crea una para organizar tus items</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Modales */}
       {isCreateModalOpen && (

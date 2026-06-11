@@ -484,36 +484,51 @@ export default function DiscoverPage() {
 
   return (
     <>
-      <div className="min-h-screen pb-24 md:pb-0">
-        <main className="container mx-auto px-4 pt-24 sm:pt-28">
+      <div className="min-h-screen pb-nav-safe relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: '1s' }}
+          />
+        </div>
+
+        <main className="container mx-auto px-4 pt-8 md:pt-28 relative z-10">
           {/* Header */}
           <FadeIn direction="up" delay={0.1}>
-            <div className="mb-6">
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">Descubrir</h1>
-              <p className="text-[var(--text-secondary)]">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none mb-3">
+                Descubrir
+              </h1>
+              <p className="text-sm sm:text-base text-[var(--text-secondary)]">
                 Próximos lanzamientos y recomendaciones personalizadas
               </p>
             </div>
           </FadeIn>
 
           {/* Filtros - Sticky */}
-          <div className="sticky top-14 sm:top-16 z-40 -mx-4 px-4 py-4 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-white/5">
-            <div className="flex flex-col gap-4">
-              {/* Tipo - Tabs principales */}
-              <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl w-fit">
+          <div className="sticky top-0 md:top-16 z-40 -mx-4 px-4 py-3 sm:py-4 bg-[var(--bg-primary)]/60 backdrop-blur-xl border-b border-white/10">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Tipo - Tabs principales (ancho completo en móvil para hit-area cómoda) */}
+              <div className="liquid-glass-soft flex w-full sm:w-fit gap-1 p-1 rounded-full border border-white/10">
                 {(['MOVIE', 'SERIES', 'BOOK', 'GAME'] as MediaType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => setSelectedType(type)}
                     className={`
-                      relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                      ${selectedType === type 
-                        ? 'text-white shadow-lg' 
-                        : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                      relative flex flex-1 sm:flex-initial items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-full text-sm font-medium transition-all duration-200
+                      ${selectedType === type
+                        ? 'text-white shadow-lg'
+                        : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-white/5'
                       }
                     `}
                     style={{
                       backgroundColor: selectedType === type ? TYPE_COLORS[type] : 'transparent',
+                      boxShadow:
+                        selectedType === type
+                          ? `inset 0 1px 0 rgba(255,255,255,0.18), 0 0 18px color-mix(in srgb, ${TYPE_COLORS[type]} 33%, transparent)`
+                          : undefined,
                     }}
                   >
                     {typeConfig[type].icon}
@@ -522,21 +537,21 @@ export default function DiscoverPage() {
                 ))}
               </div>
 
-              {/* Fila de filtros secundarios */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* Fila de filtros secundarios: scroll horizontal en móvil */}
+              <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
                 {/* Período */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-shrink-0 items-center gap-2">
                   <Clock size={16} className="text-[var(--text-tertiary)]" />
-                  <div className="flex gap-1 p-0.5 bg-[var(--bg-secondary)] rounded-lg">
+                  <div className="liquid-glass-soft flex gap-1 p-1 rounded-full border border-white/10">
                     {periods.map((period) => (
                       <button
                         key={period.value}
                         onClick={() => setSelectedPeriod(period.value as PeriodType)}
                         className={`
-                          px-3 py-1.5 rounded-md text-xs font-medium transition-all
+                          px-3 py-1.5 rounded-full text-xs font-medium transition-all
                           ${selectedPeriod === period.value
-                            ? 'bg-white/10 text-white'
-                            : 'text-[var(--text-tertiary)] hover:text-white'
+                            ? 'liquid-glass-active text-[var(--accent-primary)]'
+                            : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
                           }
                         `}
                       >
@@ -549,12 +564,12 @@ export default function DiscoverPage() {
 
                 {/* Género - Select estilizado */}
                 {availableGenres.length > 0 && (
-                  <div className="relative">
+                  <div className="relative flex-shrink-0">
                     <select
                       value={selectedGenre}
                       onChange={(e) => setSelectedGenre(e.target.value)}
                       className="
-                        h-8 appearance-none rounded-lg border border-white/10 bg-[var(--bg-secondary)] 
+                        liquid-glass-soft h-8 appearance-none rounded-full border border-white/10
                         pl-3 pr-8 text-xs text-[var(--text-primary)] transition-all
                         hover:border-white/20 focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]
                         cursor-pointer
@@ -571,7 +586,7 @@ export default function DiscoverPage() {
 
                 {/* Indicador de resultados */}
                 {!isLoading && (
-                  <span className="text-xs text-[var(--text-tertiary)] ml-auto">
+                  <span className="text-xs text-[var(--text-tertiary)] ml-auto flex-shrink-0 whitespace-nowrap">
                     {getFilteredUpcoming().length} resultados
                   </span>
                 )}
@@ -623,10 +638,10 @@ export default function DiscoverPage() {
                         ))}
                       </HorizontalScroll>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-white/5 bg-[var(--bg-secondary)]/50">
-                        <div 
+                      <div className="liquid-glass-soft flex flex-col items-center justify-center py-16 rounded-2xl border border-white/10">
+                        <div
                           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                          style={{ backgroundColor: `${TYPE_COLORS[selectedType]}20` }}
+                          style={{ backgroundColor: `color-mix(in srgb, ${TYPE_COLORS[selectedType]} 12%, transparent)` }}
                         >
                           {typeConfig[selectedType].icon}
                         </div>
@@ -678,7 +693,7 @@ export default function DiscoverPage() {
                           ))}
                         </HorizontalScroll>
                       ) : (
-                        <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-white/5 bg-[var(--bg-secondary)]/50">
+                        <div className="liquid-glass-soft flex flex-col items-center justify-center py-16 rounded-2xl border border-white/10">
                           <div className="w-16 h-16 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center mb-4">
                             <Sparkles size={24} className="text-[var(--accent-primary)]" />
                           </div>

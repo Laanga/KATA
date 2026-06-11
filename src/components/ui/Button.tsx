@@ -19,7 +19,7 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50';
 
   const variants = {
     primary: 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-primary)]/90 active:scale-95',

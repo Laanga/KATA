@@ -201,13 +201,13 @@ export default function HomePage() {
 
   return (
     <>
-      <div ref={containerRef} className="min-h-screen pb-24 md:pb-0 relative overflow-hidden">
+      <div ref={containerRef} className="min-h-screen pb-nav-safe relative overflow-hidden">
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <main className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 max-w-7xl relative z-10">
+        <main className="container mx-auto px-4 sm:px-6 pt-10 md:pt-24 max-w-7xl relative z-10">
         <header ref={headerRef} className="mb-8 sm:mb-12 md:mb-16">
           <div className="flex items-baseline gap-2 sm:gap-4 mb-3 sm:mb-4">
             <h1 className="header-title text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight text-balance bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none">

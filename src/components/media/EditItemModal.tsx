@@ -91,9 +91,9 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Item Preview - Read Only */}
-        <div className="rounded-xl border border-white/10 bg-[var(--bg-tertiary)] p-4">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <div className="flex items-start gap-4">
-            <div className="relative h-28 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)] border border-white/5">
+            <div className="relative h-28 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/10">
               <Image
                 src={item.coverUrl}
                 alt={item.title}
@@ -247,7 +247,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
               placeholder="¿Qué te pareció? (opcional)"
-              className="min-h-[100px] w-full resize-none rounded-xl border border-white/10 bg-[var(--bg-tertiary)] p-3 text-sm text-white placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="min-h-[100px] w-full resize-none rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               maxLength={500}
             />
           </div>

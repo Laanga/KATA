@@ -41,7 +41,7 @@ export default function LibraryPage() {
 
   return (
     <>
-      <div className="min-h-screen pb-24 md:pb-0 relative overflow-hidden">
+      <div className="min-h-screen pb-nav-safe relative overflow-hidden">
         {/* Ambient glow */}
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
@@ -56,7 +56,7 @@ export default function LibraryPage() {
           onCollectionSelect={setSelectedCollection}
         />
 
-        <div className="flex pt-14 sm:pt-16 relative z-10">
+        <div className="flex pt-2 md:pt-16 relative z-10">
           {/* Sidebar de Colecciones */}
           <aside className="hidden lg:block sticky top-14 sm:top-16 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] pt-8 pl-4">
             <CollectionsSidebar
@@ -95,8 +95,8 @@ export default function LibraryPage() {
               <DashboardMetrics />
             </FadeIn>
 
-            {/* Sticky filter row */}
-            <div className="sticky top-20 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 backdrop-blur-md">
+            {/* Filter row: sticky solo en escritorio (en móvil ocuparía demasiado viewport) */}
+            <div className="md:sticky md:top-20 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 md:backdrop-blur-md">
               <FadeIn direction="up" delay={0.2}>
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div></div>
@@ -205,7 +205,7 @@ export default function LibraryPage() {
                           </p>
                         </div>
                         {item.rating !== null && (
-                          <div className="hidden sm:flex items-center gap-1 text-[var(--accent-warning)] text-sm font-medium px-3">
+                          <div className="flex items-center gap-1 text-[var(--accent-warning)] text-xs sm:text-sm font-medium px-1 sm:px-3">
                             <Star size={14} fill="currentColor" />
                             {item.rating.toFixed(1)}
                           </div>
