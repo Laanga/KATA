@@ -15,8 +15,8 @@ export function StatusDistribution() {
 
   return (
     <FadeIn delay={0.2}>
-      <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6 mb-8">
-        <h3 className="text-lg font-semibold mb-6">Composición de la Biblioteca</h3>
+      <div className="kata-panel p-6 mb-8">
+        <h3 className="kata-title-dialog mb-6">Composición de la Biblioteca</h3>
 
         {/* Progress Bar */}
         <div className="h-4 w-full rounded-full bg-white/5 overflow-hidden flex mb-6">

@@ -40,7 +40,7 @@ export default function SignupPage() {
 
       {/* Form container */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md p-8 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl">
+        <div className="kata-panel w-full max-w-md p-8">
           <AuthForm mode="signup" />
         </div>
       </div>

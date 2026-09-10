@@ -48,7 +48,7 @@ export function EditCollectionNameModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Editar nombre" size="sm">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <label htmlFor="name" className="block text-sm font-medium text-[var(--text-secondary)]">
+          <label htmlFor="name" className="kata-label">
             Nombre de la colección
           </label>
           <TextInput

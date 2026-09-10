@@ -1,4 +1,5 @@
 'use client';
+import { Chip } from '@/components/ui/Choice';
 import { MediaCover } from '@/components/media/MediaCover';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -117,7 +118,7 @@ export default function ProfilePage() {
           <>
             <FadeIn direction="up" delay={0.1}>
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 sm:mb-12">
-                <div className="flex items-center gap-4 sm:gap-6">
+                <div className="flex items-center gap-4 sm:gap-6 min-w-0 max-w-full">
                   <div className="relative h-20 w-20 sm:h-28 sm:w-28 flex-shrink-0 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
                     {avatarUrl ? (
                       <MediaCover
@@ -137,7 +138,7 @@ export default function ProfilePage() {
                       <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
                       {stats.total} elementos rastreados
                     </p>
-                    <p className="text-[var(--text-tertiary)] text-sm mt-1">
+                    <p className="text-[var(--text-tertiary)] text-sm mt-1 break-all">
                       {userEmail || 'Sin email'}
                     </p>
                   </div>
@@ -152,12 +153,10 @@ export default function ProfilePage() {
 
             {stats.total === 0 && (
               <FadeIn direction="up" delay={0.15}>
-                <div className="liquid-glass-soft mb-8 p-6 rounded-[var(--kata-radius-card)] border border-[var(--accent-primary)]/20">
+                <div className="kata-panel kata-panel--subtle mb-8 p-6 border-[var(--accent-primary)]/20">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-start sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-2">
-                        Empieza a trackear tu contenido
-                      </h3>
+                      <h3 className="kata-title-dialog mb-2">Empieza a trackear tu contenido</h3>
                       <p className="text-sm text-[var(--text-secondary)]">
                         Añade tus primeras películas, series, libros o videojuegos para ver tus
                         estadísticas y actividad.
@@ -208,7 +207,7 @@ export default function ProfilePage() {
 
             <FadeIn direction="up" delay={0.3}>
               <div className="border-b border-white/10 mb-8">
-                <div className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide">
+                <div className="flex gap-2 pb-3 overflow-x-auto scrollbar-hide">
                   <TabItem
                     label="Resumen"
                     active={activeTab === 'overview'}
@@ -239,9 +238,9 @@ export default function ProfilePage() {
                   <section ref={heatmapRef}>
                     <div className="flex items-center gap-3 mb-6">
                       <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
-                      <h2 className="text-xl font-semibold">Actividad por Día</h2>
+                      <h2 className="kata-title-section text-xl">Actividad por Día</h2>
                     </div>
-                    <div className="liquid-glass rounded-[var(--kata-radius-card)] border border-white/10 p-4 sm:p-8 hover:border-white/20 transition-colors">
+                    <div className="kata-panel p-4 sm:p-8 transition-colors">
                       <div className="h-32 flex items-end justify-between gap-0.5 sm:gap-1">
                         {activityChartData.map((data, i) => (
                           <div
@@ -263,7 +262,7 @@ export default function ProfilePage() {
 
                   {favoriteItems.length > 0 && (
                     <section ref={favoritesRef}>
-                      <h2 className="text-xl font-semibold mb-6">Mejor Valorados</h2>
+                      <h2 className="kata-title-section text-xl mb-6">Mejor Valorados</h2>
                       <div className="grid grid-cols-3 gap-2 sm:gap-4">
                         {favoriteItems.map((item, index) => (
                           <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
@@ -277,7 +276,7 @@ export default function ProfilePage() {
 
                 <div className="space-y-8">
                   <section ref={timelineRef}>
-                    <h2 className="text-lg font-semibold mb-4 text-[var(--text-secondary)]">
+                    <h2 className="kata-title-section mb-4 text-[var(--text-secondary)]">
                       Actividad Reciente
                     </h2>
                     <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
@@ -302,11 +301,11 @@ export default function ProfilePage() {
 
             {activeTab === 'history' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-6">Historial Completo</h2>
+                <h2 className="kata-title-section text-xl mb-6">Historial Completo</h2>
                 <div className="space-y-3">
                   {recentActivity.map((item, index) => (
                     <FadeIn key={item.id} delay={index * 0.05}>
-                      <div className="liquid-glass-soft flex items-center gap-4 p-4 rounded-[var(--kata-radius-card)] border border-white/10 hover:border-white/20 transition-colors">
+                      <div className="kata-panel kata-panel--subtle flex items-center gap-4 p-4 transition-colors">
                         <MediaCover
                           width={96}
                           height={128}
@@ -315,7 +314,7 @@ export default function ProfilePage() {
                           className="h-16 w-12 rounded object-cover"
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-white">{item.title}</h3>
+                          <h3 className="kata-title-dialog">{item.title}</h3>
                           <p className="text-sm text-[var(--text-secondary)]">
                             {item.author || item.platform || item.releaseYear}
                           </p>
@@ -337,13 +336,13 @@ export default function ProfilePage() {
 
             {activeTab === 'reviews' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-6">Tus Reseñas</h2>
+                <h2 className="kata-title-section text-xl mb-6">Tus Reseñas</h2>
                 <div className="space-y-4">
                   {items
                     .filter((item) => item.review)
                     .map((item, index) => (
                       <FadeIn key={item.id} delay={index * 0.05}>
-                        <div className="liquid-glass-soft p-6 rounded-[var(--kata-radius-card)] border border-white/10 hover:border-white/20 transition-colors">
+                        <div className="kata-panel kata-panel--subtle p-6 transition-colors">
                           <div className="flex items-start gap-4 mb-4">
                             <MediaCover
                               width={96}
@@ -353,7 +352,7 @@ export default function ProfilePage() {
                               className="h-20 w-14 rounded object-cover"
                             />
                             <div className="flex-1">
-                              <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                              <h3 className="kata-title-dialog mb-1">{item.title}</h3>
                               <p className="text-sm text-[var(--text-secondary)] mb-2">
                                 {item.author || item.platform}
                               </p>
@@ -385,11 +384,11 @@ export default function ProfilePage() {
 
             {activeTab === 'stats' && (
               <div className="space-y-8">
-                <h2 className="text-xl font-semibold mb-6">Estadísticas Detalladas</h2>
+                <h2 className="kata-title-section text-xl mb-6">Estadísticas Detalladas</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="liquid-glass-soft p-6 rounded-[var(--kata-radius-card)] border border-white/10">
-                    <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                  <div className="kata-panel kata-panel--subtle p-6">
+                    <h3 className="kata-section-label text-[var(--text-tertiary)] mb-4">
                       Por Estado
                     </h3>
                     <div className="space-y-3">
@@ -406,8 +405,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="liquid-glass-soft p-6 rounded-[var(--kata-radius-card)] border border-white/10">
-                    <h3 className="text-sm font-semibold text-[var(--text-tertiary)] uppercase mb-4">
+                  <div className="kata-panel kata-panel--subtle p-6">
+                    <h3 className="kata-section-label text-[var(--text-tertiary)] mb-4">
                       Distribución de Valoraciones
                     </h3>
                     <div className="space-y-3">
@@ -462,7 +461,7 @@ function StatCard({
 
   return (
     <FadeIn delay={delay} direction="up">
-      <div className="liquid-glass group relative overflow-hidden rounded-[var(--kata-radius-card)] border border-white/10 p-4 sm:p-6 hover:border-[var(--accent-primary)]/30 transition-all duration-300 hover:scale-105">
+      <div className="kata-panel group relative overflow-hidden p-4 sm:p-6 transition-all duration-300 hover:scale-105">
         <div
           className={`mb-3 sm:mb-4 ${color} opacity-80 group-hover:scale-110 transition-transform`}
         >
@@ -494,15 +493,9 @@ function TabItem({
   onClick: () => void;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`pb-4 text-sm font-medium transition-all relative whitespace-nowrap flex-shrink-0 ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)] hover:text-white'}`}
-    >
+    <Chip selected={!!active} onClick={onClick}>
       {label}
-      {active && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)] shadow-[0_0_10px_var(--accent-primary)]"></div>
-      )}
-    </button>
+    </Chip>
   );
 }
 

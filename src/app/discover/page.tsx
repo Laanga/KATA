@@ -144,13 +144,13 @@ export default function DiscoverPage() {
         </NativeSelect>
       </div>
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-5">
+        <h2 className="kata-title-section mb-5">
           {type === 'BOOK' ? 'Lecturas recientes' : 'Próximos lanzamientos'}
         </h2>
         {upcoming.loading ? (
           <p role="status">Cargando novedades…</p>
         ) : upcoming.error ? (
-          <div role="status">
+          <div role="status" className="kata-notice kata-notice--warning">
             <p>{upcoming.error}</p>
             <Button variant="ghost" size="sm" onClick={upcoming.retry}>
               Reintentar
@@ -174,7 +174,7 @@ export default function DiscoverPage() {
         )}
       </section>
       <section className="pb-10">
-        <h2 className="flex items-center gap-3 text-2xl font-semibold mb-3">
+        <h2 className="kata-title-section flex items-center gap-3 mb-3">
           <Sparkles size={22} className="text-emerald-300" />
           Para ti
         </h2>
@@ -186,7 +186,7 @@ export default function DiscoverPage() {
         {recommendations.loading ? (
           <p role="status">Buscando recomendaciones…</p>
         ) : recommendations.error ? (
-          <div role="status">
+          <div role="status" className="kata-notice kata-notice--warning">
             <p>{recommendations.error}</p>
             <Button variant="ghost" size="sm" onClick={recommendations.retry}>
               Reintentar

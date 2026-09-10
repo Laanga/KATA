@@ -109,7 +109,7 @@ function MetricCard({
   return (
     <FadeIn delay={delay}>
       <div
-        className="liquid-glass-soft group relative rounded-[var(--kata-radius-card)] border border-white/10 p-3 sm:p-4 md:p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20"
+        className="kata-panel kata-panel--subtle group relative p-3 sm:p-4 md:p-5 transition-all duration-300 hover:-translate-y-0.5"
         style={{
           ['--metric-glow' as string]: `rgba(${a.rgb}, 0.18)`,
         }}

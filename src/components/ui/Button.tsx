@@ -1,5 +1,5 @@
 'use client';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -12,7 +12,7 @@ export function buttonStyles({
 }: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {}) {
   return cn('kata-button', `kata-button--${variant}`, `kata-button--${size}`, className);
 }
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ComponentProps<'button'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
@@ -64,4 +64,20 @@ export function ButtonLink({
   ...props
 }: React.ComponentProps<typeof Link> & { variant?: ButtonVariant; size?: ButtonSize }) {
   return <Link {...props} className={buttonStyles({ variant, size, className })} />;
+}
+
+/** Full-width action with supporting content, used in settings and lists. */
+export function ActionButton({ className, ...props }: ButtonProps) {
+  return <Button variant="secondary" {...props} className={cn('kata-button--row', className)} />;
+}
+
+/** A cover remains a cover; interaction, focus and surface come from the system. */
+export function MediaButton({ className, ...props }: ComponentProps<'button'>) {
+  return (
+    <button
+      {...props}
+      type={props.type || 'button'}
+      className={cn('kata-media-button', className)}
+    />
+  );
 }

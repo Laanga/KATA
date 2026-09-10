@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/components/ui/Button';
 import { MediaCover } from '@/components/media/MediaCover';
 
 import { FadeIn } from '@/components/FadeIn';
@@ -22,8 +23,8 @@ export function TopRatedItems() {
   if (topRated.length === 0) {
     return (
       <FadeIn delay={0.2}>
-        <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6">
-          <h3 className="text-lg font-semibold mb-4">Top Valorados</h3>
+        <div className="kata-panel p-6">
+          <h3 className="kata-title-dialog mb-4">Top Valorados</h3>
           <p className="text-sm text-[var(--text-tertiary)] text-center py-8">
             No hay items con rating alto (≥4)
           </p>
@@ -34,10 +35,10 @@ export function TopRatedItems() {
 
   return (
     <FadeIn delay={0.2}>
-      <div className="group liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] overflow-hidden hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative">
+      <div className="kata-panel p-0 group overflow-hidden transition-all duration-500 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
         <div className="p-6 border-b border-white/5 relative z-10">
-          <h3 className="text-lg font-semibold">Top Valorados</h3>
+          <h3 className="kata-title-dialog">Top Valorados</h3>
           <p className="text-sm text-[var(--text-tertiary)] mt-1">Tus items mejor puntuados</p>
         </div>
         <div className="relative z-10">
@@ -45,9 +46,10 @@ export function TopRatedItems() {
             const Icon = TYPE_ICONS_COMPONENT[item.type];
             return (
               <FadeIn key={item.id} delay={index * 0.05}>
-                <button
+                <ActionButton
+                  variant="ghost"
                   onClick={() => router.push(`/library?item=${item.id}`)}
-                  className="w-full group/item flex items-center gap-4 p-4 border-b border-white/5 last:border-0 hover:bg-white/5 hover:bg-gradient-to-r hover:from-emerald-500/5 hover:to-transparent transition-all duration-300 text-left relative overflow-hidden"
+                  className="group/item relative overflow-hidden"
                 >
                   {/* Hover glow effect */}
                   <div className="absolute inset-0 bg-emerald-500/0 group-hover/item:bg-emerald-500/5 transition-all duration-300" />
@@ -103,7 +105,7 @@ export function TopRatedItems() {
                   <div className="text-[var(--text-tertiary)] group-hover/item:text-emerald-400 group-hover/item:translate-x-1 transition-all duration-300 z-10">
                     →
                   </div>
-                </button>
+                </ActionButton>
               </FadeIn>
             );
           })}

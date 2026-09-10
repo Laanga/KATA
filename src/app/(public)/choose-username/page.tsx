@@ -98,7 +98,7 @@ export default function ChooseUsernamePage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-[var(--bg-secondary)] border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="kata-panel p-8">
           {/* Icon */}
           <div className="flex justify-center mb-6">
             <div className="rounded-full bg-emerald-500/10 p-4">
@@ -107,9 +107,7 @@ export default function ChooseUsernamePage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-bold text-center text-white mb-2">
-            Elige tu Nombre de Usuario
-          </h1>
+          <h1 className="kata-title-page text-center mb-2">Elige tu Nombre de Usuario</h1>
 
           <p className="text-center text-[var(--text-secondary)] mb-6">
             Para completar tu registro, elige un nombre de usuario único para tu cuenta.
@@ -118,10 +116,7 @@ export default function ChooseUsernamePage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-              >
+              <label htmlFor="username" className="kata-label">
                 Nombre de Usuario
               </label>
               <TextInput

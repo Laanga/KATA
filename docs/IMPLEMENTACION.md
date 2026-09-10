@@ -28,7 +28,7 @@ El seguimiento numérico de páginas/episodios/horas sigue siendo una posible ev
 | --- | --- |
 | `npm run lint -- --max-warnings=0` | Sin errores ni avisos. |
 | `npm run typecheck` y TypeScript del build | Correctos. |
-| `npm test` | **27 pruebas, 7 archivos, todas pasan**. Incluyen carreras de búsqueda, carga/sesión, fallos de guardado, reintento tras insertar, CSV/JSON y onboarding. |
+| `npm test` | **29 pruebas, 7 archivos, todas pasan**. Incluyen carreras de búsqueda, carga/sesión, fallos de guardado, reintento tras insertar, CSV/JSON y onboarding. |
 | `npm run build` | Build de producción completo con Next.js 16.3.4; 24 páginas generadas. |
 | Auditoría del lockfile | **0 vulnerabilidades** reportadas. |
 | PostgreSQL con datos previos al cambio | Conserva título, nota y valoración cero. Las dos cuentas existentes, incluida una vacía, quedan `skipped`; no se inventa `completed_at`. |
@@ -69,3 +69,9 @@ La retención real requiere medir uso después del alta; el cambio reduce pasos 
 ## Preparación del despliegue
 
 El propietario aplicó manualmente las migraciones remotas y compartió la verificación correcta del esquema, permisos y Storage. Confirmó además que la configuración de Auth era correcta. Véase BASE-DE-DATOS.md para el historial CLI pendiente. El sistema visual compartido y su catálogo están descritos en DESIGN-SYSTEM.md.
+
+## Unificación visual completa
+
+Se han revisado las rutas públicas y privadas y migrado los controles heredados de colecciones, Ajustes, listas, pestañas y 404 a las primitivas de UI. También se comparten superficies de tarjetas/skeletons, avisos, navegación y notificaciones. El menú de colecciones queda dentro del viewport y su color se elige en el modal compartido. Los nombres largos de perfil se ajustan al ancho móvil. ESLint impide nuevos controles nativos fuera de UI.
+
+Verificación: 29 pruebas, lint sin avisos, build y worker generado correctos. Revisión de navegador local en escritorio y móvil 390×844, incluyendo creación y cambio de color de colección, cambio de vista, edición, perfil/Ajustes, búsqueda real de libros y estados de proveedor no disponible. No hay cambios de esquema ni nuevas migraciones para esta revisión visual.

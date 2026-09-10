@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
 
       {/* Form container */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md p-8 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl">
+        <div className="kata-panel w-full max-w-md p-8">
           {isSuccess ? (
             /* Success state */
             <div className="text-center space-y-6">
@@ -130,7 +130,7 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">¡Contraseña actualizada!</h2>
+                <h2 className="kata-title-section mb-2">¡Contraseña actualizada!</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
                   Tu contraseña ha sido cambiada correctamente
                 </p>
@@ -146,7 +146,7 @@ export default function ResetPasswordPage() {
                 <AlertCircle className="w-8 h-8 text-red-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Enlace inválido o expirado</h2>
+                <h2 className="kata-title-section mb-2">Enlace inválido o expirado</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
                   El enlace de recuperación ha expirado o ya fue utilizado
                 </p>
@@ -162,7 +162,7 @@ export default function ResetPasswordPage() {
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
                   <Lock className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Nueva contraseña</h2>
+                <h2 className="kata-title-section">Nueva contraseña</h2>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   Ingresa tu nueva contraseña
                 </p>
@@ -170,10 +170,7 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-                  >
+                  <label htmlFor="password" className="kata-label">
                     Nueva contraseña
                   </label>
                   <TextInput
@@ -191,10 +188,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-                  >
+                  <label htmlFor="confirmPassword" className="kata-label">
                     Confirmar contraseña
                   </label>
                   <TextInput

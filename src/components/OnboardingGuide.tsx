@@ -205,7 +205,7 @@ export function OnboardingGuide({
           </>
         )}
         {error && (
-          <p role="alert" className="text-sm text-red-300 border border-red-400/25 rounded-xl p-3">
+          <p role="alert" className="kata-notice kata-notice--error">
             {error}
           </p>
         )}

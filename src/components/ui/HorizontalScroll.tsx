@@ -1,4 +1,5 @@
 'use client';
+import { IconButton } from './Button';
 
 import { useRef, useState, useEffect, ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -46,7 +47,7 @@ export function HorizontalScroll({ children, showArrows = true }: HorizontalScro
     const scrollAmount = el.clientWidth * 0.8;
     el.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   };
 
@@ -67,43 +68,25 @@ export function HorizontalScroll({ children, showArrows = true }: HorizontalScro
       {/* Flechas de navegación */}
       {showArrows && (
         <>
-          <button
+          <IconButton
+            variant="secondary"
             onClick={() => scroll('left')}
-            className={`
-              absolute left-2 top-1/2 -translate-y-1/2 z-10
-              w-10 h-10 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm
-              border border-white/10 shadow-lg
-              hidden sm:flex items-center justify-center
-              transition-all duration-300
-              ${
-                canScrollLeft
-                  ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]'
-                  : 'opacity-0 pointer-events-none'
-              }
-            `}
-            aria-label="Scroll left"
+            disabled={!canScrollLeft}
+            label="Desplazar a la izquierda"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex"
           >
-            <ChevronLeft size={20} className="text-white" />
-          </button>
+            <ChevronLeft size={20} />
+          </IconButton>
 
-          <button
+          <IconButton
+            variant="secondary"
             onClick={() => scroll('right')}
-            className={`
-              absolute right-2 top-1/2 -translate-y-1/2 z-10
-              w-10 h-10 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm
-              border border-white/10 shadow-lg
-              hidden sm:flex items-center justify-center
-              transition-all duration-300
-              ${
-                canScrollRight
-                  ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]'
-                  : 'opacity-0 pointer-events-none'
-              }
-            `}
-            aria-label="Scroll right"
+            disabled={!canScrollRight}
+            label="Desplazar a la derecha"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex"
           >
-            <ChevronRight size={20} className="text-white" />
-          </button>
+            <ChevronRight size={20} />
+          </IconButton>
         </>
       )}
     </div>

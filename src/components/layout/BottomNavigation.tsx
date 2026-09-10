@@ -70,11 +70,7 @@ export default function BottomNavigation() {
               href={item.href}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
-              className={`relative flex flex-col items-center justify-center min-w-[56px] min-h-[52px] px-1 rounded-full transition-all duration-200 active:scale-90 ${
-                active
-                  ? 'liquid-glass-active text-[var(--accent-primary)]'
-                  : 'text-[var(--text-secondary)]'
-              }`}
+              className="kata-nav-link flex-col min-w-[56px] min-h-[52px] px-1"
             >
               <Icon
                 className={`w-[22px] h-[22px] transition-transform duration-200 ${

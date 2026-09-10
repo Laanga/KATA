@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { RadioChoice } from '@/components/ui/Choice';
+import { Button, ButtonLink, IconButton } from '@/components/ui/Button';
+import { RadioChoice, ColorSwatch } from '@/components/ui/Choice';
 
 it('requires explicit submission and blocks repeated actions while saving', () => {
   const submit = vi.fn((event: React.FormEvent) => event.preventDefault());
@@ -36,4 +36,31 @@ it('keeps navigation as a link and choices as labeled native radios', () => {
   expect(screen.getByRole('link', { name: 'Biblioteca' })).toHaveAttribute('href', '/library');
   fireEvent.click(screen.getByRole('radio', { name: 'Libros' }));
   expect(change).toHaveBeenCalledTimes(1);
+});
+
+it('keeps icon button refs usable by positioned menus', () => {
+  const ref = { current: null as HTMLButtonElement | null };
+  render(
+    <IconButton ref={ref} label="Opciones">
+      …
+    </IconButton>,
+  );
+  expect(ref.current).toBe(screen.getByRole('button', { name: 'Opciones' }));
+  ref.current?.focus();
+  expect(ref.current).toHaveFocus();
+});
+
+it('exposes a selected color and keeps its click out of form submission', () => {
+  const submit = vi.fn((event: React.FormEvent) => event.preventDefault());
+  const choose = vi.fn();
+  render(
+    <form onSubmit={submit}>
+      <ColorSwatch color="#10B981" selected onClick={choose} />
+    </form>,
+  );
+  const swatch = screen.getByRole('button', { name: 'Color #10B981' });
+  expect(swatch).toHaveAttribute('aria-pressed', 'true');
+  fireEvent.click(swatch);
+  expect(choose).toHaveBeenCalledTimes(1);
+  expect(submit).not.toHaveBeenCalled();
 });

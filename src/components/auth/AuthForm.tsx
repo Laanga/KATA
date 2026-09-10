@@ -155,7 +155,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
   return (
     <div className="w-full space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="kata-title-section">
           {mode === 'login' ? 'Bienvenido de nuevo' : 'Únete a Kata'}
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -173,10 +173,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
         <div className="space-y-4">
           {mode === 'signup' && (
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-              >
+              <label htmlFor="username" className="kata-label">
                 Nombre de Usuario
               </label>
               <TextInput
@@ -194,10 +191,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           )}
 
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-            >
+            <label htmlFor="email" className="kata-label">
               Email
             </label>
             <TextInput
@@ -215,10 +209,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[var(--text-secondary)]"
-              >
+              <label htmlFor="password" className="kata-label">
                 Contraseña
               </label>
               {mode === 'login' && (
@@ -245,10 +236,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
           {mode === 'signup' && (
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-              >
+              <label htmlFor="confirmPassword" className="kata-label">
                 Confirmar Contraseña
               </label>
               <TextInput

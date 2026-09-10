@@ -16,7 +16,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   /* eslint-disable react-hooks/set-state-in-effect */
 
   // Asegurarse de que estamos en el cliente
-    
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -38,7 +38,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         scale: 1,
         duration: 0.6,
         ease: 'power3.out',
-      }
+      },
     );
 
     // Scroll to top on route change

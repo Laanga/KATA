@@ -442,7 +442,7 @@ export default function LandingPage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="feature-card liquid-glass-soft group relative p-6 sm:p-7 rounded-3xl border border-white/10 overflow-hidden transition-all duration-500 hover:border-white/20 hover:-translate-y-1"
+                className="kata-panel kata-panel--subtle feature-card group relative p-6 sm:p-7 overflow-hidden transition-all duration-500 hover:-translate-y-1"
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <div
@@ -453,7 +453,7 @@ export default function LandingPage() {
                 />
 
                 <div
-                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110"
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-[var(--kata-radius-control)] flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110"
                   style={{
                     background: `linear-gradient(180deg, rgba(${feature.rgb}, 0.22) 0%, rgba(${feature.rgb}, 0.10) 100%)`,
                     boxShadow: `inset 0 0 0 1px rgba(${feature.rgb}, 0.28)`,
@@ -497,20 +497,20 @@ export default function LandingPage() {
             {steps.map((step) => (
               <div
                 key={step.number}
-                className="step-card liquid-glass-soft relative flex flex-col sm:flex-row items-start gap-4 sm:gap-8 p-6 sm:p-8 rounded-3xl border border-white/10 transition-all hover:border-white/20"
+                className="kata-panel kata-panel--subtle step-card relative flex flex-col sm:flex-row items-start gap-4 sm:gap-8 p-6 sm:p-8 transition-all"
               >
                 <div className="flex-shrink-0 flex sm:block items-center gap-4">
                   <span className="text-5xl sm:text-7xl md:text-8xl font-bold text-emerald-500/20 leading-none">
                     {step.number}
                   </span>
-                  <div className="sm:hidden w-12 h-12 rounded-xl liquid-glass-soft border border-emerald-400/20 flex items-center justify-center">
+                  <div className="kata-icon-well sm:hidden w-12 h-12">
                     <step.icon size={22} className="text-emerald-400" />
                   </div>
                 </div>
 
                 <div className="flex-1">
                   <div className="hidden sm:flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl liquid-glass-soft border border-emerald-400/20 flex items-center justify-center">
+                    <div className="kata-icon-well w-12 h-12">
                       <step.icon size={24} className="text-emerald-400" />
                     </div>
                     <h3 className="text-2xl font-bold text-white">{step.title}</h3>
@@ -547,9 +547,9 @@ export default function LandingPage() {
                 {benefits.map((benefit, i) => (
                   <div
                     key={i}
-                    className="benefit-item liquid-glass-soft flex items-center gap-4 p-4 rounded-2xl border border-white/10 transition-all hover:border-white/20 hover:-translate-y-0.5"
+                    className="kata-panel kata-panel--subtle benefit-item flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+                    <div className="kata-icon-well w-10 h-10">
                       <benefit.icon size={18} className="text-emerald-400" />
                     </div>
                     <span className="text-sm sm:text-base text-white font-medium">
@@ -561,7 +561,7 @@ export default function LandingPage() {
             </div>
 
             <div className="feature-card relative">
-              <div className="liquid-glass aspect-square rounded-3xl border border-white/10 p-6 sm:p-8 flex items-center justify-center overflow-hidden">
+              <div className="kata-panel aspect-square p-6 sm:p-8 flex items-center justify-center overflow-hidden">
                 <span
                   className="text-[200px] sm:text-[260px] font-bold opacity-[0.04] select-none absolute"
                   style={{ fontFamily: '"Noto Sans JP", sans-serif' }}
@@ -574,7 +574,7 @@ export default function LandingPage() {
                     {['Libro actual', 'Juego en progreso', 'Serie siguiendo'].map((item, i) => (
                       <div
                         key={i}
-                        className="liquid-glass-soft flex items-center gap-3 p-3 rounded-xl border border-white/10"
+                        className="kata-panel kata-panel--subtle flex items-center gap-3 p-3"
                       >
                         <div className="w-8 h-10 rounded bg-gradient-to-br from-white/20 to-white/5" />
                         <div className="flex-1">
@@ -604,7 +604,7 @@ export default function LandingPage() {
             ].map((stat, i) => (
               <div
                 key={i}
-                className="feature-card liquid-glass-soft text-center p-5 sm:p-6 rounded-2xl border border-white/10 transition-all hover:border-white/20 hover:-translate-y-0.5"
+                className="kata-panel kata-panel--subtle feature-card text-center p-5 sm:p-6 transition-all hover:-translate-y-0.5"
               >
                 <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-emerald-400 mb-1.5 sm:mb-2">
                   {stat.value === '∞' ? (
@@ -627,7 +627,7 @@ export default function LandingPage() {
 
       <section className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="final-cta liquid-glass relative p-8 sm:p-12 md:p-20 rounded-3xl border border-white/10 overflow-hidden text-center">
+          <div className="kata-panel final-cta relative p-8 sm:p-12 md:p-20 overflow-hidden text-center">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
               <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-3xl" />
@@ -640,7 +640,7 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <div className="liquid-glass-soft mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/20">
+              <div className="kata-icon-well mx-auto mb-6 h-14 w-14">
                 <Sparkles className="w-6 h-6 text-emerald-400" />
               </div>
 

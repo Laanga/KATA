@@ -296,3 +296,213 @@
     }
   }
 }
+
+@layer components {
+  .kata-button--row {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    padding: var(--kata-space-4);
+    gap: var(--kata-space-3);
+    font-weight: 400;
+  }
+  .kata-button[aria-pressed='true'] {
+    background: var(--kata-selected-bg);
+    border-color: var(--kata-selected-border);
+    color: var(--kata-accent-text);
+  }
+  .kata-media-button {
+    display: block;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    text-align: left;
+    background: var(--bg-secondary);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-card);
+    cursor: pointer;
+    transition:
+      border-color var(--kata-duration),
+      box-shadow var(--kata-duration);
+  }
+  .kata-media-button:hover {
+    border-color: var(--kata-selected-border);
+    box-shadow: var(--kata-shadow-soft);
+  }
+  .kata-media-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .kata-swatch {
+    width: 44px;
+    height: 44px;
+    padding: 5px;
+    border: 1px solid transparent;
+    border-radius: var(--kata-radius-control);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+  }
+  .kata-swatch > span {
+    position: absolute;
+    inset: 5px;
+    border-radius: 8px;
+  }
+  .kata-swatch > svg {
+    position: relative;
+    color: white;
+    filter: drop-shadow(0 1px 2px black);
+  }
+  .kata-swatch[aria-pressed='true'] {
+    border-color: var(--kata-accent-hover);
+    background: var(--kata-selected-bg);
+  }
+  .kata-swatch:hover {
+    border-color: var(--kata-border-hover);
+  }
+  .kata-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--kata-accent);
+  }
+  .kata-file-picker {
+    display: flex;
+    align-items: center;
+    gap: var(--kata-space-3);
+    width: 100%;
+    padding: var(--kata-space-4);
+    border-radius: var(--kata-radius-control);
+    background: var(--kata-surface);
+    border: 1px solid var(--kata-border);
+    cursor: pointer;
+  }
+  .kata-file-picker:hover {
+    border-color: var(--kata-border-hover);
+  }
+  .kata-file-picker:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .kata-media-button:focus-visible,
+  .kata-swatch:focus-visible,
+  .kata-checkbox:focus-visible,
+  .kata-file-picker:has(input:focus-visible) {
+    outline: 2px solid var(--kata-accent-hover);
+    outline-offset: 3px;
+    box-shadow: var(--kata-focus);
+  }
+  .kata-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--kata-radius-pill);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition:
+      background var(--kata-duration),
+      color var(--kata-duration);
+  }
+  .kata-nav-link:hover {
+    background: var(--kata-surface-soft);
+    color: var(--text-primary);
+  }
+  .kata-nav-link[aria-current='page'] {
+    background: var(--kata-selected-bg);
+    color: var(--kata-accent-text);
+  }
+  .kata-nav-link:focus-visible {
+    outline: 2px solid var(--kata-accent-hover);
+    outline-offset: 3px;
+  }
+  .kata-popover {
+    background: var(--kata-surface-raised);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-card);
+    box-shadow: var(--kata-shadow-raised);
+  }
+  .kata-section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kata-media-button,
+    .kata-nav-link {
+      transition: none;
+    }
+  }
+}
+@layer components {
+  .kata-avatar-action {
+    border-radius: var(--kata-radius-pill);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .group:hover .kata-avatar-action,
+  .kata-avatar-action:focus-visible {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .kata-avatar-action {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+@layer components {
+  .kata-media-surface {
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-card);
+    background: var(--bg-secondary);
+    box-shadow: var(--kata-shadow-soft);
+  }
+  .kata-icon-well {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--kata-radius-control);
+    color: var(--kata-accent-text);
+    border: 1px solid var(--kata-selected-border);
+    background: var(--kata-selected-bg);
+  }
+  .kata-notice {
+    padding: var(--kata-space-4);
+    border: 1px solid var(--kata-selected-border);
+    border-radius: var(--kata-radius-control);
+    background: var(--kata-selected-bg);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .kata-notice--error {
+    background: rgba(248, 113, 113, 0.08);
+    border-color: rgba(248, 113, 113, 0.3);
+    color: #fca5a5;
+  }
+  .kata-notice--warning {
+    background: rgba(251, 191, 36, 0.08);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fcd34d;
+  }
+}
+@layer components {
+  .kata-title-page,
+  .kata-title-section,
+  .kata-title-dialog {
+    overflow-wrap: anywhere;
+  }
+}

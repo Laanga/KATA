@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
 
       {/* Form container */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md p-8 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl">
+        <div className="kata-panel w-full max-w-md p-8">
           {isEmailSent ? (
             /* Success state */
             <div className="text-center space-y-6">
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">¡Email enviado!</h2>
+                <h2 className="kata-title-section mb-2">¡Email enviado!</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
                   Hemos enviado un enlace de recuperación a{' '}
                   <span className="text-white font-medium">{email}</span>
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
                   <Mail className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">¿Olvidaste tu contraseña?</h2>
+                <h2 className="kata-title-section">¿Olvidaste tu contraseña?</h2>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   No te preocupes, te enviaremos instrucciones para recuperarla
                 </p>
@@ -116,10 +116,7 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
-                  >
+                  <label htmlFor="email" className="kata-label">
                     Email
                   </label>
                   <TextInput

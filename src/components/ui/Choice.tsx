@@ -27,3 +27,40 @@ export function RadioChoice({
     </label>
   );
 }
+
+export function ColorSwatch({
+  color,
+  selected,
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { color: string; selected: boolean }) {
+  return (
+    <button
+      {...props}
+      type="button"
+      aria-label={`Color ${color}`}
+      aria-pressed={selected}
+      className={cn('kata-swatch', className)}
+    >
+      <span style={{ backgroundColor: color }} />
+      {selected && <Check size={16} aria-hidden="true" />}
+    </button>
+  );
+}
+
+export function Checkbox({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} type="checkbox" className={cn('kata-checkbox', className)} />;
+}
+
+export function FilePicker({
+  children,
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { children: ReactNode }) {
+  return (
+    <label className={cn('kata-file-picker', className)}>
+      <input {...props} type="file" className="sr-only" />
+      {children}
+    </label>
+  );
+}

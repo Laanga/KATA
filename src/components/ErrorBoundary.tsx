@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/Button';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -72,14 +72,14 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-white">Algo salió mal</h1>
+              <h1 className="kata-title-page">Algo salió mal</h1>
               <p className="text-[var(--text-secondary)]">
                 Lo sentimos, ha ocurrido un error inesperado.
               </p>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="text-left bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-sm">
+              <div className="kata-notice kata-notice--error text-left">
                 <p className="text-red-400 font-mono mb-2">{this.state.error.toString()}</p>
                 {this.state.errorInfo && (
                   <pre className="text-xs text-[var(--text-tertiary)] overflow-auto max-h-40">
@@ -98,13 +98,10 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw size={16} />
                 Intentar de nuevo
               </Button>
-              <Link
-                href="/"
-                className="flex items-center gap-2 rounded-md px-4 py-2 hover:bg-white/10"
-              >
+              <ButtonLink variant="secondary" href="/">
                 <Home size={16} />
                 Ir al inicio
-              </Link>
+              </ButtonLink>
             </div>
           </div>
         </div>

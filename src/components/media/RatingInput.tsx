@@ -19,7 +19,7 @@ export function RatingInput({ value, onChange, max = 5, readonly = false }: Rati
         <span>{value === null ? 'Sin puntuar' : `${value}/${max}`}</span>
       ) : (
         <>
-          <label htmlFor={id} className="sr-only">
+          <label htmlFor={id} className="kata-label sr-only">
             Valoración de 0 a {max}
           </label>
           <NativeSelect

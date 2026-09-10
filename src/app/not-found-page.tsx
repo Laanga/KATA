@@ -1,6 +1,7 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 
-import Link from 'next/link';
 import { Home, ArrowLeft, Search } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
@@ -91,7 +92,7 @@ export default function NotFound() {
 
         {/* Text */}
         <div ref={textRef} className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Página no encontrada</h1>
+          <h1 className="kata-title-page mb-4">Página no encontrada</h1>
           <p className="text-[var(--text-secondary)] text-lg max-w-md mx-auto">
             El contenido que buscas no existe o ha sido movido a otro lugar
           </p>
@@ -102,29 +103,20 @@ export default function NotFound() {
           ref={buttonsRef}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
+          <ButtonLink size="lg" variant="primary" href="/">
             <Home size={18} />
             Ir al inicio
-          </Link>
+          </ButtonLink>
 
-          <button
-            onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl transition-all duration-300"
-          >
+          <Button variant="secondary" size="lg" onClick={() => window.history.back()}>
             <ArrowLeft size={18} />
             Volver atrás
-          </button>
+          </Button>
 
-          <Link
-            href="/library"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl transition-all duration-300"
-          >
+          <ButtonLink size="lg" variant="secondary" href="/library">
             <Search size={18} />
             Explorar biblioteca
-          </Link>
+          </ButtonLink>
         </div>
 
         {/* Fun message */}

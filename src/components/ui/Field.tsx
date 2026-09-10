@@ -9,3 +9,7 @@ export function TextArea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
 export function NativeSelect({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} className={cn('kata-field', className)} />;
 }
+
+export function FileInput({ className, ...props }: React.ComponentProps<'input'>) {
+  return <input {...props} type="file" className={cn('sr-only', className)} />;
+}

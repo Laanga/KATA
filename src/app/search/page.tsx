@@ -1,4 +1,5 @@
 'use client';
+import { MediaButton } from '@/components/ui/Button';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Choice';
 import { TextInput } from '@/components/ui/Field';
@@ -236,7 +237,7 @@ function SearchContent({
         </FadeIn>
 
         {errors.length > 0 && (
-          <div role="status" className="mb-6 rounded-xl border border-amber-500/30 p-4">
+          <div role="status" className="kata-notice kata-notice--warning mb-6">
             <p>{errors.join(' ')}</p>
             <Button variant="ghost" size="sm" onClick={retry}>
               Reintentar proveedores no disponibles
@@ -254,11 +255,11 @@ function SearchContent({
                   key={`${result.type}-${result.externalId}`}
                   delay={Math.min(index * 0.03, 0.4)}
                 >
-                  <button
+                  <MediaButton
                     onClick={() => handleSelect(result)}
                     disabled={guideBusy}
                     aria-label={`${inLib && guided ? 'Usar' : 'Añadir'} ${result.title}`}
-                    className="group w-full text-left relative aspect-[2/3] rounded-xl overflow-hidden bg-[var(--bg-secondary)] border border-white/5 hover:border-[var(--accent-primary)] transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                    className="group aspect-[2/3]"
                   >
                     <MediaCover
                       src={result.coverUrl || ''}
@@ -290,7 +291,7 @@ function SearchContent({
 
                     {/* Overlay de info: siempre visible en móvil (no hay hover), hover en escritorio */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 transition-opacity flex flex-col justify-end p-3 sm:p-4">
-                      <h3 className="font-bold text-white leading-tight line-clamp-2">
+                      <h3 className="kata-title-dialog line-clamp-2">
                         {result.title || 'Sin título'}
                       </h3>
                       <p className="text-sm text-[var(--accent-primary)] mt-1">
@@ -322,7 +323,7 @@ function SearchContent({
                           : 'Guardar título'}
                       </div>
                     </div>
-                  </button>
+                  </MediaButton>
                 </FadeIn>
               );
             })}

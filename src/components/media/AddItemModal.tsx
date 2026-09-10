@@ -176,7 +176,7 @@ export function AddItemModal({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Item Preview - Read Only */}
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="kata-panel kata-panel--subtle p-4 sm:p-6">
           <div className={`flex items-start gap-3 sm:gap-4 ${gentle ? '' : 'mb-4'}`}>
             <div className="relative h-28 w-20 sm:h-32 sm:w-24 flex-shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/10">
               {formData.coverUrl ? (
@@ -196,7 +196,7 @@ export function AddItemModal({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2 mb-2">
-                <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
+                <h3 className="kata-title-dialog line-clamp-2 flex-1">
                   {formData.title || 'Sin título'}
                 </h3>
                 <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-white/5 text-[var(--text-secondary)]">
@@ -254,9 +254,7 @@ export function AddItemModal({
 
           {/* Status */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              {gentle ? '¿Por dónde vas?' : 'Estado *'}
-            </label>
+            <label className="kata-label">{gentle ? '¿Por dónde vas?' : 'Estado *'}</label>
             <Select
               aria-label="Estado"
               value={formData.status}
@@ -277,9 +275,7 @@ export function AddItemModal({
             </summary>
             {/* Rating */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Valoración
-              </label>
+              <label className="kata-label">Valoración</label>
               <RatingInput
                 value={formData.rating}
                 onChange={(value) => setFormData({ ...formData, rating: value })}
@@ -289,9 +285,7 @@ export function AddItemModal({
 
             {/* Review */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-                Reseña / Notas
-              </label>
+              <label className="kata-label">Reseña / Notas</label>
               <TextArea
                 aria-label="Reseña / Notas"
                 value={formData.review}
@@ -309,7 +303,7 @@ export function AddItemModal({
         </div>
 
         {/* Actions: apilados a ancho completo en móvil */}
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 sm:pt-6 border-t border-white/10">
+        <div className="kata-action-row">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
             Cancelar
           </Button>

@@ -1,4 +1,5 @@
 'use client';
+import { Chip } from '@/components/ui/Choice';
 import { Button } from '@/components/ui/Button';
 
 import { useState } from 'react';
@@ -109,32 +110,24 @@ export default function LibraryPage() {
                     role="group"
                     aria-label="Modo de vista"
                   >
-                    <button
+                    <Chip
+                      selected={viewMode === 'grid'}
                       onClick={() => setViewMode('grid')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                        viewMode === 'grid'
-                          ? 'liquid-glass-active text-[var(--accent-primary)]'
-                          : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
-                      }`}
+                      className="shrink-0"
                       aria-label="Vista de cuadrícula"
-                      aria-pressed={viewMode === 'grid'}
                     >
                       <Grid3x3 size={14} />
                       <span className="hidden sm:inline">Cuadrícula</span>
-                    </button>
-                    <button
+                    </Chip>
+                    <Chip
+                      selected={viewMode === 'list'}
                       onClick={() => setViewMode('list')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                        viewMode === 'list'
-                          ? 'liquid-glass-active text-[var(--accent-primary)]'
-                          : 'text-[var(--text-tertiary)] hover:text-white hover:bg-white/5'
-                      }`}
+                      className="shrink-0"
                       aria-label="Vista de lista"
-                      aria-pressed={viewMode === 'list'}
                     >
                       <List size={14} />
                       <span className="hidden sm:inline">Lista</span>
-                    </button>
+                    </Chip>
                   </div>
                 </div>
               </FadeIn>
@@ -176,7 +169,7 @@ export default function LibraryPage() {
                 <div className="space-y-3">
                   {displayItems.map((item, index) => (
                     <FadeIn key={item.id} delay={Math.min(index * 0.02, 0.4)}>
-                      <div className="liquid-glass-soft group flex items-center gap-4 p-3 sm:p-4 rounded-[var(--kata-radius-card)] border border-white/10 hover:border-white/20 transition-all hover:scale-[1.005]">
+                      <div className="kata-panel kata-panel--subtle group flex items-center gap-4 p-3 sm:p-4 transition-all hover:scale-[1.005]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.coverUrl}
@@ -205,7 +198,7 @@ export default function LibraryPage() {
                               {STATUS_LABELS[item.status]}
                             </span>
                           </div>
-                          <h3 className="font-bold text-white mb-0.5 truncate">{item.title}</h3>
+                          <h3 className="kata-title-dialog mb-0.5 truncate">{item.title}</h3>
                           <p className="text-xs sm:text-sm text-[var(--text-tertiary)] truncate">
                             {[item.author, item.platform, item.releaseYear]
                               .filter(Boolean)

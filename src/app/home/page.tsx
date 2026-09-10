@@ -197,7 +197,7 @@ export default function HomePage() {
             <>
               {continuing.length > 0 && (
                 <section aria-labelledby="continue-heading" className="mb-10">
-                  <h2 id="continue-heading" className="text-2xl font-semibold mb-4">
+                  <h2 id="continue-heading" className="kata-title-section mb-4">
                     Continúa donde lo dejaste
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

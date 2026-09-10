@@ -13,11 +13,12 @@ export function ToastProvider() {
       toastOptions={{
         duration: 3000,
         style: {
-          background: 'var(--bg-secondary)',
+          background: 'var(--kata-surface-raised)',
           color: 'var(--text-primary)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '0.75rem',
-          padding: '1rem',
+          border: '1px solid var(--kata-border)',
+          borderRadius: 'var(--kata-radius-control)',
+          padding: 'var(--kata-space-4)',
+          boxShadow: 'var(--kata-shadow-raised)',
         },
         success: {
           iconTheme: {
@@ -27,7 +28,7 @@ export function ToastProvider() {
         },
         error: {
           iconTheme: {
-            primary: '#ef4444',
+            primary: 'var(--kata-danger)',
             secondary: 'var(--bg-secondary)',
           },
         },

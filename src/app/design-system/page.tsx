@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { ArrowRight, Film, BookOpen, Plus } from 'lucide-react';
-import { Button, IconButton } from '@/components/ui/Button';
+import { Button, IconButton, ActionButton, MediaButton } from '@/components/ui/Button';
 import { TextInput, TextArea, NativeSelect } from '@/components/ui/Field';
-import { Chip, RadioChoice } from '@/components/ui/Choice';
+import { Chip, RadioChoice, ColorSwatch, Checkbox, FilePicker } from '@/components/ui/Choice';
 import { Panel } from '@/components/ui/Panel';
 import { Modal } from '@/components/ui/Modal';
 
 export default function DesignSystemPage() {
+  const [color, setColor] = useState('#10B981');
+  const [fileName, setFileName] = useState('Selecciona una copia JSON');
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState('books');
   const [filter, setFilter] = useState('Todos');
@@ -49,13 +51,13 @@ export default function DesignSystemPage() {
         <Panel className="space-y-5">
           <h2 className="kata-title-section">Campos</h2>
           <div>
-            <label className="kata-label" htmlFor="ds-title">
+            <label className="kata-label kata-label" htmlFor="ds-title">
               Título
             </label>
             <TextInput id="ds-title" placeholder="¿Qué te apetece guardar?" />
           </div>
           <div>
-            <label className="kata-label" htmlFor="ds-state">
+            <label className="kata-label kata-label" htmlFor="ds-state">
               Estado
             </label>
             <NativeSelect id="ds-state">
@@ -65,13 +67,13 @@ export default function DesignSystemPage() {
             </NativeSelect>
           </div>
           <div>
-            <label className="kata-label" htmlFor="ds-notes">
+            <label className="kata-label kata-label" htmlFor="ds-notes">
               Tus notas
             </label>
             <TextArea id="ds-notes" placeholder="Lo que quieras recordar" />
           </div>
           <div>
-            <label className="kata-label" htmlFor="ds-error">
+            <label className="kata-label kata-label" htmlFor="ds-error">
               Campo con error
             </label>
             <TextInput
@@ -127,6 +129,52 @@ export default function DesignSystemPage() {
           </Panel>
         </Panel>
       </div>
+      <Panel className="space-y-5">
+        <h2 className="kata-title-section">Acciones de contenido y avisos</h2>
+        <ActionButton onClick={() => setOpen(true)}>
+          <Plus size={20} />
+          <span>
+            <span className="block font-medium">Crear una colección</span>
+            <span className="block text-sm text-[var(--text-secondary)]">
+              Una acción con explicación, como en Ajustes.
+            </span>
+          </span>
+        </ActionButton>
+        <div className="flex gap-2" aria-label="Colores de colección">
+          {['#10B981', '#3B82F6', '#EF4444'].map((value) => (
+            <ColorSwatch
+              key={value}
+              color={value}
+              selected={color === value}
+              onClick={() => setColor(value)}
+            />
+          ))}
+        </div>
+        <label className="flex items-center gap-3 text-sm">
+          <Checkbox />
+          Conservar mis preferencias
+        </label>
+        <FilePicker
+          accept=".json"
+          aria-label="Archivo de ejemplo"
+          onChange={(event) =>
+            setFileName(event.target.files?.[0]?.name || 'Selecciona una copia JSON')
+          }
+        >
+          {fileName}
+        </FilePicker>
+        <MediaButton className="max-w-xs p-5" onClick={() => setOpen(true)}>
+          <span className="block font-medium">Una historia pendiente</span>
+          <span className="text-sm text-[var(--text-secondary)]">
+            Tarjeta pulsable con foco compartido
+          </span>
+        </MediaButton>
+        <p className="kata-notice">Tus cambios se han guardado.</p>
+        <p className="kata-notice kata-notice--warning">
+          No pudimos consultar uno de los proveedores.
+        </p>
+        <p className="kata-notice kata-notice--error">No pudimos guardar. Inténtalo de nuevo.</p>
+      </Panel>
       <Modal isOpen={open} onClose={() => setOpen(false)} title="Bienvenido a Kata" size="md">
         <div className="space-y-5">
           <h2 className="kata-title-section">Tu próxima historia empieza aquí.</h2>

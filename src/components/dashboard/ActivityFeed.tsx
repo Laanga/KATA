@@ -16,10 +16,10 @@ export function ActivityFeed() {
   if (recentItems.length === 0) return null;
 
   return (
-    <div className="group liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] overflow-hidden hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative">
+    <div className="kata-panel p-0 group overflow-hidden transition-all duration-500 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
       <div className="p-6 border-b border-white/5 relative z-10">
-        <h3 className="text-lg font-semibold">Actividad Reciente</h3>
+        <h3 className="kata-title-dialog">Actividad Reciente</h3>
       </div>
       <div className="relative z-10">
         {recentItems.map((item, index) => (

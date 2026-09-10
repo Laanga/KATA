@@ -1,4 +1,5 @@
 'use client';
+import { Chip } from '@/components/ui/Choice';
 import { TextArea } from '@/components/ui/Field';
 
 import { useState, useEffect } from 'react';
@@ -105,7 +106,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Item Preview - Read Only */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="kata-panel kata-panel--subtle p-4">
           <div className="flex items-start gap-4">
             <div className="relative h-28 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/10">
               <Image
@@ -119,7 +120,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2 mb-1">
-                <h3 className="text-base font-bold text-white line-clamp-2 flex-1">{item.title}</h3>
+                <h3 className="kata-title-dialog line-clamp-2 flex-1">{item.title}</h3>
                 <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/5 text-[var(--text-secondary)]">
                   {TYPE_LABELS[item.type]}
                 </span>
@@ -155,9 +156,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
         <div className="space-y-5">
           {/* Status */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Estado
-            </label>
+            <label className="kata-label">Estado</label>
             <Select
               aria-label="Estado"
               value={formData.status}
@@ -168,9 +167,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
 
           {/* Rating */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
-              Valoración
-            </label>
+            <label className="kata-label">Valoración</label>
             <RatingInput
               value={formData.rating}
               onChange={(value) => setFormData({ ...formData, rating: value })}
@@ -180,7 +177,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
           {/* Collections */}
           {collections.length > 0 && (
             <div>
-              <label className="mb-3 block text-sm font-medium text-[var(--text-secondary)]">
+              <label className="kata-label">
                 <span className="flex items-center gap-2">
                   <FolderPlus size={16} />
                   Colecciones
@@ -189,41 +186,15 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
               <div className="flex flex-wrap gap-2">
                 {collections.map((collection) => {
                   const isSelected = isInCollection(collection.id);
-                  const color = collection.color || '#6366F1';
 
                   return (
-                    <button
+                    <Chip
+                      selected={isSelected}
                       key={collection.id}
                       type="button"
                       onClick={() => handleToggleCollection(collection.id)}
                       disabled={isUpdatingCollections}
-                      className={`
-                        group relative flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium
-                        transition-all duration-200 ease-out
-                        ${isUpdatingCollections ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                      `}
-                      style={{
-                        backgroundColor: isSelected ? color : 'transparent',
-                        borderWidth: '2px',
-                        borderStyle: 'solid',
-                        borderColor: isSelected ? color : 'rgba(255,255,255,0.1)',
-                        color: isSelected ? '#000' : 'var(--text-secondary)',
-                        boxShadow: isSelected ? `0 0 20px ${color}40` : 'none',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.borderColor = color;
-                          e.currentTarget.style.backgroundColor = `${color}20`;
-                          e.currentTarget.style.color = color;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = 'var(--text-secondary)';
-                        }
-                      }}
+                      className="shrink-0"
                     >
                       {/* Icon o emoji */}
                       {collection.icon && <span className="text-base">{collection.icon}</span>}
@@ -233,7 +204,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
 
                       {/* Check cuando está seleccionado */}
                       {isSelected && <Check size={14} className="ml-0.5" />}
-                    </button>
+                    </Chip>
                   );
                 })}
               </div>
@@ -243,9 +214,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
           {/* Review */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Notas personales
-              </label>
+              <label className="kata-label">Notas personales</label>
               <span className="text-xs text-[var(--text-tertiary)]">
                 {formData.review.length}/500
               </span>
@@ -262,7 +231,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="kata-action-row">
           <Button
             type="button"
             variant="ghost"

@@ -34,3 +34,22 @@ La portada puede utilizar una composición y tipografía de campaña más grande
 Usar `className` para distribución y anchura; evitar redefinir fondos, radios, sombras o tamaños de texto de los controles. Si hace falta una variante nueva, incorporarla al componente y al catálogo. Los círculos de avatares, portadas y gráficos no son controles y mantienen su geometría propia.
 
 El foco visible, los estados deshabilitado/error/carga y la preferencia de movimiento reducido están centralizados. El onboarding usa los mismos componentes: no tiene una familia visual independiente.
+
+## Alcance y continuidad
+
+Por indicación expresa del usuario, esta es la base obligatoria de toda Kata y de las funcionalidades futuras. La uniformidad se mantiene reutilizando los mismos componentes, no copiando su aspecto en cada pantalla. Las instrucciones de `AGENTS.md` recogen este requisito para futuras intervenciones.
+
+La revisión integral incluye portada, acceso/registro/recuperación/verificación, inicio, biblioteca en cuadrícula/lista, colecciones, búsqueda, descubrimiento, perfil, Ajustes, onboarding, edición/guardado, confirmaciones y 404. Las tarjetas, skeletons, mensajes y navegación comparten tokens; los controles de las pantallas se importan de `ui`.
+
+La regla de ESLint `no-restricted-syntax` impide añadir botones, inputs, selectores y áreas de texto nativos fuera de `src/components/ui`. No detecta por sí sola todas las divergencias visuales: la revisión de distribución y estados en móvil/escritorio sigue siendo necesaria.
+
+### Componentes y patrones adicionales
+
+- `ActionButton`: acción de fila con explicación, para Ajustes y listas.
+- `MediaButton` / `kata-media-surface`: tarjetas de portadas con superficie y foco compartidos.
+- `ColorSwatch`: muestra de color seleccionable, 44 px y nombre accesible; el color de la colección se muestra como dato, mientras la selección usa esmeralda.
+- `Checkbox`, `FilePicker`, `FileInput`: controles nativos encapsulados; el selector de archivos conserva acceso por teclado.
+- `kata-nav-link`: navegación con estado de página actual y foco; `Chip` se usa para filtros y pestañas de contenido.
+- `kata-popover`, `kata-icon-well`, `kata-notice`: menús, iconos y mensajes de información, advertencia o error. Las notificaciones flotantes usan los mismos tokens.
+
+La paleta por categoría, los gráficos, los avatares, las insignias y las ilustraciones de portada conservan su significado visual. No son familias alternativas de botones o formularios.

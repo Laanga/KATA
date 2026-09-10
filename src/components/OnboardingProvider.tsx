@@ -84,7 +84,7 @@ function UserOnboarding({ children }: { children: React.ReactNode }) {
     return (
       <main className="min-h-screen grid place-items-center p-6">
         <div role="alert" className="max-w-md text-center space-y-4">
-          <h1 className="text-xl font-semibold">No pudimos cargar tus preferencias</h1>
+          <h1 className="kata-title-page text-xl">No pudimos cargar tus preferencias</h1>
           <p>Tu biblioteca sigue guardada. Vuelve a intentarlo.</p>
           <Button
             onClick={() => {

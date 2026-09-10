@@ -20,7 +20,7 @@ export function DiscoverCard({
         <MediaCover src={item.coverUrl || ''} alt="" fill sizes="192px" className="object-cover" />
       </div>
       <div className="p-3">
-        <h3 className="font-medium line-clamp-2 min-h-12">{item.title}</h3>
+        <h3 className="kata-title-dialog line-clamp-2 min-h-12">{item.title}</h3>
         <p className="text-xs text-[var(--text-secondary)] mt-2">
           {item.releaseDate
             ? new Date(item.releaseDate).toLocaleDateString('es-ES', {

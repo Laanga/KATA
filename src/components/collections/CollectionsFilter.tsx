@@ -1,4 +1,6 @@
 'use client';
+import { IconButton } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Choice';
 
 import { useMediaStore } from '@/lib/store';
 import { Folder, Plus } from 'lucide-react';
@@ -23,20 +25,17 @@ export default function CollectionsFilter({
       <div className="lg:hidden sticky top-0 md:top-16 z-10 bg-[var(--bg-primary)]/70 backdrop-blur-xl border-b border-white/10">
         <div className="px-4 py-3">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            <button
+            <Chip
+              selected={selectedCollection === 'ALL'}
               onClick={() => onCollectionSelect('ALL')}
-              className={`flex flex-shrink-0 items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm border border-white/10 transition-all ${
-                selectedCollection === 'ALL'
-                  ? 'liquid-glass-active text-[var(--accent-primary)] font-medium'
-                  : 'liquid-glass-soft text-[var(--text-secondary)] hover:text-white'
-              }`}
+              className="shrink-0"
             >
               <Folder className="w-4 h-4" />
               <span>Todas</span>
               <span className="text-xs opacity-60">
                 {useMediaStore.getState().getStats().total}
               </span>
-            </button>
+            </Chip>
 
             {collections.map((collection) => {
               const itemCount = getItemsByCollection(collection.id).length;
@@ -44,20 +43,11 @@ export default function CollectionsFilter({
               const color = collection.color || 'var(--text-secondary)';
 
               return (
-                <button
+                <Chip
+                  selected={isActive}
                   key={collection.id}
                   onClick={() => onCollectionSelect(collection.id)}
-                  className={`liquid-glass-soft flex flex-shrink-0 items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm transition-all ${
-                    isActive
-                      ? 'text-white font-medium'
-                      : 'text-[var(--text-secondary)] hover:text-white'
-                  }`}
-                  style={{
-                    border: `1px solid color-mix(in srgb, ${color} ${isActive ? '60%' : '25%'}, transparent)`,
-                    boxShadow: isActive
-                      ? `0 0 14px color-mix(in srgb, ${color} 25%, transparent)`
-                      : undefined,
-                  }}
+                  className="shrink-0"
                 >
                   <span
                     className="h-2.5 w-2.5 rounded-full flex-shrink-0"
@@ -65,17 +55,17 @@ export default function CollectionsFilter({
                   />
                   <span className="truncate max-w-[120px]">{collection.name}</span>
                   <span className="text-xs opacity-60">{itemCount}</span>
-                </button>
+                </Chip>
               );
             })}
 
-            <button
+            <IconButton
               onClick={() => setIsCreateModalOpen(true)}
-              className="liquid-glass-soft flex items-center justify-center w-9 h-9 rounded-full border border-white/10 text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 transition-all flex-shrink-0"
-              aria-label="Crear colección"
+
+              label="Crear colección"
             >
               <Plus className="w-4 h-4" />
-            </button>
+            </IconButton>
           </div>
         </div>
       </div>

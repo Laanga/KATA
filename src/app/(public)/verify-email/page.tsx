@@ -4,8 +4,7 @@ import { TextInput } from '@/components/ui/Field';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Mail, RefreshCw, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import gsap from 'gsap';
 
@@ -159,20 +158,20 @@ export default function VerifyEmailPage() {
 
         {/* Content */}
         <div className="verify-content">
-          <div className="bg-[var(--bg-secondary)] border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl">
+          <div className="kata-panel p-8 md:p-12">
             {/* Title */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/10 mb-4">
                 <Mail size={32} className="text-emerald-400" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Verifica tu Email</h1>
+              <h1 className="kata-title-page mb-3">Verifica tu Email</h1>
               <p className="text-[var(--text-secondary)] text-lg">
                 Hemos enviado un enlace de verificación a tu correo
               </p>
             </div>
 
             <div className="mb-8">
-              <label htmlFor="verification-email" className="block text-sm mb-2">
+              <label htmlFor="verification-email" className="kata-label">
                 Correo de tu cuenta
               </label>
               <TextInput
@@ -191,7 +190,7 @@ export default function VerifyEmailPage() {
 
             {/* Instructions */}
             <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-4 p-4 bg-[var(--bg-tertiary)]/50 rounded-lg border border-white/5">
+              <div className="kata-panel kata-panel--subtle flex items-start gap-4 p-4">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 </div>
@@ -199,7 +198,7 @@ export default function VerifyEmailPage() {
                   Revisa tu bandeja de entrada y la carpeta de spam
                 </p>
               </div>
-              <div className="flex items-start gap-4 p-4 bg-[var(--bg-tertiary)]/50 rounded-lg border border-white/5">
+              <div className="kata-panel kata-panel--subtle flex items-start gap-4 p-4">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 </div>
@@ -207,7 +206,7 @@ export default function VerifyEmailPage() {
                   Haz clic en el enlace de verificación del email
                 </p>
               </div>
-              <div className="flex items-start gap-4 p-4 bg-[var(--bg-tertiary)]/50 rounded-lg border border-white/5">
+              <div className="kata-panel kata-panel--subtle flex items-start gap-4 p-4">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 </div>
@@ -223,7 +222,7 @@ export default function VerifyEmailPage() {
                 variant="primary"
                 onClick={handleResendEmail}
                 disabled={isResending || !email}
-                className="w-full flex items-center justify-center gap-2 h-12 text-base"
+                className="w-full flex items-center justify-center gap-2 h-12"
               >
                 {isResending ? (
                   <>
@@ -238,15 +237,10 @@ export default function VerifyEmailPage() {
                 )}
               </Button>
 
-              <Link href="/login" className="block">
-                <Button
-                  variant="ghost"
-                  className="w-full h-12 flex items-center justify-center gap-2"
-                >
-                  <ArrowLeft size={18} />
-                  Volver al Login
-                </Button>
-              </Link>
+              <ButtonLink href="/login" variant="ghost" size="lg" className="w-full">
+                <ArrowLeft size={18} />
+                Volver al Login
+              </ButtonLink>
             </div>
 
             {/* Footer note */}

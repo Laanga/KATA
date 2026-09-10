@@ -46,6 +46,7 @@ export function ConfirmDialog({
       onClose={() => {
         if (!isConfirming) onClose();
       }}
+      title={title}
       size="sm"
     >
       <div className="text-center py-4">
@@ -53,10 +54,9 @@ export function ConfirmDialog({
           <AlertTriangle className="h-6 w-6 text-red-500" />
         </div>
 
-        <h3 className="mb-2 text-lg font-bold text-white">{title}</h3>
         <p className="mb-6 text-sm text-[var(--text-secondary)]">{message}</p>
 
-        <div className="flex justify-center gap-3">
+        <div className="kata-action-row">
           <Button variant="ghost" onClick={onClose} disabled={isConfirming}>
             {cancelText}
           </Button>

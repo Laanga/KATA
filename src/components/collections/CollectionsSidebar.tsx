@@ -1,4 +1,6 @@
 'use client';
+import { Chip } from '@/components/ui/Choice';
+import { IconButton } from '@/components/ui/Button';
 
 import { useMediaStore } from '@/lib/store';
 import { Plus, Folder, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
@@ -81,49 +83,45 @@ export default function CollectionsSidebar({
 
   return (
     <div
-      className={`liquid-glass-soft relative overflow-hidden rounded-2xl border border-white/10 transition-[width] duration-300 ease-out ${
-        isCollapsed ? 'w-14' : 'w-full lg:w-64'
+      className={`kata-panel kata-panel--subtle p-0 relative overflow-hidden transition-[width] duration-300 ease-out ${
+        isCollapsed ? 'w-16' : 'w-full lg:w-64'
       }`}
     >
       {isCollapsed ? (
         /* Rail contraído: cada colección es un punto de su color */
         <div className="flex flex-col items-center gap-1.5 p-2">
-          <button
+          <IconButton
             onClick={() => {
               setIsCollapsed(false);
               handleCloseMenu();
             }}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white transition-colors"
+
             title="Expandir colecciones"
-            aria-label="Expandir colecciones"
+            label="Expandir colecciones"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </IconButton>
 
           <div className="h-px w-6 bg-white/10" />
 
-          <button
+          <Chip
+            selected={selectedCollection === 'ALL'}
             onClick={() => onCollectionSelect('ALL')}
-            className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
-              selectedCollection === 'ALL'
-                ? 'liquid-glass-active text-[var(--accent-primary)]'
-                : 'text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white'
-            }`}
+            className="shrink-0 w-11 px-0"
             title="Todas las colecciones"
             aria-label="Todas las colecciones"
           >
             <Folder className="w-4 h-4" />
-          </button>
+          </Chip>
 
           {collections.map((collection) => {
             const isActive = selectedCollection === collection.id;
             return (
-              <button
+              <Chip
+                selected={isActive}
                 key={collection.id}
                 onClick={() => onCollectionSelect(collection.id)}
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
-                  isActive ? 'liquid-glass-active' : 'hover:bg-white/5'
-                }`}
+                className="shrink-0 w-11 px-0"
                 title={collection.name}
                 aria-label={collection.name}
               >
@@ -131,56 +129,51 @@ export default function CollectionsSidebar({
                   className={`rounded-full transition-all ${isActive ? 'h-3 w-3' : 'h-2.5 w-2.5'}`}
                   style={{ backgroundColor: collection.color || 'var(--text-tertiary)' }}
                 />
-              </button>
+              </Chip>
             );
           })}
 
-          <button
+          <IconButton
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/15 transition-colors"
+
             title="Crear colección"
-            aria-label="Crear colección"
+            label="Crear colección"
           >
             <Plus className="w-4 h-4" />
-          </button>
+          </IconButton>
         </div>
       ) : (
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-              Colecciones
-            </h2>
+            <h2 className="kata-section-label text-[var(--text-secondary)]">Colecciones</h2>
             <div className="flex items-center gap-1">
-              <button
+              <IconButton
                 onClick={() => setIsCreateModalOpen(true)}
-                className="p-1.5 rounded-full hover:bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] transition-colors"
+
                 title="Crear colección"
-                aria-label="Crear colección"
+                label="Crear colección"
               >
                 <Plus className="w-4 h-4" />
-              </button>
-              <button
+              </IconButton>
+              <IconButton
                 onClick={() => {
                   setIsCollapsed(true);
                   handleCloseMenu();
                 }}
-                className="p-1.5 rounded-full text-[var(--text-tertiary)] hover:bg-white/5 hover:text-white transition-colors"
+
                 title="Contraer colecciones"
-                aria-label="Contraer colecciones"
+                label="Contraer colecciones"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
+              </IconButton>
             </div>
           </div>
 
           <div className="space-y-1">
-            <button
+            <Chip
+              selected={selectedCollection === 'ALL'}
               onClick={() => onCollectionSelect('ALL')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-full transition-all ${
-                selectedCollection === 'ALL'
-                  ? 'liquid-glass-active text-[var(--accent-primary)]'
-                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
-              }`}
+              className="w-full justify-between min-w-0 pr-12"
             >
               <div className="flex items-center gap-3">
                 <Folder className="w-4 h-4" />
@@ -189,7 +182,7 @@ export default function CollectionsSidebar({
               <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-tertiary)]">
                 {totalItems}
               </span>
-            </button>
+            </Chip>
 
             {collections.map((collection) => {
               const itemCount = getItemsByCollection(collection.id).length;
@@ -197,13 +190,10 @@ export default function CollectionsSidebar({
 
               return (
                 <div key={collection.id} className="relative group">
-                  <button
+                  <Chip
+                    selected={isActive}
                     onClick={() => onCollectionSelect(collection.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-full transition-all ${
-                      isActive
-                        ? 'liquid-glass-active text-[var(--accent-primary)]'
-                        : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
-                    }`}
+                    className="w-full justify-between min-w-0 pr-12"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span
@@ -212,22 +202,22 @@ export default function CollectionsSidebar({
                       />
                       <span className="text-sm truncate">{collection.name}</span>
                     </div>
-                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-tertiary)] group-hover:opacity-0 transition-opacity">
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-tertiary)] mr-1">
                       {itemCount}
                     </span>
-                  </button>
+                  </Chip>
 
-                  <button
+                  <IconButton
                     ref={(el) => {
                       menuButtonRefs.current[collection.id] = el;
                     }}
                     onClick={(e) => handleOpenMenu(collection, e)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-white/10 transition-opacity"
+                    className="absolute right-0 top-1/2 -translate-y-1/2"
                     title="Más opciones"
-                    aria-label="Más opciones"
+                    label="Más opciones"
                   >
                     <MoreVertical className="w-4 h-4" />
-                  </button>
+                  </IconButton>
                 </div>
               );
             })}

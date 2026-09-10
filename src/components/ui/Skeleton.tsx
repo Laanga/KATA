@@ -146,7 +146,7 @@ export function DashboardMetricsSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="liquid-glass-soft border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden"
+          className="liquid-glass-soft border border-white/10 rounded-[var(--kata-radius-card)] p-3 sm:p-4 md:p-5 relative overflow-hidden"
         >
           <div className="absolute inset-0 opacity-10">
             <Skeleton variant="kanji" className="h-full w-full" />
@@ -167,7 +167,7 @@ export function DashboardMetricsSkeleton() {
 // Chart Skeleton (for donut charts)
 export function ChartSkeleton() {
   return (
-    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden">
+    <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute inset-0 opacity-5">
         <Skeleton variant="kanji" className="h-full w-full" />
       </div>
@@ -198,7 +198,7 @@ export function ChartSkeleton() {
 // Top Rated Items Skeleton
 export function TopRatedSkeleton() {
   return (
-    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl overflow-hidden relative">
+    <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] overflow-hidden relative">
       <div className="absolute inset-0 opacity-5">
         <Skeleton variant="kanji" className="h-full w-full" />
       </div>
@@ -231,7 +231,7 @@ export function TopRatedSkeleton() {
 // Activity Feed Skeleton
 export function ActivityFeedSkeleton() {
   return (
-    <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl sm:rounded-2xl overflow-hidden relative">
+    <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] overflow-hidden relative">
       <div className="absolute inset-0 opacity-5">
         <Skeleton variant="kanji" className="h-full w-full" />
       </div>
@@ -362,7 +362,10 @@ export function ProfileSkeleton() {
         {/* Stats Grid Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-[var(--bg-secondary)] border border-white/5 rounded-xl p-6">
+            <div
+              key={i}
+              className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6"
+            >
               <div className="mb-4">
                 <Skeleton className="h-5 w-5" variant="rectangular" />
               </div>
@@ -388,7 +391,7 @@ export function ProfileSkeleton() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-12">
             {/* Activity Chart Skeleton */}
-            <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-8">
+            <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-8">
               <div className="flex items-center gap-3 mb-6">
                 <Skeleton className="h-6 w-6" variant="rectangular" />
                 <Skeleton className="h-6 w-32" variant="text" />

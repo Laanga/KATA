@@ -1,4 +1,5 @@
 'use client';
+import { ColorSwatch } from '@/components/ui/Choice';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 
@@ -45,7 +46,7 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
     <Modal isOpen={isOpen} onClose={onClose} title="Nueva Colección" size="md">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <label htmlFor="name" className="block text-sm font-medium text-[var(--text-secondary)]">
+          <label htmlFor="name" className="kata-label">
             Nombre *
           </label>
           <TextInput
@@ -60,25 +61,16 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-[var(--text-secondary)]">Color</label>
+          <label className="kata-label">Color</label>
           <div className="flex flex-wrap gap-2">
             {DEFAULT_COLLECTION_COLORS.map((color) => (
-              <button
+              <ColorSwatch
+                color={color}
+                selected={selectedColor === color}
                 key={color}
                 type="button"
                 onClick={() => setSelectedColor(color)}
-                className={`w-8 h-8 rounded-full transition-all hover:scale-110 active:scale-95 ${
-                  selectedColor === color
-                    ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#141414] scale-110'
-                    : ''
-                }`}
-                style={{
-                  backgroundColor: color,
-                  boxShadow:
-                    selectedColor === color
-                      ? `0 0 14px color-mix(in srgb, ${color} 50%, transparent)`
-                      : undefined,
-                }}
+
                 title={color}
               />
             ))}

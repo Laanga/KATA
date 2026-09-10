@@ -1,5 +1,7 @@
 'use client';
-import { TextInput } from '@/components/ui/Field';
+import { FilePicker, Checkbox } from '@/components/ui/Choice';
+import { ActionButton } from '@/components/ui/Button';
+import { TextInput, FileInput } from '@/components/ui/Field';
 
 import { MediaCover } from '@/components/media/MediaCover';
 
@@ -276,15 +278,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <div className="space-y-4 sm:space-y-6">
         {/* User Info Section */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
-            Perfil
-          </h3>
+          <h3 className="kata-section-label text-[var(--text-secondary)] mb-2 sm:mb-4">Perfil</h3>
           <div className="space-y-3 sm:space-y-4">
             {/* Avatar */}
             <div>
-              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
-                Foto de Perfil
-              </label>
+              <label className="kata-label">Foto de Perfil</label>
               <div className="flex items-center gap-3 sm:gap-4">
                 {/* Avatar preview */}
                 <div className="relative group flex-shrink-0">
@@ -303,17 +301,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </div>
 
                   {/* Overlay con botón de cámara */}
-                  <button
+                  <Button
+                    variant="ghost"
+                    aria-label="Cambiar foto de perfil"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
-                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                    className="kata-avatar-action absolute inset-0"
                   >
                     {isUploadingAvatar ? (
                       <Loader2 size={24} className="text-white animate-spin" />
                     ) : (
                       <Camera size={24} className="text-white" />
                     )}
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Botones */}
@@ -339,7 +339,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
 
                 {/* Input oculto */}
-                <input
+                <FileInput
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
@@ -354,9 +354,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Username */}
             <div>
-              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
-                Nombre de Usuario
-              </label>
+              <label className="kata-label">Nombre de Usuario</label>
               <div className="flex gap-2">
                 <TextInput
                   type="text"
@@ -371,7 +369,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     variant="outline"
                     size="md"
                     onClick={() => setIsEditingUsername(true)}
-                    className="text-xs sm:text-sm"
+                    className=""
                   >
                     Editar
                   </Button>
@@ -394,7 +392,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         });
                       }}
                       disabled={isSaving}
-                      className="text-xs sm:text-sm"
+                      className=""
                     >
                       Cancelar
                     </Button>
@@ -403,7 +401,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       size="md"
                       onClick={handleSaveUsername}
                       isLoading={isSaving}
-                      className="text-xs sm:text-sm"
+                      className=""
                     >
                       Guardar
                     </Button>
@@ -413,9 +411,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
-                Email
-              </label>
+              <label className="kata-label">Email</label>
               <TextInput type="email" value={email} disabled className="w-full" />
               <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 El email no se puede modificar
@@ -425,9 +421,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Cambiar contraseña - SOLO si NO es usuario de Google */}
             {!isGoogleUser && (
               <div>
-                <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
-                  Contraseña
-                </label>
+                <label className="kata-label">Contraseña</label>
                 {!isPasswordEmailSent ? (
                   !isChangingPassword ? (
                     <Button
@@ -440,7 +434,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       <span className="text-xs text-white sm:text-sm">Cambiar contraseña</span>
                     </Button>
                   ) : (
-                    <div className="space-y-2.5 rounded-lg border border-white/10 bg-white/5 p-3 sm:space-y-3 sm:p-4">
+                    <div className="kata-panel kata-panel--subtle space-y-2.5 p-3 sm:space-y-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3">
                         <div className="mt-0.5">
                           <Mail size={16} className="text-emerald-400 sm:size-[18]" />
@@ -460,7 +454,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 setIsChangingPassword(false);
                               }}
                               disabled={isSendingPasswordEmail}
-                              className="text-xs sm:text-sm"
+                              className=""
                             >
                               Cancelar
                             </Button>
@@ -469,7 +463,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                               size="sm"
                               onClick={handleChangePassword}
                               isLoading={isSendingPasswordEmail}
-                              className="text-xs sm:text-sm"
+                              className=""
                             >
                               {isSendingPasswordEmail ? 'Enviando...' : 'Enviar email'}
                             </Button>
@@ -479,7 +473,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </div>
                   )
                 ) : (
-                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
+                  <div className="kata-notice">
                     <div className="flex items-start gap-2 sm:gap-3">
                       <div className="mt-0.5">
                         <CheckCircle size={16} className="text-emerald-400 sm:size-[18]" />
@@ -492,15 +486,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de
                           entrada y spam.
                         </p>
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => {
                             setIsPasswordEmailSent(false);
                             setIsChangingPassword(false);
                           }}
-                          className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
                         >
                           Enviar de nuevo
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -512,15 +506,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* Data Management */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
+          <h3 className="kata-section-label text-[var(--text-secondary)] mb-2 sm:mb-4">
             Gestión de Datos
           </h3>
           <div className="space-y-1.5 sm:space-y-3">
             {/* Export JSON */}
-            <button
-              onClick={handleExportJSON}
-              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
-            >
+            <ActionButton onClick={handleExportJSON}>
               <FileJson
                 size={16}
                 className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
@@ -531,13 +522,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   Descarga tu biblioteca en formato JSON ({items.length} items)
                 </p>
               </div>
-            </button>
+            </ActionButton>
 
             {/* Export CSV */}
-            <button
-              onClick={handleExportCSV}
-              className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
-            >
+            <ActionButton onClick={handleExportCSV}>
               <FileSpreadsheet
                 size={16}
                 className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
@@ -548,10 +536,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   Descarga tu biblioteca en formato CSV para Excel ({items.length} items)
                 </p>
               </div>
-            </button>
+            </ActionButton>
 
             {/* Import */}
-            <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 transition-colors hover:bg-white/10 sm:gap-3 sm:p-4">
+            <FilePicker
+              accept=".json,.csv"
+              onChange={handleImport}
+              disabled={isTransferring}
+              aria-label="Importar biblioteca"
+            >
               <Upload
                 size={16}
                 className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
@@ -562,20 +555,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   Restaurar desde una exportación JSON o CSV
                 </p>
               </div>
-              <input
-                type="file"
-                accept=".json,.csv"
-                onChange={handleImport}
-                disabled={isTransferring}
-                className="hidden"
-              />
-            </label>
+            </FilePicker>
 
             {pendingImport && (
-              <div
-                className="rounded-xl border border-emerald-500/30 p-4 space-y-3"
-                aria-live="polite"
-              >
+              <div className="kata-panel kata-panel--accent space-y-3" aria-live="polite">
                 <p className="font-medium">Revisar importación</p>
                 <p className="text-sm text-[var(--text-secondary)]">
                   {pendingImport.items.length} elementos · {pendingImport.collections?.length || 0}{' '}
@@ -588,8 +571,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   coincidencias con tu biblioteca.
                 </p>
                 <label className="flex gap-2 text-sm">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={replaceImport}
                     disabled={isTransferring}
                     onChange={(e) => setReplaceImport(e.target.checked)}
@@ -617,10 +599,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             )}
             {/* Clear Library */}
             {!showClearConfirm ? (
-              <button
-                onClick={() => setShowClearConfirm(true)}
-                className="flex w-full items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-2.5 text-left transition-colors hover:bg-red-500/10 sm:gap-3 sm:p-4"
-              >
+              <ActionButton variant="danger" onClick={() => setShowClearConfirm(true)}>
                 <Trash2 size={16} className="text-red-400 sm:size-[20]" />
                 <div className="flex-1">
                   <p className="text-xs font-medium text-red-400 sm:text-sm">Vaciar Biblioteca</p>
@@ -628,9 +607,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     Eliminar todos los elementos de tu biblioteca
                   </p>
                 </div>
-              </button>
+              </ActionButton>
             ) : (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 sm:p-4">
+              <div className="kata-notice kata-notice--error">
                 <p className="mb-2 text-xs text-red-400 sm:mb-3 sm:text-sm">
                   ¿Estás seguro? Esto eliminará permanentemente todos los {items.length} elementos.
                 </p>
@@ -639,7 +618,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     size="sm"
                     variant="ghost"
                     onClick={() => setShowClearConfirm(false)}
-                    className="text-xs sm:text-sm"
+                    className=""
                   >
                     Cancelar
                   </Button>
@@ -648,7 +627,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     variant="danger"
                     onClick={handleClearLibrary}
                     isLoading={isTransferring}
-                    className="text-xs sm:text-sm"
+                    className=""
                   >
                     Sí, Vaciar Todo
                   </Button>
@@ -678,7 +657,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </Button>
         {/* App Info */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
+          <h3 className="kata-section-label text-[var(--text-secondary)] mb-2 sm:mb-4">
             Acerca de
           </h3>
           <div className="space-y-2 text-xs sm:text-sm">
@@ -695,24 +674,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         {/* Account Actions */}
         <div>
-          <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
-            Cuenta
-          </h3>
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-2.5 text-left transition-colors hover:bg-red-500/10 sm:gap-3 sm:p-4"
-          >
+          <h3 className="kata-section-label text-[var(--text-secondary)] mb-2 sm:mb-4">Cuenta</h3>
+          <ActionButton variant="danger" onClick={handleLogout}>
             <LogOut size={16} className="text-red-400 flex-shrink-0 sm:w-5 sm:h-5" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-red-400 sm:text-sm">Cerrar Sesión</p>
               <p className="text-xs text-red-400/70 line-clamp-1 sm:text-sm">Salir de tu cuenta</p>
             </div>
-          </button>
+          </ActionButton>
         </div>
 
         {/* Close Button */}
-        <div className="flex justify-end pt-2 border-t border-white/10 sm:pt-4">
-          <Button variant="primary" onClick={onClose} size="sm" className="text-xs sm:text-sm">
+        <div className="kata-action-row">
+          <Button variant="primary" onClick={onClose} size="sm" className="">
             Cerrar
           </Button>
         </div>

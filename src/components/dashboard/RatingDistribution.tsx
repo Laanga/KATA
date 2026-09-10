@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="bg-black/90 border border-white/20 rounded-lg p-3 shadow-xl">
+      <div className="kata-popover p-3">
         <p className="text-white font-medium">{data.name}</p>
         <p className="text-sm text-[var(--text-secondary)]">
           {data.value} items ({data.payload.percentage}%)
@@ -78,8 +78,8 @@ export function RatingDistribution() {
   if (total === 0) {
     return (
       <FadeIn delay={0.2}>
-        <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6">
-          <h3 className="text-lg font-semibold mb-4">Distribución de Ratings</h3>
+        <div className="kata-panel p-6">
+          <h3 className="kata-title-dialog mb-4">Distribución de Ratings</h3>
           <p className="text-sm text-[var(--text-tertiary)] text-center py-8">
             No hay items valorados
           </p>
@@ -97,9 +97,9 @@ export function RatingDistribution() {
 
   return (
     <FadeIn delay={0.2}>
-      <div className="group liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6 hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative overflow-hidden">
+      <div className="kata-panel group p-6 transition-all duration-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
-        <h3 className="text-lg font-semibold mb-6 relative z-10">Distribución de Ratings</h3>
+        <h3 className="kata-title-dialog mb-6 relative z-10">Distribución de Ratings</h3>
 
         <div className="h-64 relative z-10">
           <ResponsiveContainer width="100%" height="100%">

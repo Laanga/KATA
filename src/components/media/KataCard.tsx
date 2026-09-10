@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/Button';
 
 import { MediaCover as Image } from './MediaCover';
@@ -148,7 +149,7 @@ export function KataCard({ item }: KataCardProps) {
     <>
       <div
         ref={container}
-        className="kata-card group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform"
+        className="kata-card kata-media-surface group relative aspect-[2/3] w-full overflow-hidden will-change-transform"
         style={{ transformStyle: 'preserve-3d' }}
       >
         <div ref={imageRef} className="absolute inset-0 will-change-transform">
@@ -174,7 +175,7 @@ export function KataCard({ item }: KataCardProps) {
           className="kata-card-overlay absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0"
           style={{ transform: 'translateZ(20px)' }}
         >
-          <h3 className="line-clamp-2 font-bold text-white leading-tight mb-1">{item.title}</h3>
+          <h3 className="kata-title-dialog line-clamp-2 mb-1">{item.title}</h3>
 
           <p className="text-xs text-[var(--text-secondary)] mb-1 line-clamp-1">
             {item.author || item.platform || item.releaseYear}
@@ -214,14 +215,11 @@ export function KataCard({ item }: KataCardProps) {
           </div>
 
           {showActions && (
-            <div className="liquid-glass absolute bottom-12 right-4 rounded-xl border border-white/10 p-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <button
-                onClick={handleDeleteClick}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors touch-target-mobile"
-              >
+            <div className="kata-popover absolute bottom-12 right-4 p-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <Button variant="danger" onClick={handleDeleteClick} className="w-full justify-start">
                 <Trash2 size={16} />
                 Eliminar
-              </button>
+              </Button>
             </div>
           )}
         </div>
