@@ -1,555 +1,316 @@
 'use client';
-import { Chip } from '@/components/ui/Choice';
-import { MediaCover } from '@/components/media/MediaCover';
-
-import { useState, useEffect, useMemo } from 'react';
-import { Settings, ChartNoAxesCombined, BookOpen, Gamepad2, Tv, Film, User } from 'lucide-react';
-import { KataCard } from '@/components/media/KataCard';
-import { useMediaStore } from '@/lib/store';
-import { FadeIn } from '@/components/FadeIn';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { SettingsModal } from '@/components/SettingsModal';
+import { useState } from 'react';
+import { Settings, User, Star, Library } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
-import { Button } from '@/components/ui/Button';
+import { useMediaStore } from '@/lib/store';
+import { getDashboardSummary, getDailyAdditions, formatRating } from '@/lib/utils/dashboard';
+import { getYearDistribution } from '@/lib/utils/analytics';
+import { TYPE_COLORS } from '@/lib/utils/constants';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Choice';
+import { Panel } from '@/components/ui/Panel';
 import { ProfileSkeleton } from '@/components/ui/Skeleton';
-import { useRouter } from 'next/navigation';
-import { STATUS_LABELS } from '@/lib/utils/constants';
+import { MediaCover } from '@/components/media/MediaCover';
+import { EditItemModal } from '@/components/media/EditItemModal';
+import { SettingsModal } from '@/components/SettingsModal';
+import { DistributionPanel } from '@/components/dashboard/DistributionPanel';
+import type { MediaItem, MediaType } from '@/types/media';
 
 export default function ProfilePage() {
-  const items = useMediaStore((state) => state.items);
-  const getStats = useMediaStore((state) => state.getStats);
-  const isInitialized = useMediaStore((state) => state.isInitialized);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'reviews' | 'stats'>(
-    'overview',
-  );
   const { user } = useAuth();
-  const userName = user?.user_metadata?.username || 'Usuario';
-  const userEmail = user?.email || '';
-  const avatarUrl = user?.user_metadata?.avatar_url || null;
-  const router = useRouter();
-
-  const stats = getStats();
-
-  const favoriteItems = items
-    .filter((item) => item.rating !== null)
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    .slice(0, 3);
-
-  const recentActivity = [...items]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 10);
-
-  const heatmapRef = useScrollAnimation({
-    from: { opacity: 0, y: 50, scale: 0.95 },
-    to: { opacity: 1, y: 0, scale: 1 },
-  });
-
-  const favoritesRef = useScrollAnimation({
-    from: { opacity: 0, x: -50 },
-    to: { opacity: 1, x: 0 },
-  });
-
-  const timelineRef = useScrollAnimation({
-    from: { opacity: 0, x: 50 },
-    to: { opacity: 1, x: 0 },
-  });
-
-  const days = 40;
-
-  const activityChartData = useMemo(() => {
-    const now = new Date();
-    const data = Array.from({ length: days }).map((_, index) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (days - 1 - index));
-      date.setHours(0, 0, 0, 0);
-
-      const dayItems = items.filter((item) => {
-        const itemDate = new Date(item.createdAt);
-        itemDate.setHours(0, 0, 0, 0);
-        return itemDate.getTime() === date.getTime();
-      });
-
-      const height = dayItems.length > 0 ? Math.min(100, dayItems.length * 20) : 0;
-      const opacity = dayItems.length > 0 ? Math.max(0.3, Math.min(1, dayItems.length * 0.2)) : 0.1;
-
-      return { height, opacity };
-    });
-
-    return data;
-  }, [items]);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-
-  // Fix hydration mismatch
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  if (!isInitialized) {
-    return (
-      <>
-        <div className="min-h-screen pb-nav-safe">
-          <main className="container mx-auto px-4 pt-10 md:pt-32 max-w-5xl">
-            <ProfileSkeleton />
-          </main>
-        </div>
-      </>
+  const items = useMediaStore((s) => s.items);
+  const ready = useMediaStore((s) => s.isInitialized);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tab, setTab] = useState<'overview' | 'stats' | 'reviews'>('overview');
+  const [editing, setEditing] = useState<MediaItem | null>(null);
+  const summary = getDashboardSummary(items);
+  const days = getDailyAdditions(items);
+  const maximum = Math.max(1, ...days.map((day) => day.count));
+  const reviews = [...items]
+    .filter((item) => item.review?.trim())
+    .sort(
+      (a, b) => Date.parse(b.updatedAt || b.createdAt) - Date.parse(a.updatedAt || a.createdAt),
     );
-  }
-
+  const years = getYearDistribution(items);
+  const knownYears = years.reduce((sum, year) => sum + year.count, 0);
+  const types: { type: MediaType; label: string }[] = [
+    { type: 'BOOK', label: 'Libros' },
+    { type: 'GAME', label: 'Juegos' },
+    { type: 'MOVIE', label: 'Películas' },
+    { type: 'SERIES', label: 'Series' },
+  ];
+  if (!ready)
+    return (
+      <div className="max-w-6xl mx-auto px-4 pt-10 md:pt-24 pb-nav-safe">
+        <ProfileSkeleton />
+      </div>
+    );
   return (
-    <>
-      <div className="min-h-screen pb-nav-safe relative overflow-hidden">
-        {/* Ambient glow */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
-          <div
-            className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDelay: '1s' }}
-          />
+    <div className="min-h-screen pb-nav-safe">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 md:pt-24 pb-10">
+        <header className="mb-8">
+          <p className="kata-label text-[var(--accent-primary)] mb-4">TU CUENTA</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-full overflow-hidden kata-icon-well">
+                {user?.user_metadata?.avatar_url ? (
+                  <MediaCover
+                    src={user.user_metadata.avatar_url}
+                    alt="Tu avatar"
+                    width={80}
+                    height={80}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User size={32} aria-hidden="true" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <h1 className="kata-title-page break-words">
+                  {user?.user_metadata?.username || 'Usuario'}
+                </h1>
+                <p className="text-sm text-[var(--text-secondary)] mt-2 break-all">
+                  {user?.email || 'Sin email'}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              className="self-start shrink-0"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <Settings size={16} aria-hidden="true" />
+              Ajustes
+            </Button>
+          </div>
+        </header>
+        <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Secciones del perfil">
+          {(
+            [
+              { id: 'overview', label: 'Resumen' },
+              { id: 'stats', label: 'Estadísticas' },
+              { id: 'reviews', label: 'Reseñas' },
+            ] as const
+          ).map((section) => (
+            <Chip
+              key={section.id}
+              selected={tab === section.id}
+              onClick={() => setTab(section.id)}
+              aria-controls="profile-content"
+            >
+              {section.label}
+            </Chip>
+          ))}
         </div>
-
-        <main className="container mx-auto px-4 pt-10 md:pt-32 max-w-5xl relative z-10">
-          <>
-            <FadeIn direction="up" delay={0.1}>
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 sm:mb-12">
-                <div className="flex items-center gap-4 sm:gap-6 min-w-0 max-w-full">
-                  <div className="relative h-20 w-20 sm:h-28 sm:w-28 flex-shrink-0 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-[var(--accent-primary)] shadow-2xl flex items-center justify-center overflow-hidden">
-                    {avatarUrl ? (
-                      <MediaCover
-                        width={96}
-                        height={128}
-                        src={avatarUrl}
-                        alt={userName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User size={48} className="text-white" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <h1 className="kata-title-page">{userName}</h1>
-                    <p className="text-[var(--text-secondary)] flex items-center gap-2 mt-1">
-                      <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-                      {stats.total} elementos rastreados
+        <div id="profile-content">
+          {summary.total === 0 && (
+            <Panel tone="accent" className="p-5 sm:p-6 mb-6">
+              <h2 className="kata-title-section">Tu biblioteca, a tu ritmo</h2>
+              <p className="kata-copy mt-2 mb-4">
+                Cuando añadas contenido, aquí podrás ver cómo se reparte tu biblioteca y consultar
+                tus valoraciones.
+              </p>
+              <ButtonLink href="/search">Añadir contenido</ButtonLink>
+            </Panel>
+          )}
+          {tab === 'overview' && (
+            <div className="space-y-6">
+              <Panel
+                tone="subtle"
+                className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10"
+              >
+                <div className="p-5 sm:p-6">
+                  <Library
+                    size={20}
+                    className="text-[var(--accent-primary)] mb-3"
+                    aria-hidden="true"
+                  />
+                  <p className="kata-label">Títulos en tu biblioteca</p>
+                  <p className="text-3xl font-semibold mt-2 tabular-nums">{summary.total}</p>
+                </div>
+                <div className="p-5 sm:p-6">
+                  <Star
+                    size={20}
+                    className="text-[var(--accent-warning)] mb-3"
+                    aria-hidden="true"
+                  />
+                  <p className="kata-label">Valoración media</p>
+                  <p className="text-3xl font-semibold mt-2 tabular-nums">
+                    {formatRating(summary.average)}
+                  </p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-2">
+                    {summary.rated} {summary.rated === 1 ? 'título valorado' : 'títulos valorados'}{' '}
+                    · los títulos sin valorar no se incluyen
+                  </p>
+                </div>
+              </Panel>
+              <div className="grid md:grid-cols-2 gap-6">
+                <DistributionPanel
+                  title="Por categoría"
+                  description="Los títulos que has guardado, según su formato."
+                  total={summary.total}
+                  rows={types.map(({ type, label }) => ({
+                    label,
+                    count: items.filter((item) => item.type === type).length,
+                    color: TYPE_COLORS[type],
+                  }))}
+                />
+                <DistributionPanel
+                  title="Por estado"
+                  description="Una vista de lo que tienes pendiente, en marcha y terminado."
+                  total={summary.total}
+                  rows={[
+                    { label: 'En curso', count: summary.inProgress },
+                    { label: 'Pendientes', count: summary.pending },
+                    { label: 'Completados', count: summary.completed },
+                    { label: 'Abandonados', count: summary.dropped },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+          {tab === 'stats' && (
+            <div className="space-y-6">
+              <Panel className="p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="kata-title-section">Títulos añadidos</h2>
+                    <p className="kata-copy mt-2">
+                      Últimos 30 días, incluido hoy. Cuenta incorporaciones, no sesiones de uso.
                     </p>
-                    <p className="text-[var(--text-tertiary)] text-sm mt-1 break-all">
-                      {userEmail || 'Sin email'}
-                    </p>
                   </div>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {days.reduce((sum, day) => sum + day.count, 0)}
+                    <span className="text-sm font-normal text-[var(--text-secondary)] ml-2">
+                      títulos
+                    </span>
+                  </p>
                 </div>
-
-                <Button variant="secondary" onClick={() => setIsSettingsOpen(true)}>
-                  <Settings size={16} />
-                  Ajustes
-                </Button>
-              </div>
-            </FadeIn>
-
-            {stats.total === 0 && (
-              <FadeIn direction="up" delay={0.15}>
-                <div className="kata-panel kata-panel--subtle mb-8 p-6 border-[var(--accent-primary)]/20">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-start sm:justify-between gap-4">
-                    <div>
-                      <h3 className="kata-title-dialog mb-2">Empieza a trackear tu contenido</h3>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        Añade tus primeras películas, series, libros o videojuegos para ver tus
-                        estadísticas y actividad.
-                      </p>
-                    </div>
-                    <Button onClick={() => router.push('/search')}>Buscar Contenido</Button>
-                  </div>
-                </div>
-              </FadeIn>
-            )}
-
-            <FadeIn direction="up" delay={0.2}>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-16">
-                <StatCard
-                  icon={<BookOpen size={20} />}
-                  label="Libros"
-                  value={stats.byType.BOOK || 0}
-                  color="text-[var(--color-book)]"
-                  total={stats.total}
-                  delay={0}
-                />
-                <StatCard
-                  icon={<Gamepad2 size={20} />}
-                  label="Juegos"
-                  value={stats.byType.GAME || 0}
-                  color="text-[var(--color-game)]"
-                  total={stats.total}
-                  delay={0.1}
-                />
-                <StatCard
-                  icon={<Tv size={20} />}
-                  label="Series"
-                  value={stats.byType.SERIES || 0}
-                  color="text-[var(--color-series)]"
-                  total={stats.total}
-                  delay={0.2}
-                />
-                <StatCard
-                  icon={<Film size={20} />}
-                  label="Películas"
-                  value={stats.byType.MOVIE || 0}
-                  color="text-[var(--color-movie)]"
-                  total={stats.total}
-                  delay={0.3}
-                />
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="up" delay={0.3}>
-              <div className="border-b border-white/10 mb-8">
-                <div className="flex gap-2 pb-3 overflow-x-auto scrollbar-hide">
-                  <TabItem
-                    label="Resumen"
-                    active={activeTab === 'overview'}
-                    onClick={() => setActiveTab('overview')}
-                  />
-                  <TabItem
-                    label="Historial"
-                    active={activeTab === 'history'}
-                    onClick={() => setActiveTab('history')}
-                  />
-                  <TabItem
-                    label="Reseñas"
-                    active={activeTab === 'reviews'}
-                    onClick={() => setActiveTab('reviews')}
-                  />
-                  <TabItem
-                    label="Estadísticas"
-                    active={activeTab === 'stats'}
-                    onClick={() => setActiveTab('stats')}
-                  />
-                </div>
-              </div>
-            </FadeIn>
-
-            {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                <div className="lg:col-span-2 space-y-8 sm:space-y-12">
-                  <section ref={heatmapRef}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <ChartNoAxesCombined className="text-[var(--accent-primary)]" />
-                      <h2 className="kata-title-section text-xl">Actividad por Día</h2>
-                    </div>
-                    <div className="kata-panel p-4 sm:p-8 transition-colors">
-                      <div className="h-32 flex items-end justify-between gap-0.5 sm:gap-1">
-                        {activityChartData.map((data, i) => (
-                          <div
-                            key={i}
-                            className="w-full min-w-[3px] rounded-sm bg-[var(--accent-primary)] transition-all hover:opacity-100 cursor-pointer"
-                            style={{
-                              height: `${data.height}%`,
-                              opacity: data.opacity,
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between mt-4 text-xs text-[var(--text-tertiary)] font-mono">
-                        <span>Hace 40 días</span>
-                        <span>Ayer</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  {favoriteItems.length > 0 && (
-                    <section ref={favoritesRef}>
-                      <h2 className="kata-title-section text-xl mb-6">Mejor Valorados</h2>
-                      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                        {favoriteItems.map((item, index) => (
-                          <FadeIn key={`fav-${item.id}`} delay={index * 0.1}>
-                            <KataCard item={item} />
-                          </FadeIn>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-                </div>
-
-                <div className="space-y-8">
-                  <section ref={timelineRef}>
-                    <h2 className="kata-title-section mb-4 text-[var(--text-secondary)]">
-                      Actividad Reciente
-                    </h2>
-                    <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
-                      {recentActivity.slice(0, 5).map((item, index) => (
-                        <FadeIn key={item.id} delay={index * 0.15}>
-                          <TimelineItem
-                            title={item.title}
-                            date={getRelativeTime(item.createdAt)}
-                            type={item.type}
-                            desc={
-                              item.review ||
-                              `Añadido a ${STATUS_LABELS[item.status as keyof typeof STATUS_LABELS] || item.status}`
-                            }
-                          />
-                        </FadeIn>
-                      ))}
-                    </div>
-                  </section>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="space-y-4">
-                <h2 className="kata-title-section text-xl mb-6">Historial Completo</h2>
-                <div className="space-y-3">
-                  {recentActivity.map((item, index) => (
-                    <FadeIn key={item.id} delay={index * 0.05}>
-                      <div className="kata-panel kata-panel--subtle flex items-center gap-4 p-4 transition-colors">
-                        <MediaCover
-                          width={96}
-                          height={128}
-                          src={item.coverUrl}
-                          alt={item.title}
-                          className="h-16 w-12 rounded object-cover"
-                        />
-                        <div className="flex-1">
-                          <h3 className="kata-title-dialog">{item.title}</h3>
-                          <p className="text-sm text-[var(--text-secondary)]">
-                            {item.author || item.platform || item.releaseYear}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-[var(--accent-primary)]">
-                            {item.rating ? `${item.rating}/5` : 'Sin valorar'}
-                          </p>
-                          <p className="text-xs text-[var(--text-tertiary)]">
-                            {getRelativeTime(item.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    </FadeIn>
+                <div
+                  role="img"
+                  aria-label="Incorporaciones diarias. Fechas y cantidades disponibles en la tabla siguiente."
+                  className="flex items-end gap-1 h-32 mt-6"
+                >
+                  {days.map((day) => (
+                    <div
+                      key={day.date.toISOString()}
+                      title={`${day.date.toLocaleDateString('es-ES')}: ${day.count} títulos`}
+                      className="flex-1 bg-[var(--accent-primary)] rounded-t-sm"
+                      style={{ height: `${(day.count / maximum) * 100}%` }}
+                    />
                   ))}
                 </div>
+                <div className="flex justify-between text-xs text-[var(--text-secondary)] mt-3">
+                  <span>{days[0].date.toLocaleDateString('es-ES')}</span>
+                  <span>Hoy</span>
+                </div>
+                <details className="mt-5 text-sm">
+                  <summary className="cursor-pointer text-[var(--text-secondary)] focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)]">
+                    Ver fechas y cantidades
+                  </summary>
+                  <table className="w-full mt-3 text-left">
+                    <caption className="sr-only">Títulos añadidos cada día</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" className="py-2">
+                          Fecha
+                        </th>
+                        <th scope="col">Títulos</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {days.map((day) => (
+                        <tr key={day.date.toISOString()}>
+                          <td className="py-1">{day.date.toLocaleDateString('es-ES')}</td>
+                          <td>{day.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </details>
+              </Panel>
+              <div className="grid md:grid-cols-2 gap-6">
+                <DistributionPanel
+                  title="Tus valoraciones"
+                  description="Cómo se reparten tus puntuaciones, de 0 a 5."
+                  total={summary.rated}
+                  rows={Array.from(
+                    new Set(items.flatMap((item) => (item.rating === null ? [] : [item.rating]))),
+                  )
+                    .sort((a, b) => b - a)
+                    .map((rating) => ({
+                      label: formatRating(rating),
+                      count: items.filter((item) => item.rating === rating).length,
+                      color: 'var(--accent-warning)',
+                    }))}
+                />
+                <DistributionPanel
+                  title="Años de las obras"
+                  description={`Publicación o estreno, agrupados por década. ${summary.total - knownYears} títulos sin año conocido quedan fuera.`}
+                  total={knownYears}
+                  rows={years.map((year) => ({ label: year.decade, count: year.count }))}
+                />
               </div>
-            )}
-
-            {activeTab === 'reviews' && (
-              <div className="space-y-4">
-                <h2 className="kata-title-section text-xl mb-6">Tus Reseñas</h2>
+            </div>
+          )}
+          {tab === 'reviews' && (
+            <section>
+              <h2 className="kata-title-section mb-2">Tus reseñas</h2>
+              <p className="kata-copy mb-6">
+                Lo que pensaste de cada título, con espacio para cambiar de opinión.
+              </p>
+              {reviews.length === 0 ? (
+                <Panel tone="subtle" className="p-6">
+                  <p className="kata-copy mb-4">
+                    Aún no has escrito reseñas. Puedes añadir una al editar cualquier título.
+                  </p>
+                  <ButtonLink href="/library" variant="secondary">
+                    Ir a mi biblioteca
+                  </ButtonLink>
+                </Panel>
+              ) : (
                 <div className="space-y-4">
-                  {items
-                    .filter((item) => item.review)
-                    .map((item, index) => (
-                      <FadeIn key={item.id} delay={index * 0.05}>
-                        <div className="kata-panel kata-panel--subtle p-6 transition-colors">
-                          <div className="flex items-start gap-4 mb-4">
-                            <MediaCover
-                              width={96}
-                              height={128}
-                              src={item.coverUrl}
-                              alt={item.title}
-                              className="h-20 w-14 rounded object-cover"
-                            />
-                            <div className="flex-1">
-                              <h3 className="kata-title-dialog mb-1">{item.title}</h3>
-                              <p className="text-sm text-[var(--text-secondary)] mb-2">
-                                {item.author || item.platform}
-                              </p>
-                              <div className="flex items-center gap-2">
-                                <div className="text-[var(--accent-warning)]">
-                                  {item.rating ? `${item.rating}/5` : 'Sin valorar'}
-                                </div>
-                                <span className="text-[var(--text-tertiary)]">•</span>
-                                <span className="text-sm text-[var(--text-tertiary)]">
-                                  {getRelativeTime(item.createdAt)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                            {item.review}
+                  {reviews.map((item) => (
+                    <Panel key={item.id} className="p-5 sm:p-6">
+                      <div className="flex items-start gap-3">
+                        <MediaCover
+                          src={item.coverUrl}
+                          alt=""
+                          width={40}
+                          height={56}
+                          className="w-10 h-14 shrink-0 rounded object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <h3 className="kata-title-dialog break-words">{item.title}</h3>
+                          <p className="text-sm text-[var(--accent-warning)] mt-2">
+                            {formatRating(item.rating)}
                           </p>
                         </div>
-                      </FadeIn>
-                    ))}
-                  {items.filter((item) => item.review).length === 0 && (
-                    <p className="text-center text-[var(--text-tertiary)] py-12">
-                      Aún no tienes reseñas. ¡Comienza a reseñar tus elementos!
-                    </p>
-                  )}
+                      </div>
+                      <p className="kata-copy whitespace-pre-wrap break-words mt-4">
+                        {item.review}
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="mt-4"
+                        aria-label={`Editar reseña de ${item.title}`}
+                        onClick={() => setEditing(item)}
+                      >
+                        Editar reseña
+                      </Button>
+                    </Panel>
+                  ))}
                 </div>
-              </div>
-            )}
-
-            {activeTab === 'stats' && (
-              <div className="space-y-8">
-                <h2 className="kata-title-section text-xl mb-6">Estadísticas Detalladas</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="kata-panel kata-panel--subtle p-6">
-                    <h3 className="kata-section-label text-[var(--text-tertiary)] mb-4">
-                      Por Estado
-                    </h3>
-                    <div className="space-y-3">
-                      {Object.entries(stats.byStatus).map(([status, count]) => (
-                        <div key={status} className="flex items-center justify-between">
-                          <span className="text-sm text-white">
-                            {STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status}
-                          </span>
-                          <span className="text-sm font-bold text-[var(--accent-primary)]">
-                            {count}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="kata-panel kata-panel--subtle p-6">
-                    <h3 className="kata-section-label text-[var(--text-tertiary)] mb-4">
-                      Distribución de Valoraciones
-                    </h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: '5 estrellas', min: 4.5, max: 6 },
-                        { label: '4 estrellas', min: 3.5, max: 4.5 },
-                        { label: '3 estrellas', min: 2.5, max: 3.5 },
-                        { label: '1-2 estrellas', min: 0, max: 2.5 },
-                      ].map(({ label, min, max }) => {
-                        const count = items.filter(
-                          (item) => item.rating !== null && item.rating >= min && item.rating < max,
-                        ).length;
-                        return (
-                          <div key={label} className="flex items-center justify-between">
-                            <span className="text-sm text-white">{label}</span>
-                            <span className="text-sm font-bold text-[var(--accent-primary)]">
-                              {count}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        </main>
-      </div>
-
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-    </>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-  icon,
-  total,
-  delay,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  icon: React.ReactNode;
-  total: number;
-  delay: number;
-}) {
-  const percentage = total > 0 ? (value / total) * 100 : 0;
-
-  return (
-    <FadeIn delay={delay} direction="up">
-      <div className="kata-panel group relative overflow-hidden p-4 sm:p-6 transition-all duration-300 hover:scale-105">
-        <div
-          className={`mb-3 sm:mb-4 ${color} opacity-80 group-hover:scale-110 transition-transform`}
-        >
-          {icon}
+              )}
+            </section>
+          )}
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{value}</div>
-        <div className="text-sm text-[var(--text-tertiary)] font-medium">{label}</div>
-        <div className="mt-4 h-1 w-full rounded-full bg-white/5 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-1000 ease-out`}
-            style={{
-              width: `${percentage}%`,
-              backgroundColor: `var(--color-${label.toLowerCase()})`,
-            }}
-          />
-        </div>
-      </div>
-    </FadeIn>
-  );
-}
-
-function TabItem({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Chip selected={!!active} onClick={onClick}>
-      {label}
-    </Chip>
-  );
-}
-
-function TimelineItem({
-  title,
-  date,
-  type,
-  desc,
-}: {
-  title: string;
-  date: string;
-  type: string;
-  desc: string;
-}) {
-  const getColor = (t: string) => {
-    switch (t) {
-      case 'BOOK':
-        return 'bg-[var(--color-book)]';
-      case 'GAME':
-        return 'bg-[var(--color-game)]';
-      case 'MOVIE':
-        return 'bg-[var(--color-movie)]';
-      case 'SERIES':
-        return 'bg-[var(--color-series)]';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  return (
-    <div className="relative group">
-      <span
-        className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ${getColor(type)} ring-4 ring-[var(--bg-primary)] group-hover:scale-125 transition-transform`}
-      />
-      <h4 className="text-sm font-medium text-white group-hover:text-[var(--accent-primary)] transition-colors">
-        {title}
-      </h4>
-      <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{date}</p>
-      <p className="text-xs text-[var(--text-secondary)] mt-2 line-clamp-2">{desc}</p>
+      </main>
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {editing && (
+        <EditItemModal key={editing.id} item={editing} isOpen onClose={() => setEditing(null)} />
+      )}
     </div>
   );
-}
-
-function getRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'Ahora mismo';
-  if (diffInSeconds < 3600)
-    return `hace ${Math.floor(diffInSeconds / 60)} minuto${Math.floor(diffInSeconds / 60) > 1 ? 's' : ''}`;
-  if (diffInSeconds < 86400)
-    return `hace ${Math.floor(diffInSeconds / 3600)} hora${Math.floor(diffInSeconds / 3600) > 1 ? 's' : ''}`;
-  if (diffInSeconds < 604800)
-    return `hace ${Math.floor(diffInSeconds / 86400)} día${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''}`;
-  return `hace ${Math.floor(diffInSeconds / 604800)} semana${Math.floor(diffInSeconds / 604800) > 1 ? 's' : ''}`;
 }

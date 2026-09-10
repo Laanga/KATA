@@ -55,3 +55,7 @@ La regla de ESLint `no-restricted-syntax` impide añadir botones, inputs, select
 La paleta por categoría, los gráficos, los avatares, las insignias y las ilustraciones de portada conservan su significado visual. No son familias alternativas de botones o formularios.
 
 La valoración usa `StarRating`: cinco estrellas pulsables, puntuaciones enteras de 0 a 5 y una acción independiente para quitar la puntuación. No sustituirlo por un desplegable ni añadir medias estrellas.
+
+## Inicio y Perfil
+
+Inicio prioriza retomar y organizar: resumen de estados, filas compactas de títulos en curso y últimas incorporaciones. Las portadas son miniaturas de apoyo, no otra cuadrícula de Biblioteca. Perfil concentra cuenta, distribución de la biblioteca, estadísticas y reseñas. Las gráficas explican sus datos; las incorporaciones por día no se presentan como sesiones ni como historial de cambios. El contenido permanece visible sin animaciones de entrada o desplazamiento.

@@ -1,237 +1,114 @@
 'use client';
-
-import { TypeComparison } from '@/components/dashboard/TypeComparison';
-import { RatingDistribution } from '@/components/dashboard/RatingDistribution';
-import { TopRatedItems } from '@/components/dashboard/TopRatedItems';
-import { YearDistribution } from '@/components/dashboard/YearDistribution';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
-import { DashboardSkeleton } from '@/components/ui/Skeleton';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { useEffect, useRef } from 'react';
-import { useAuth } from '@/components/AuthProvider';
-import { KataCard } from '@/components/media/KataCard';
-import { useMediaStore } from '@/lib/store';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Library } from 'lucide-react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { Plus, ArrowUpRight, BookOpen, Check, Clock } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
+import { useMediaStore } from '@/lib/store';
+import { getDashboardSummary } from '@/lib/utils/dashboard';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Panel } from '@/components/ui/Panel';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
+import { LibraryRow } from '@/components/dashboard/LibraryRow';
+import { EditItemModal } from '@/components/media/EditItemModal';
+import type { MediaItem } from '@/types/media';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const userName = user?.user_metadata?.username || 'Usuario';
   const router = useRouter();
-  const items = useMediaStore((state) => state.items);
-  const stats = { total: items.length };
-  const continuing = items
-    .filter((item) => ['READING', 'PLAYING', 'WATCHING'].includes(item.status))
-    .sort((a, b) => (b.updatedAt || b.createdAt).localeCompare(a.updatedAt || a.createdAt))
-    .slice(0, 4);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-  const activityRef = useRef<HTMLDivElement>(null);
-  const isInitialized = useMediaStore((state) => state.isInitialized);
-
-  useEffect(() => {
-    if (!containerRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-      return;
-
-    const ctx = gsap.context(() => {
-      const mainTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      const headerTitle = headerRef.current?.querySelector('.header-title');
-      const headerSubtitle = headerRef.current?.querySelector('.header-subtitle');
-      const headerKanji = headerRef.current?.querySelector('.header-kanji');
-      const headerLine = headerRef.current?.querySelector('.header-line');
-
-      if (headerTitle) {
-        mainTl.fromTo(
-          headerTitle,
-          { y: 60, opacity: 0, scale: 0.95 },
-          { y: 0, opacity: 1, scale: 1, duration: 1, ease: 'power4.out' },
-          '-=0.6',
-        );
-      }
-
-      if (headerSubtitle) {
-        mainTl.fromTo(
-          headerSubtitle,
-          { y: 30, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' },
-          '-=0.6',
-        );
-      }
-
-      if (headerKanji) {
-        mainTl.fromTo(
-          headerKanji,
-          { opacity: 0, scale: 0.8, rotate: -10 },
-          { opacity: 1, scale: 1, rotate: 0, duration: 0.8, ease: 'back.out(1.7)' },
-          '-=0.5',
-        );
-      }
-
-      if (headerLine) {
-        mainTl.fromTo(
-          headerLine,
-          { scaleX: 0, opacity: 0 },
-          { scaleX: 1, opacity: 1, duration: 0.8, ease: 'power2.out' },
-          '-=0.4',
-        );
-      }
-
-      if (headerKanji) {
-        gsap.to(headerKanji, {
-          y: -8,
-          duration: 3,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-        });
-      }
-
-      const cards = cardsRef.current?.children;
-      if (cards) {
-        gsap.fromTo(
-          cards,
-          { y: 50, opacity: 0, scale: 0.9 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.8,
-            stagger: { amount: 0.6, from: 'start' },
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: cardsRef.current,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          },
-        );
-      }
-
-      if (activityRef.current) {
-        gsap.fromTo(
-          activityRef.current,
-          { y: 40, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: activityRef.current,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          },
-        );
-      }
-
-      if (headerRef.current) {
-        gsap.to(headerRef.current, {
-          y: -30,
-          opacity: 0.3,
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1,
-          },
-        });
-      }
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, [isInitialized]);
-
-  if (!isInitialized) return <DashboardSkeleton />;
-
+  const items = useMediaStore((s) => s.items);
+  const ready = useMediaStore((s) => s.isInitialized);
+  const [editing, setEditing] = useState<MediaItem | null>(null);
+  const summary = getDashboardSummary(items);
+  function openLibrary(status: 'IN_PROGRESS' | 'WANT_TO_CONSUME') {
+    const store = useMediaStore.getState();
+    store.resetFilters();
+    store.setSearchQuery('');
+    store.setFilters({ status });
+    router.push('/library');
+  }
+  if (!ready) return <DashboardSkeleton />;
   return (
-    <>
-      <div ref={containerRef} className="min-h-screen pb-nav-safe relative overflow-hidden">
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
-          <div
-            className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
-            style={{ animationDelay: '1s' }}
-          />
-        </div>
-
-        <main className="container mx-auto px-4 sm:px-6 pt-10 md:pt-24 max-w-7xl relative z-10">
-          <header ref={headerRef} className="mb-8 sm:mb-12 md:mb-16">
-            <div className="flex items-baseline gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <h1 className="header-title kata-title-page">Resumen</h1>
-              <div className="header-kanji text-2xl sm:text-4xl md:text-5xl text-emerald-400/60 font-serif">
-                型
-              </div>
+    <div className="min-h-screen pb-nav-safe">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 md:pt-24 pb-10">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="min-w-0">
+            <p className="kata-label text-[var(--accent-primary)] mb-2">TU ESPACIO EN KATA</p>
+            <h1 className="kata-title-page break-words">
+              Hola, {user?.user_metadata?.username || 'Usuario'}
+            </h1>
+            <p className="kata-copy mt-2">Un momento para seguir con lo que te gusta.</p>
+          </div>
+          <ButtonLink href="/search" className="shrink-0 self-start">
+            <Plus size={18} aria-hidden="true" />
+            Añadir contenido
+          </ButtonLink>
+        </header>
+        <Panel tone="subtle" className="grid grid-cols-3 divide-x divide-white/10 mb-8 py-5">
+          {[
+            { label: 'En curso', value: summary.inProgress, icon: BookOpen },
+            { label: 'Pendientes', value: summary.pending, icon: Clock },
+            { label: 'Completados', value: summary.completed, icon: Check },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="px-3 sm:px-6">
+              <Icon size={18} aria-hidden="true" className="text-[var(--accent-primary)] mb-3" />
+              <p className="text-2xl sm:text-3xl font-semibold tabular-nums">{value}</p>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">{label}</p>
             </div>
-            <p className="header-subtitle text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-4 sm:mb-6 md:mb-8 font-light">
-              {stats.total === 0 ? 'Tu biblioteca empieza aquí, ' : 'Bienvenido de vuelta, '}
-              {userName && <span className="text-emerald-400/80 font-medium">{userName}</span>}
+          ))}
+        </Panel>
+        {summary.total === 0 ? (
+          <Panel tone="accent" className="p-6 sm:p-10">
+            <BookOpen size={28} className="text-[var(--accent-primary)] mb-5" aria-hidden="true" />
+            <h2 className="kata-title-section">Tu próximo título empieza aquí</h2>
+            <p className="kata-copy mt-3 mb-6 max-w-lg">
+              Añade un libro, juego, película o serie. Aquí podrás retomar lo que tengas en curso y
+              actualizarlo a tu ritmo.
             </p>
-            <div className="header-line h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent max-w-md" />
-          </header>
-
-          {stats.total === 0 ? (
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <EmptyState
-                icon={<Library className="w-16 h-16" />}
-                title="Tu biblioteca está vacía"
-                description="Empieza a trackear tus películas, series, libros y videojuegos favoritos."
-                action={{
-                  label: 'Buscar Contenido',
-                  onClick: () => router.push('/search'),
-                }}
-              />
-            </div>
-          ) : (
-            <>
-              {continuing.length > 0 && (
-                <section aria-labelledby="continue-heading" className="mb-10">
-                  <h2 id="continue-heading" className="kata-title-section mb-4">
-                    Continúa donde lo dejaste
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {continuing.map((item) => (
-                      <KataCard key={item.id} item={item} />
-                    ))}
-                  </div>
-                </section>
+            <ButtonLink href="/search">Añadir mi primer título</ButtonLink>
+          </Panel>
+        ) : (
+          <div className="grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-6 items-start">
+            <Panel className="p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="kata-title-section">En curso</h2>
+                <Button variant="ghost" size="sm" onClick={() => openLibrary('IN_PROGRESS')}>
+                  Ver todos
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </Button>
+              </div>
+              <p className="kata-copy mt-2 mb-2">Retoma tus títulos y actualiza cómo vas.</p>
+              {summary.continuing.length ? (
+                <div className="divide-y divide-white/10">
+                  {summary.continuing.map((item) => (
+                    <LibraryRow key={item.id} item={item} onEdit={setEditing} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8">
+                  <p className="kata-copy mb-4">
+                    No tienes títulos en curso. Elige uno de tus pendientes para empezar.
+                  </p>
+                  <Button variant="secondary" onClick={() => openLibrary('WANT_TO_CONSUME')}>
+                    Ver pendientes
+                  </Button>
+                </div>
               )}
-              <div
-                ref={cardsRef}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-              >
-                <div className="will-change-transform">
-                  <TopRatedItems />
-                </div>
-                <div className="will-change-transform">
-                  <TypeComparison />
-                </div>
-                <div className="will-change-transform">
-                  <RatingDistribution />
-                </div>
-                <div className="will-change-transform">
-                  <YearDistribution />
-                </div>
+            </Panel>
+            <Panel tone="subtle" className="p-5 sm:p-6">
+              <h2 className="kata-title-section">Últimos añadidos</h2>
+              <p className="kata-copy mt-2 mb-2">Las últimas incorporaciones a tu biblioteca.</p>
+              <div className="divide-y divide-white/10">
+                {summary.recent.map((item) => (
+                  <LibraryRow key={item.id} item={item} onEdit={setEditing} recent />
+                ))}
               </div>
-
-              <div ref={activityRef} className="mt-6 sm:mt-8 md:mt-12 will-change-transform">
-                <ActivityFeed />
-              </div>
-            </>
-          )}
-        </main>
-      </div>
-    </>
+            </Panel>
+          </div>
+        )}
+      </main>
+      {editing && (
+        <EditItemModal key={editing.id} item={editing} isOpen onClose={() => setEditing(null)} />
+      )}
+    </div>
   );
 }
