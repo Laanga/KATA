@@ -23,31 +23,26 @@ interface UseScrollAnimationOptions {
   ease?: string;
 }
 
-export function useScrollAnimation<T extends HTMLElement>(
-  options: UseScrollAnimationOptions
-) {
+export function useScrollAnimation<T extends HTMLElement>(options: UseScrollAnimationOptions) {
   const elementRef = useRef<T>(null);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        element,
-        options.from,
-        {
-          ...options.to,
-          duration: options.duration || 0.8,
-          delay: options.delay || 0,
-          ease: options.ease || 'power2.out',
-          scrollTrigger: {
-            trigger: element,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
+      gsap.fromTo(element, options.from, {
+        ...options.to,
+        duration: options.duration || 0.8,
+        delay: options.delay || 0,
+        ease: options.ease || 'power2.out',
+        scrollTrigger: {
+          trigger: element,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      });
     }, element);
 
     return () => ctx.revert();

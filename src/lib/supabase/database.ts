@@ -1,6 +1,13 @@
 import { createClient } from './client';
-import type { MediaItem, MediaType } from '@/types/media';
-import { dbRowToMediaItem, mediaItemToDbInsert, mediaItemToDbUpdate, type MediaMetadata } from '@/types/supabase';
+import type { MediaItem } from '@/types/media';
+import type { LibraryBackup } from '@/lib/utils/libraryTransfer';
+import type { Json } from '@/types/supabase';
+import {
+  dbRowToMediaItem,
+  mediaItemToDbInsert,
+  mediaItemToDbUpdate,
+  type MediaMetadata,
+} from '@/types/supabase';
 
 class MediaDatabase {
   private getClient() {
@@ -12,20 +19,27 @@ class MediaDatabase {
    */
   async getAll(): Promise<MediaItem[]> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     // Si no hay usuario, retornar array vacío en lugar de lanzar error
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('media_items')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    
-    return data.map(dbRowToMediaItem);
+    const items: MediaItem[] = [];
+    const pageSize = 500;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from('media_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .order('id')
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      items.push(...data.map(dbRowToMediaItem));
+      if (data.length < pageSize) return items;
+    }
   }
 
   /**
@@ -33,8 +47,10 @@ class MediaDatabase {
    */
   async getById(id: string): Promise<MediaItem | null> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return null;
 
     const { data, error } = await supabase
@@ -48,27 +64,8 @@ class MediaDatabase {
       if (error.code === 'PGRST116') return null; // Not found
       throw error;
     }
-    
+
     return dbRowToMediaItem(data);
-  }
-
-  /**
-   * Verifica si existe un item duplicado
-   */
-  async checkDuplicate(userId: string, type: MediaType, title: string): Promise<boolean> {
-    const supabase = this.getClient();
-
-    const { data, error } = await supabase
-      .from('media_items')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('type', type)
-      .eq('title', title.trim())
-      .limit(1);
-
-    if (error) throw error;
-
-    return data && data.length > 0;
   }
 
   /**
@@ -77,24 +74,16 @@ class MediaDatabase {
   async create(item: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<MediaItem> {
     const supabase = this.getClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para crear items');
     }
 
-    const isDuplicate = await this.checkDuplicate(user.id, item.type, item.title);
-    if (isDuplicate) {
-      throw new Error('Este elemento ya existe en tu biblioteca');
-    }
-
     const dbItem = mediaItemToDbInsert(item, user.id);
 
-    const { data, error } = await supabase
-      .from('media_items')
-      // @ts-expect-error - Supabase types are too strict with JSONB metadata
-      .insert(dbItem)
-      .select()
-      .single();
+    const { data, error } = await supabase.from('media_items').insert(dbItem).select().single();
 
     if (error) {
       if (error.code === '23505' || error.message?.includes('unique constraint')) {
@@ -111,29 +100,30 @@ class MediaDatabase {
    */
   async update(id: string, updates: Partial<MediaItem>): Promise<MediaItem> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para actualizar items');
     }
 
-    // Obtener el item actual para preservar metadata
-    const currentItem = await this.getById(id);
-    if (!currentItem) throw new Error('Item no encontrado');
-
     // Obtener metadata actual de la base de datos
-    const { data: currentData } = await supabase
+    const { data: currentData, error: metadataError } = await supabase
       .from('media_items')
       .select('metadata')
+      .eq('user_id', user.id)
       .eq('id', id)
       .single();
 
-    const metadata = currentData ? (currentData as { metadata?: MediaMetadata }).metadata : undefined;
+    if (metadataError) throw metadataError;
+    const metadata = currentData
+      ? (currentData as { metadata?: MediaMetadata }).metadata
+      : undefined;
     const dbUpdate = mediaItemToDbUpdate(updates, metadata);
 
     const { data, error } = await supabase
       .from('media_items')
-      // @ts-expect-error - Supabase types are too strict with JSONB metadata
       .update(dbUpdate)
       .eq('id', id)
       .eq('user_id', user.id)
@@ -141,7 +131,7 @@ class MediaDatabase {
       .single();
 
     if (error) throw error;
-    
+
     return dbRowToMediaItem(data);
   }
 
@@ -150,8 +140,10 @@ class MediaDatabase {
    */
   async delete(id: string): Promise<void> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para eliminar items');
     }
@@ -165,21 +157,41 @@ class MediaDatabase {
     if (error) throw error;
   }
 
+  async clear(): Promise<void> {
+    const { error } = await this.getClient().rpc('clear_library');
+    if (error) throw error;
+  }
+
+  async import(backup: LibraryBackup, replace = false): Promise<number> {
+    const payload = JSON.parse(JSON.stringify(backup)) as Json;
+    const { data, error } = await this.getClient().rpc('import_library', {
+      payload,
+      replace_existing: replace,
+    });
+    if (error) throw error;
+    return data;
+  }
   /**
    * Obtiene estadísticas del usuario
    */
   async getStats() {
     const items = await this.getAll();
-    
-    const byType = items.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
 
-    const byStatus = items.reduce((acc, item) => {
-      acc[item.status] = (acc[item.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = items.reduce(
+      (acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const byStatus = items.reduce(
+      (acc, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const ratingsSum = items
       .filter((item) => item.rating !== null)

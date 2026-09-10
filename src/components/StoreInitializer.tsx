@@ -1,47 +1,16 @@
 'use client';
-
 import { useEffect } from 'react';
 import { useMediaStore } from '@/lib/store';
-import { createClient } from '@/lib/supabase/client';
-
+import { useAuth } from './AuthProvider';
 export function StoreInitializer() {
-  const initialize = useMediaStore((state) => state.initialize);
-
+  const { user } = useAuth();
+  const initialize = useMediaStore((s) => s.initialize);
   useEffect(() => {
-    let isMounted = true;
-
-    const checkAndInitialize = async () => {
-      try {
-        const supabase = createClient();
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-
-        if (!isMounted) return;
-
-        // Only initialize if user exists and has valid session
-        if (user && !error) {
-          const emailConfirmed = user.email_confirmed_at !== null;
-          const hasUsername = user.user_metadata?.username;
-
-          // Only initialize store if user is fully authenticated
-          if (emailConfirmed && hasUsername) {
-            await initialize();
-          }
-        }
-      } catch {
-        // Silently fail - auth is handled by AuthProvider
-      }
-    };
-
-    checkAndInitialize();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [initialize]);
-
-  // Render nothing - this is purely for side effects
+    if (user?.email_confirmed_at && user.user_metadata?.username) {
+      void initialize().catch(() => {
+        /* DataBoundary renders a recoverable error. */
+      });
+    }
+  }, [user?.id, user?.email_confirmed_at, user?.user_metadata?.username, initialize]);
   return null;
 }

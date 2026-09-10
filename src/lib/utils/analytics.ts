@@ -37,16 +37,16 @@ interface MonthStats {
 export function getGenreStats(items: MediaItem[]): GenreStat[] {
   const genreCount: Record<string, number> = {};
 
-  items.forEach(item => {
+  items.forEach((item) => {
     if (item.genres && Array.isArray(item.genres)) {
-      item.genres.forEach(genre => {
+      item.genres.forEach((genre) => {
         genreCount[genre] = (genreCount[genre] || 0) + 1;
       });
     }
   });
 
   const total = Object.values(genreCount).reduce((sum, count) => sum + count, 0);
-  
+
   return Object.entries(genreCount)
     .map(([name, count]) => ({
       name,
@@ -68,12 +68,12 @@ export function getRatingDistribution(items: MediaItem[]): RatingRange[] {
     { range: '4-5', label: 'Alto', min: 4, max: 5 },
   ];
 
-  const ratedItems = items.filter(item => item.rating !== null);
+  const ratedItems = items.filter((item) => item.rating !== null);
   const total = ratedItems.length;
 
   return ranges.map(({ range, label, min, max }) => {
     const count = ratedItems.filter(
-      item => item.rating !== null && item.rating >= min && item.rating <= max
+      (item) => item.rating !== null && item.rating >= min && item.rating <= max,
     ).length;
 
     return {
@@ -91,7 +91,7 @@ export function getRatingDistribution(items: MediaItem[]): RatingRange[] {
 export function getYearDistribution(items: MediaItem[]): YearDecade[] {
   const decadeCount: Record<string, number> = {};
 
-  items.forEach(item => {
+  items.forEach((item) => {
     if (item.releaseYear) {
       const decade = Math.floor(item.releaseYear / 10) * 10;
       const decadeLabel = `${decade}s`;
@@ -121,7 +121,7 @@ export function getYearDistribution(items: MediaItem[]): YearDecade[] {
  */
 export function getTopRatedItems(items: MediaItem[], limit: number = 5): MediaItem[] {
   return items
-    .filter(item => item.rating !== null && item.rating >= 4)
+    .filter((item) => item.rating !== null && item.rating >= 4)
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))
     .slice(0, limit);
 }
@@ -132,7 +132,7 @@ export function getTopRatedItems(items: MediaItem[], limit: number = 5): MediaIt
 export function getMonthlyStats(items: MediaItem[]): MonthlyStat[] {
   const monthStats: Record<string, MonthStats> = {};
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const createdDate = new Date(item.createdAt);
     const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
     const monthLabel = createdDate.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
@@ -143,10 +143,13 @@ export function getMonthlyStats(items: MediaItem[]): MonthlyStat[] {
     monthStats[monthKey].added += 1;
 
     // Si está completado y tiene updatedAt, contar cuando se completó
-    if (item.status === 'COMPLETED' && item.updatedAt) {
-      const completedDate = new Date(item.updatedAt);
+    if (item.status === 'COMPLETED' && item.completedAt) {
+      const completedDate = new Date(item.completedAt!);
       const completedMonthKey = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}`;
-      const completedMonthLabel = completedDate.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+      const completedMonthLabel = completedDate.toLocaleDateString('es-ES', {
+        month: 'short',
+        year: 'numeric',
+      });
 
       if (!monthStats[completedMonthKey]) {
         monthStats[completedMonthKey] = { added: 0, completed: 0, monthLabel: completedMonthLabel };
@@ -156,18 +159,11 @@ export function getMonthlyStats(items: MediaItem[]): MonthlyStat[] {
   });
 
   return Object.entries(monthStats)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .slice(0, 6)
     .map(([key, stats]) => ({
       month: stats.monthLabel || key,
       added: stats.added,
       completed: stats.completed,
-    }))
-    .sort((a, b) => {
-      // Ordenar por mes (más reciente primero)
-      const [yearA, monthA] = a.month.split(' ');
-      const [yearB, monthB] = b.month.split(' ');
-      if (yearA !== yearB) return parseInt(yearB) - parseInt(yearA);
-      const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-      return months.indexOf(monthB) - months.indexOf(monthA);
-    })
-    .slice(0, 6); // Últimos 6 meses
+    }));
 }

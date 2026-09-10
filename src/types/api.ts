@@ -36,8 +36,8 @@ export interface GoogleBookVolume {
     title: string;
     authors?: string[];
     imageLinks?: {
-      smallThumbnail: string;
-      thumbnail: string;
+      smallThumbnail?: string;
+      thumbnail?: string;
     };
     categories?: string[];
     subject?: string[];
@@ -75,6 +75,7 @@ export interface IGDBResponse {
 export interface RAWGGame {
   id: number;
   name: string;
+  released?: string;
   background_image: string | null;
   rating: number | null;
   genres?: Array<{
@@ -94,4 +95,15 @@ export interface RAWGResponse {
   next: string | null;
   previous: string | null;
   results: RAWGGame[];
+}
+
+export interface OpenLibraryWork {
+  key: string;
+  title: string;
+  first_publish_year?: number;
+  cover_id?: number;
+  cover_i?: number;
+  authors?: { name: string }[];
+  author_name?: string[];
+  subject?: string[];
 }

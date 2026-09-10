@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -16,7 +18,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       toast.error('Por favor ingresa tu email');
       return;
@@ -46,7 +48,7 @@ export default function ForgotPasswordPage() {
       {/* Background */}
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -66,7 +68,10 @@ export default function ForgotPasswordPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link
+        href="/"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
+      >
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>
@@ -81,23 +86,19 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  ¡Email enviado!
-                </h2>
+                <h2 className="text-2xl font-bold text-white mb-2">¡Email enviado!</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
-                  Hemos enviado un enlace de recuperación a <span className="text-white font-medium">{email}</span>
+                  Hemos enviado un enlace de recuperación a{' '}
+                  <span className="text-white font-medium">{email}</span>
                 </p>
               </div>
               <div className="pt-4 space-y-3">
                 <p className="text-xs text-[var(--text-tertiary)]">
                   ¿No lo ves? Revisa tu carpeta de spam
                 </p>
-                <button
-                  onClick={() => setIsEmailSent(false)}
-                  className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
+                <Button variant="secondary" onClick={() => setIsEmailSent(false)}>
                   Enviar de nuevo
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -107,9 +108,7 @@ export default function ForgotPasswordPage() {
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
                   <Mail className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">
-                  ¿Olvidaste tu contraseña?
-                </h2>
+                <h2 className="text-2xl font-bold text-white">¿Olvidaste tu contraseña?</h2>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   No te preocupes, te enviaremos instrucciones para recuperarla
                 </p>
@@ -117,10 +116,13 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                  >
                     Email
                   </label>
-                  <input
+                  <TextInput
                     id="email"
                     name="email"
                     type="email"
@@ -128,18 +130,14 @@ export default function ForgotPasswordPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                    className="w-full"
                     placeholder="tu@email.com"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <Button variant="primary" type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? 'Enviando...' : 'Enviar enlace de recuperación'}
-                </button>
+                </Button>
               </form>
 
               <p className="text-center text-sm text-[var(--text-secondary)]">

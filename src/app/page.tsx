@@ -1,12 +1,25 @@
 'use client';
+import { ButtonLink } from '@/components/ui/Button';
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 import {
-  BookOpen, Gamepad2, Film, Tv, ArrowRight, Sparkles,
-  Search, Plus, Star, BarChart3, Check, Zap, Shield, Clock
+  BookOpen,
+  Gamepad2,
+  Film,
+  Tv,
+  ArrowRight,
+  Sparkles,
+  Search,
+  Plus,
+  Star,
+  BarChart3,
+  Check,
+  Zap,
+  Shield,
+  Clock,
 } from 'lucide-react';
 import { ParticleBackground } from '@/components/ui/ParticleBackground';
 
@@ -21,6 +34,7 @@ export default function LandingPage() {
   const kanjiContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = gsap.context(() => {
       const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
@@ -38,38 +52,23 @@ export default function LandingPage() {
             rotateY: 0,
             duration: 1.5,
             ease: 'elastic.out(1, 0.5)',
-          }
+          },
         )
         .fromTo(
           '.kanji-glow',
           { opacity: 0, scale: 0.8 },
           { opacity: 1, scale: 1, duration: 1 },
-          '-=1'
+          '-=1',
         )
-        .fromTo(
-          '.hero-title',
-          { y: 60, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.8 },
-          '-=0.5'
-        )
+        .fromTo('.hero-title', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.5')
         .fromTo(
           '.hero-subtitle',
           { y: 40, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.6 },
-          '-=0.4'
+          '-=0.4',
         )
-        .fromTo(
-          '.hero-cta',
-          { y: 30, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.5 },
-          '-=0.3'
-        )
-        .fromTo(
-          '.scroll-indicator',
-          { opacity: 0 },
-          { opacity: 1, duration: 0.5 },
-          '-=0.2'
-        );
+        .fromTo('.hero-cta', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.3')
+        .fromTo('.scroll-indicator', { opacity: 0 }, { opacity: 1, duration: 0.5 }, '-=0.2');
 
       gsap.to(kanjiRef.current, {
         y: -15,
@@ -110,7 +109,7 @@ export default function LandingPage() {
               start: 'top 85%',
               toggleActions: 'play none none reverse',
             },
-          }
+          },
         );
       });
 
@@ -133,7 +132,7 @@ export default function LandingPage() {
               start: 'top 88%',
               toggleActions: 'play none none reverse',
             },
-          }
+          },
         );
       });
 
@@ -153,7 +152,7 @@ export default function LandingPage() {
               start: 'top 85%',
               toggleActions: 'play none none reverse',
             },
-          }
+          },
         );
       });
 
@@ -171,7 +170,7 @@ export default function LandingPage() {
               start: 'top 90%',
               toggleActions: 'play none none reverse',
             },
-          }
+          },
         );
       });
 
@@ -190,7 +189,7 @@ export default function LandingPage() {
                 start: 'top 85%',
                 toggleActions: 'play none none none',
               },
-            }
+            },
           );
         }
       });
@@ -209,7 +208,7 @@ export default function LandingPage() {
               trigger: line,
               start: 'top 90%',
             },
-          }
+          },
         );
       });
 
@@ -225,9 +224,8 @@ export default function LandingPage() {
             start: 'top 80%',
             toggleActions: 'play none none reverse',
           },
-        }
+        },
       );
-
     }, containerRef);
 
     return () => ctx.revert();
@@ -269,25 +267,29 @@ export default function LandingPage() {
       number: '01',
       icon: Search,
       title: 'Busca',
-      description: 'Encuentra libros, juegos, películas y series usando nuestra búsqueda integrada con bases de datos globales.',
+      description:
+        'Encuentra libros, juegos, películas y series usando nuestra búsqueda integrada con bases de datos globales.',
     },
     {
       number: '02',
       icon: Plus,
       title: 'Añade',
-      description: 'Agrega cualquier título a tu biblioteca con un solo click. Elige su estado: quiero ver, viendo, completado...',
+      description:
+        'Agrega cualquier título a tu biblioteca con un solo click. Elige su estado: quiero ver, viendo, completado...',
     },
     {
       number: '03',
       icon: Star,
       title: 'Valora',
-      description: 'Puntúa y escribe reseñas para recordar qué te pareció cada obra. Tu opinión, tu historia.',
+      description:
+        'Puntúa y escribe reseñas para recordar qué te pareció cada obra. Tu opinión, tu historia.',
     },
     {
       number: '04',
       icon: BarChart3,
       title: 'Analiza',
-      description: 'Visualiza estadísticas de tu consumo de medios. Descubre patrones y celebra tu progreso.',
+      description:
+        'Visualiza estadísticas de tu consumo de medios. Descubre patrones y celebra tu progreso.',
     },
   ];
 
@@ -299,7 +301,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-black w-full max-w-full landing-container">
+    <div
+      ref={containerRef}
+      className="relative min-h-screen overflow-hidden bg-black w-full max-w-full landing-container"
+    >
       <ParticleBackground />
 
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -342,12 +347,9 @@ export default function LandingPage() {
             >
               Iniciar Sesión
             </Link>
-            <Link
-              href="/signup"
-              className="px-4 py-2 text-sm bg-emerald-500 text-black font-medium rounded-full hover:bg-emerald-400 transition-all"
-            >
+            <ButtonLink size="lg" variant="primary" href="/signup" className="group">
               Registrarse
-            </Link>
+            </ButtonLink>
           </div>
         </div>
       </nav>
@@ -389,7 +391,8 @@ export default function LandingPage() {
 
         <div className="hero-subtitle text-center max-w-2xl mb-8 sm:mb-10 px-2">
           <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-3">
-            Tu <span className="text-emerald-400 font-semibold">biblioteca personal</span> para organizar
+            Tu <span className="text-emerald-400 font-semibold">biblioteca personal</span> para
+            organizar
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
             libros, juegos, películas y series.
@@ -400,23 +403,17 @@ export default function LandingPage() {
         </div>
 
         <div className="hero-cta flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
-          <Link
-            href="/signup"
-            className="group relative px-8 py-4 bg-emerald-500 text-black font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] active:scale-95 text-center"
-          >
+          <ButtonLink size="lg" variant="primary" href="/signup" className="group">
             <span className="relative z-10 flex items-center justify-center gap-2">
               Comenzar Gratis
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Link>
+          </ButtonLink>
 
-          <Link
-            href="/login"
-            className="liquid-glass group px-8 py-4 rounded-full border border-white/15 text-white font-medium transition-all duration-300 hover:border-white/30 hover:scale-[1.02] active:scale-95 text-center"
-          >
+          <ButtonLink size="lg" variant="secondary" href="/login" className="group">
             Ya tengo cuenta
-          </Link>
+          </ButtonLink>
         </div>
 
         <div className="scroll-indicator absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
@@ -432,7 +429,9 @@ export default function LandingPage() {
               CARACTERÍSTICAS
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-              Todo tu entretenimiento,<br />un solo lugar
+              Todo tu entretenimiento,
+              <br />
+              un solo lugar
             </h2>
             <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl mx-auto px-2">
               Organiza y rastrea todo lo que consumes. Sin complicaciones, con elegancia.
@@ -460,10 +459,7 @@ export default function LandingPage() {
                     boxShadow: `inset 0 0 0 1px rgba(${feature.rgb}, 0.28)`,
                   }}
                 >
-                  <feature.icon
-                    size={26}
-                    style={{ color: feature.color }}
-                  />
+                  <feature.icon size={26} style={{ color: feature.color }} />
                 </div>
 
                 <h3 className="relative text-lg sm:text-xl font-semibold text-white mb-2.5">
@@ -542,8 +538,8 @@ export default function LandingPage() {
                   Diseñado para ti
                 </h2>
                 <p className="text-base sm:text-lg text-[var(--text-secondary)]">
-                  Kata nace de la filosofía japonesa de la mejora continua.
-                  Cada detalle está pensado para hacer tu experiencia simple y satisfactoria.
+                  Kata nace de la filosofía japonesa de la mejora continua. Cada detalle está
+                  pensado para hacer tu experiencia simple y satisfactoria.
                 </p>
               </div>
 
@@ -556,7 +552,9 @@ export default function LandingPage() {
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
                       <benefit.icon size={18} className="text-emerald-400" />
                     </div>
-                    <span className="text-sm sm:text-base text-white font-medium">{benefit.text}</span>
+                    <span className="text-sm sm:text-base text-white font-medium">
+                      {benefit.text}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -613,7 +611,9 @@ export default function LandingPage() {
                     <span>∞</span>
                   ) : (
                     <>
-                      <span className="stat-number" data-value={stat.value}>{stat.value}</span>
+                      <span className="stat-number" data-value={stat.value}>
+                        {stat.value}
+                      </span>
                       {stat.suffix}
                     </>
                   )}
@@ -649,17 +649,14 @@ export default function LandingPage() {
               </h2>
 
               <p className="text-base sm:text-lg text-[var(--text-secondary)] mb-8 sm:mb-10 max-w-xl mx-auto px-2">
-                Únete a Kata y comienza a organizar tu biblioteca personal de medios.
-                Gratis para siempre. Sin anuncios. Sin límites.
+                Únete a Kata y comienza a organizar tu biblioteca personal de medios. Gratis para
+                siempre. Sin anuncios. Sin límites.
               </p>
 
-              <Link
-                href="/signup"
-                className="group relative inline-flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white text-black font-semibold text-base sm:text-lg rounded-full transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] active:scale-95"
-              >
+              <ButtonLink size="lg" variant="primary" href="/signup" className="group">
                 Crear cuenta gratis
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </Link>
+              </ButtonLink>
 
               <p className="mt-5 sm:mt-6 text-xs sm:text-sm text-[var(--text-tertiary)]">
                 Configuración en 30 segundos

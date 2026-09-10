@@ -14,6 +14,7 @@ export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (variant === 'kanji' && kanjiRef.current && containerRef.current) {
       const path = kanjiRef.current;
       const length = path.getTotalLength();
@@ -27,14 +28,13 @@ export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
 
       // Animación de escritura continua
       const tl = gsap.timeline({ repeat: -1 });
-      
+
       tl.to(path, {
         strokeDashoffset: 0,
         opacity: 0.6,
         duration: 1.5,
         ease: 'power2.inOut',
-      })
-      .to(path, {
+      }).to(path, {
         strokeDashoffset: -length,
         opacity: 0.3,
         duration: 1.5,
@@ -59,10 +59,7 @@ export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
 
   if (variant === 'kanji') {
     return (
-      <div 
-        ref={containerRef}
-        className={cn('flex items-center justify-center', className)}
-      >
+      <div ref={containerRef} className={cn('flex items-center justify-center', className)}>
         <svg
           width="100%"
           height="100%"
@@ -93,15 +90,7 @@ export function Skeleton({ className, variant = 'default' }: SkeletonProps) {
     rectangular: 'rounded-none',
   };
 
-  return (
-    <div
-      className={cn(
-        baseClasses,
-        variantClasses[variant],
-        className
-      )}
-    />
-  );
+  return <div className={cn(baseClasses, variantClasses[variant], className)} />;
 }
 
 // Card skeleton for media items
@@ -119,6 +108,7 @@ export function MediaGridSkeleton({ count = 6 }: { count?: number }) {
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!gridRef.current) return;
 
     const skeletons = gridRef.current.children;
@@ -138,7 +128,10 @@ export function MediaGridSkeleton({ count = 6 }: { count?: number }) {
   }, [count]);
 
   return (
-    <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+    <div
+      ref={gridRef}
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <MediaCardSkeleton key={i} />
       ))}
@@ -151,7 +144,10 @@ export function DashboardMetricsSkeleton() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="liquid-glass-soft border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden">
+        <div
+          key={i}
+          className="liquid-glass-soft border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 relative overflow-hidden"
+        >
           <div className="absolute inset-0 opacity-10">
             <Skeleton variant="kanji" className="h-full w-full" />
           </div>
@@ -213,7 +209,10 @@ export function TopRatedSkeleton() {
         </div>
         <div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0"
+            >
               <div className="relative h-12 w-9 sm:h-16 sm:w-12 rounded overflow-hidden flex-shrink-0">
                 <Skeleton variant="kanji" className="h-full w-full" />
               </div>
@@ -242,7 +241,10 @@ export function ActivityFeedSkeleton() {
         </div>
         <div>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-b border-white/5 last:border-0"
+            >
               <div className="relative h-10 w-7 sm:h-12 sm:w-8 rounded overflow-hidden flex-shrink-0">
                 <Skeleton variant="kanji" className="h-full w-full" />
               </div>
@@ -415,7 +417,10 @@ export function ProfileSkeleton() {
             <div className="relative border-l border-white/10 pl-6 space-y-8 py-2">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="relative">
-                  <Skeleton className="absolute -left-[29px] top-1 h-3 w-3 rounded-full" variant="circular" />
+                  <Skeleton
+                    className="absolute -left-[29px] top-1 h-3 w-3 rounded-full"
+                    variant="circular"
+                  />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-48" variant="text" />
                     <Skeleton className="h-3 w-32" variant="text" />

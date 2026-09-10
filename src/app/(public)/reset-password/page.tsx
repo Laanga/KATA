@@ -1,4 +1,7 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -19,13 +22,17 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     // Verificar si hay una sesión válida (el usuario llegó desde el email)
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsValidSession(!!session);
     };
     checkSession();
 
     // Escuchar cambios de autenticación (cuando Supabase procesa el token del URL)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsValidSession(true);
       }
@@ -36,7 +43,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast.error('Las contraseñas no coinciden');
       return;
@@ -47,7 +54,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-      setIsLoading(true);
+    setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.updateUser({
@@ -63,7 +70,8 @@ export default function ResetPasswordPage() {
       await supabase.auth.signOut();
     } catch (error: unknown) {
       console.error('Error al actualizar contraseña:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la contraseña';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error al actualizar la contraseña';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -84,7 +92,7 @@ export default function ResetPasswordPage() {
       {/* Background */}
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -104,7 +112,10 @@ export default function ResetPasswordPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link
+        href="/"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
+      >
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>
@@ -119,19 +130,14 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  ¡Contraseña actualizada!
-                </h2>
+                <h2 className="text-2xl font-bold text-white mb-2">¡Contraseña actualizada!</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
                   Tu contraseña ha sido cambiada correctamente
                 </p>
               </div>
-              <Link
-                href="/login"
-                className="inline-block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] text-center"
-              >
+              <ButtonLink variant="primary" href="/login" className="w-full">
                 Iniciar sesión
-              </Link>
+              </ButtonLink>
             </div>
           ) : !isValidSession ? (
             /* Invalid/expired link state */
@@ -140,19 +146,14 @@ export default function ResetPasswordPage() {
                 <AlertCircle className="w-8 h-8 text-red-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  Enlace inválido o expirado
-                </h2>
+                <h2 className="text-2xl font-bold text-white mb-2">Enlace inválido o expirado</h2>
                 <p className="text-[var(--text-secondary)] text-sm">
                   El enlace de recuperación ha expirado o ya fue utilizado
                 </p>
               </div>
-              <Link
-                href="/forgot-password"
-                className="inline-block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] text-center"
-              >
+              <ButtonLink variant="primary" href="/forgot-password" className="w-full">
                 Solicitar nuevo enlace
-              </Link>
+              </ButtonLink>
             </div>
           ) : (
             /* Form state */
@@ -161,9 +162,7 @@ export default function ResetPasswordPage() {
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
                   <Lock className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">
-                  Nueva contraseña
-                </h2>
+                <h2 className="text-2xl font-bold text-white">Nueva contraseña</h2>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   Ingresa tu nueva contraseña
                 </p>
@@ -171,10 +170,13 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                  >
                     Nueva contraseña
                   </label>
-                  <input
+                  <TextInput
                     id="password"
                     name="password"
                     type="password"
@@ -182,19 +184,20 @@ export default function ResetPasswordPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                    className="w-full"
                     placeholder="••••••••"
                   />
-                  <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">
-                    Mínimo 6 caracteres
-                  </p>
+                  <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">Mínimo 6 caracteres</p>
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                  >
                     Confirmar contraseña
                   </label>
-                  <input
+                  <TextInput
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
@@ -202,18 +205,14 @@ export default function ResetPasswordPage() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                    className="w-full"
                     placeholder="••••••••"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <Button variant="primary" type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? 'Actualizando...' : 'Actualizar contraseña'}
-                </button>
+                </Button>
               </form>
             </div>
           )}

@@ -14,7 +14,10 @@ interface CollectionsSidebarProps {
   onCollectionSelect: (collectionId: string | 'ALL') => void;
 }
 
-export default function CollectionsSidebar({ selectedCollection, onCollectionSelect }: CollectionsSidebarProps) {
+export default function CollectionsSidebar({
+  selectedCollection,
+  onCollectionSelect,
+}: CollectionsSidebarProps) {
   const collections = useMediaStore((state) => state.collections);
   const totalItems = useMediaStore((state) => state.items.length);
   const deleteCollection = useMediaStore((state) => state.deleteCollection);

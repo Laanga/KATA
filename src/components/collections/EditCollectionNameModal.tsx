@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
@@ -12,7 +14,12 @@ interface EditCollectionNameModalProps {
   onUpdate: (id: string, name: string) => Promise<void>;
 }
 
-export function EditCollectionNameModal({ collection, isOpen, onClose, onUpdate }: EditCollectionNameModalProps) {
+export function EditCollectionNameModal({
+  collection,
+  isOpen,
+  onClose,
+  onUpdate,
+}: EditCollectionNameModalProps) {
   const [name, setName] = useState(collection.name);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,35 +51,26 @@ export function EditCollectionNameModal({ collection, isOpen, onClose, onUpdate 
           <label htmlFor="name" className="block text-sm font-medium text-[var(--text-secondary)]">
             Nombre de la colección
           </label>
-          <input
+          <TextInput
             type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Animes vistos en 2024"
-            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] text-white placeholder-[var(--text-tertiary)] transition-colors"
+            className="w-full"
             autoFocus
             maxLength={50}
           />
-          <p className="text-xs text-[var(--text-tertiary)]">
-            {name.length} / 50 caracteres
-          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">{name.length} / 50 caracteres</p>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-full border border-white/10 text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors text-sm"
-          >
+        <div className="kata-action-row">
+          <Button variant="secondary" type="button" onClick={onClose}>
             Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 rounded-full bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-primary)]/90 active:scale-95 transition-all text-sm font-semibold"
-          >
+          </Button>
+          <Button variant="primary" type="submit">
             Guardar
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

@@ -5,7 +5,13 @@ export async function GET(request: Request) {
   const { searchParams, origin: requestOrigin } = new URL(request.url);
   const code = searchParams.get('code');
   const type = searchParams.get('type');
-  const next = searchParams.get('next') ?? '/home';
+  const requestedNext = searchParams.get('next') ?? '/home';
+  const next =
+    requestedNext.startsWith('/') &&
+    !requestedNext.startsWith('//') &&
+    !requestedNext.includes('\\')
+      ? requestedNext
+      : '/home';
 
   if (code) {
     const supabase = await createClient();
@@ -14,15 +20,17 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('[Auth] Code exchange failed:', error);
-      return NextResponse.redirect(`${requestOrigin}/login?error=${encodeURIComponent(error.message)}`);
+      return NextResponse.redirect(
+        `${requestOrigin}/login?error=${encodeURIComponent(error.message)}`,
+      );
     }
 
     const user = data.user;
-    const emailConfirmed = user?.email_confirmed_at !== null;
+    const emailConfirmed = !!user?.email_confirmed_at;
     const hasUsername = user?.user_metadata?.username;
 
-    if (user && user.identities?.some(id => id.provider === 'google')) {
-      const googleIdentity = user.identities.find(id => id.provider === 'google');
+    if (user && user.identities?.some((id) => id.provider === 'google')) {
+      const googleIdentity = user.identities.find((id) => id.provider === 'google');
       const googleAvatar = googleIdentity?.identity_data?.avatar_url;
 
       const isValidImageUrl = (url: string | undefined | null) => {
@@ -30,21 +38,21 @@ export async function GET(request: Request) {
         return url.startsWith('https://') || url.startsWith('http://');
       };
 
-      if (isValidImageUrl(googleAvatar)) {
+      if (isValidImageUrl(googleAvatar) && user.user_metadata?.avatar_url === undefined) {
         await supabase.auth.updateUser({
-          data: { avatar_url: googleAvatar }
+          data: { avatar_url: googleAvatar },
         });
       }
     }
 
     let redirectUrl = next;
 
-    if (!emailConfirmed) {
+    if (type === 'recovery') {
+      redirectUrl = '/reset-password';
+    } else if (!emailConfirmed) {
       redirectUrl = '/verify-email';
     } else if (!hasUsername) {
       redirectUrl = '/choose-username';
-    } else if (type === 'recovery') {
-      redirectUrl = '/reset-password';
     } else if (type === 'signup' && emailConfirmed && hasUsername) {
       redirectUrl = '/home';
     }
@@ -74,19 +82,5 @@ function buildRedirectUrl(request: Request, path: string): string {
     return `${baseUrl}${cleanPath}`;
   }
 
-  const forwardedHost = request.headers.get('x-forwarded-host');
-  const forwardedProto = request.headers.get('x-forwarded-proto');
-
-  if (forwardedHost) {
-    const protocol = forwardedProto || 'https';
-    return `${protocol}://${forwardedHost}${path}`;
-  }
-
-  console.warn(
-    '[Auth] Missing NEXT_PUBLIC_SITE_URL and x-forwarded-host. ' +
-    'Redirects may fail. Please configure NEXT_PUBLIC_SITE_URL.'
-  );
-
-  const origin = new URL(request.url).origin;
-  return `${origin}${path}`;
+  return `${new URL(request.url).origin}${path}`;
 }

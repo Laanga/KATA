@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -46,21 +48,19 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
           <label htmlFor="name" className="block text-sm font-medium text-[var(--text-secondary)]">
             Nombre *
           </label>
-          <input
+          <TextInput
             type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Animes vistos en 2024"
-            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] text-white placeholder-[var(--text-tertiary)] transition-colors"
+            className="w-full"
             autoFocus
           />
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-[var(--text-secondary)]">
-            Color
-          </label>
+          <label className="block text-sm font-medium text-[var(--text-secondary)]">Color</label>
           <div className="flex flex-wrap gap-2">
             {DEFAULT_COLLECTION_COLORS.map((color) => (
               <button
@@ -68,11 +68,16 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
                 type="button"
                 onClick={() => setSelectedColor(color)}
                 className={`w-8 h-8 rounded-full transition-all hover:scale-110 active:scale-95 ${
-                  selectedColor === color ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#141414] scale-110' : ''
+                  selectedColor === color
+                    ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#141414] scale-110'
+                    : ''
                 }`}
                 style={{
                   backgroundColor: color,
-                  boxShadow: selectedColor === color ? `0 0 14px color-mix(in srgb, ${color} 50%, transparent)` : undefined,
+                  boxShadow:
+                    selectedColor === color
+                      ? `0 0 14px color-mix(in srgb, ${color} 50%, transparent)`
+                      : undefined,
                 }}
                 title={color}
               />
@@ -80,20 +85,13 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-full border border-white/10 text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors text-sm"
-          >
+        <div className="kata-action-row">
+          <Button variant="secondary" type="button" onClick={onClose}>
             Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 rounded-full bg-[var(--accent-primary)] text-black font-semibold hover:bg-[var(--accent-primary)]/90 active:scale-95 transition-all text-sm"
-          >
+          </Button>
+          <Button variant="primary" type="submit">
             Crear Colección
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

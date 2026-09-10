@@ -10,17 +10,24 @@ class CollectionsDatabase {
   async getAll(): Promise<Collection[]> {
     const supabase = this.getClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('collections')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false }) as { data: Database['public']['Tables']['collections']['Row'][] | null, error: Error };
-
-    if (error) throw error;
-    if (!data) return [];
+    const data: Database['public']['Tables']['collections']['Row'][] = [];
+    for (let offset = 0; ; offset += 500) {
+      const page = await supabase
+        .from('collections')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .order('id')
+        .range(offset, offset + 499);
+      if (page.error) throw page.error;
+      data.push(...page.data);
+      if (page.data.length < 500) break;
+    }
 
     return data.map((row) => ({
       id: row.id,
@@ -34,18 +41,38 @@ class CollectionsDatabase {
     }));
   }
 
+  async getRelationships(): Promise<Record<string, string[]>> {
+    const supabase = this.getClient();
+    const result: Record<string, string[]> = {};
+    for (let offset = 0; ; offset += 500) {
+      const { data, error } = await supabase
+        .from('media_items_collections')
+        .select('media_item_id, collection_id')
+        .order('id')
+        .range(offset, offset + 499);
+      if (error) throw error;
+      for (const row of data) (result[row.collection_id] ??= []).push(row.media_item_id);
+      if (data.length < 500) return result;
+    }
+  }
+
   async getById(id: string): Promise<Collection | null> {
     const supabase = this.getClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('collections')
       .select('*')
       .eq('id', id)
       .eq('user_id', user.id)
-      .single() as { data: Database['public']['Tables']['collections']['Row'] | null, error: { code?: string } };
+      .single()) as {
+      data: Database['public']['Tables']['collections']['Row'] | null;
+      error: { code?: string };
+    };
 
     if (error) {
       if (error.code === 'PGRST116') return null;
@@ -68,14 +95,15 @@ class CollectionsDatabase {
   async create(input: CreateCollectionInput): Promise<Collection> {
     const supabase = this.getClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para crear colecciones');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('collections')
-      // @ts-expect-error - Supabase types are too strict with new tables
       .insert({
         user_id: user.id,
         name: input.name,
@@ -84,7 +112,10 @@ class CollectionsDatabase {
         icon: input.icon || null,
       })
       .select()
-      .single() as { data: Database['public']['Tables']['collections']['Row'] | null, error: Error };
+      .single()) as {
+      data: Database['public']['Tables']['collections']['Row'] | null;
+      error: Error;
+    };
 
     if (error) throw error;
     if (!data) throw new Error('Error creating collection');
@@ -104,14 +135,15 @@ class CollectionsDatabase {
   async update(id: string, input: UpdateCollectionInput): Promise<Collection> {
     const supabase = this.getClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para actualizar colecciones');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('collections')
-      // @ts-expect-error - Supabase types are too strict with new tables
       .update({
         name: input.name,
         description: input.description !== undefined ? input.description : undefined,
@@ -121,7 +153,10 @@ class CollectionsDatabase {
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
-      .single() as { data: Database['public']['Tables']['collections']['Row'] | null, error: Error };
+      .single()) as {
+      data: Database['public']['Tables']['collections']['Row'] | null;
+      error: Error;
+    };
 
     if (error) throw error;
     if (!data) throw new Error('Collection not found');
@@ -140,8 +175,10 @@ class CollectionsDatabase {
 
   async delete(id: string): Promise<void> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Debes iniciar sesión para eliminar colecciones');
     }
@@ -157,14 +194,11 @@ class CollectionsDatabase {
 
   async addItemToCollection(itemId: string, collectionId: string): Promise<void> {
     const supabase = this.getClient();
-    
-    const { error } = await supabase
-      .from('media_items_collections')
-      // @ts-expect-error - Supabase types are too strict with new tables
-      .insert({
-        media_item_id: itemId,
-        collection_id: collectionId,
-      });
+
+    const { error } = await supabase.from('media_items_collections').insert({
+      media_item_id: itemId,
+      collection_id: collectionId,
+    });
 
     if (error) {
       if (error.code === '23505') {
@@ -176,7 +210,7 @@ class CollectionsDatabase {
 
   async removeItemFromCollection(itemId: string, collectionId: string): Promise<void> {
     const supabase = this.getClient();
-    
+
     const { error } = await supabase
       .from('media_items_collections')
       .delete()
@@ -188,13 +222,16 @@ class CollectionsDatabase {
 
   async getCollectionsForItem(itemId: string): Promise<Collection[]> {
     const supabase = this.getClient();
-    
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('media_items_collections')
-      .select(`
+      .select(
+        `
         collection_id,
         collections!inner(
           id,
@@ -206,8 +243,17 @@ class CollectionsDatabase {
           created_at,
           updated_at
         )
-      `)
-      .eq('media_item_id', itemId) as { data: { collection_id: string; collections: Database['public']['Tables']['collections']['Row'] }[] | null, error: Error };
+      `,
+      )
+      .eq('media_item_id', itemId)) as {
+      data:
+        | {
+            collection_id: string;
+            collections: Database['public']['Tables']['collections']['Row'];
+          }[]
+        | null;
+      error: Error;
+    };
 
     if (error) throw error;
     if (!data) return [];
@@ -226,28 +272,31 @@ class CollectionsDatabase {
 
   async getMediaItemIdsForCollection(collectionId: string): Promise<string[]> {
     const supabase = this.getClient();
-    
-    const { data, error } = await supabase
+
+    const { data, error } = (await supabase
       .from('media_items_collections')
       .select('media_item_id')
-      .eq('collection_id', collectionId) as { data: { media_item_id: string }[] | null, error: Error };
+      .eq('collection_id', collectionId)) as {
+      data: { media_item_id: string }[] | null;
+      error: Error;
+    };
 
     if (error) throw error;
     if (!data) return [];
-    
+
     return data.map((row) => row.media_item_id);
   }
 
   async getItemCount(collectionId: string): Promise<number> {
     const supabase = this.getClient();
-    
+
     const { count, error } = await supabase
       .from('media_items_collections')
       .select('*', { count: 'exact', head: true })
       .eq('collection_id', collectionId);
 
     if (error) throw error;
-    
+
     return count || 0;
   }
 }

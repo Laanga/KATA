@@ -1,6 +1,7 @@
 'use client';
+import { IconButton } from '@/components/ui/Button';
 
-import Image from 'next/image';
+import { MediaCover as Image } from './MediaCover';
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -26,100 +27,109 @@ export function KataCard({ item }: KataCardProps) {
 
   const deleteItem = useMediaStore((state) => state.deleteItem);
 
-  useGSAP(() => {
-    const card = container.current;
-    if (!card) return;
+  useGSAP(
+    () => {
+      const card = container.current;
+      if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const tl = gsap.timeline({ paused: true });
+      const tl = gsap.timeline({ paused: true });
 
-    tl.to(overlay.current, {
-      opacity: 1,
-      duration: 0.3,
-      ease: 'power2.out'
-    })
-    .to('.card-actions', {
-      y: 0,
-      opacity: 1,
-      duration: 0.2,
-      stagger: 0.05
-    }, '<0.1')
-    .to(card, {
-      scale: 1.02,
-      duration: 0.3,
-      ease: 'back.out(1.2)'
-    }, '<');
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!card) return;
-
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * -8;
-      const rotateY = ((x - centerX) / centerX) * 8;
-
-      gsap.to(card, {
-        rotationX: rotateX,
-        rotationY: rotateY,
+      tl.to(overlay.current, {
+        opacity: 1,
         duration: 0.3,
         ease: 'power2.out',
-        transformPerspective: 1000,
-      });
+      })
+        .to(
+          '.card-actions',
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.2,
+            stagger: 0.05,
+          },
+          '<0.1',
+        )
+        .to(
+          card,
+          {
+            scale: 1.02,
+            duration: 0.3,
+            ease: 'back.out(1.2)',
+          },
+          '<',
+        );
 
-      gsap.to(imageRef.current, {
-        x: ((x - centerX) / centerX) * 10,
-        y: ((y - centerY) / centerY) * 10,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
-    };
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!card) return;
 
-    const handleMouseLeave = () => {
-      tl.reverse();
-      setShowActions(false);
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-      gsap.to(card, {
-        rotationX: 0,
-        rotationY: 0,
-        scale: 1,
-        duration: 0.5,
-        ease: 'power2.out',
-      });
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
 
-      gsap.to(imageRef.current, {
-        x: 0,
-        y: 0,
-        duration: 0.5,
-        ease: 'power2.out',
-      });
-    };
+        const rotateX = ((y - centerY) / centerY) * -8;
+        const rotateY = ((x - centerX) / centerX) * 8;
 
-    card.addEventListener('mouseenter', () => tl.play());
-    card.addEventListener('mousemove', handleMouseMove);
-    card.addEventListener('mouseleave', handleMouseLeave);
+        gsap.to(card, {
+          rotationX: rotateX,
+          rotationY: rotateY,
+          duration: 0.3,
+          ease: 'power2.out',
+          transformPerspective: 1000,
+        });
 
-    return () => {
-      card.removeEventListener('mouseenter', () => tl.play());
-      card.removeEventListener('mousemove', handleMouseMove);
-      card.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, { scope: container });
+        gsap.to(imageRef.current, {
+          x: ((x - centerX) / centerX) * 10,
+          y: ((y - centerY) / centerY) * 10,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      };
 
-  const handleDeleteConfirm = () => {
-    gsap.to(container.current, {
-      scale: 0.8,
-      opacity: 0,
-      duration: 0.3,
-      ease: 'back.in(2)',
-      onComplete: () => {
-        toast.success(`"${item.title}" eliminado de tu kata`);
-        deleteItem(item.id);
-      }
-    });
+      const handleMouseLeave = () => {
+        tl.reverse();
+        setShowActions(false);
+
+        gsap.to(card, {
+          rotationX: 0,
+          rotationY: 0,
+          scale: 1,
+          duration: 0.5,
+          ease: 'power2.out',
+        });
+
+        gsap.to(imageRef.current, {
+          x: 0,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+        });
+      };
+
+      const handleMouseEnter = () => tl.play();
+      card.addEventListener('mouseenter', handleMouseEnter);
+      card.addEventListener('mousemove', handleMouseMove);
+      card.addEventListener('mouseleave', handleMouseLeave);
+
+      return () => {
+        card.removeEventListener('mouseenter', handleMouseEnter);
+        card.removeEventListener('mousemove', handleMouseMove);
+        card.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    },
+    { scope: container },
+  );
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteItem(item.id);
+      toast.success(`"${item.title}" eliminado de tu biblioteca`);
+    } catch (error) {
+      toast.error('No se pudo eliminar. Inténtalo de nuevo.');
+      throw error;
+    }
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -138,7 +148,7 @@ export function KataCard({ item }: KataCardProps) {
     <>
       <div
         ref={container}
-        className="group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform"
+        className="kata-card group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-lg will-change-transform"
         style={{ transformStyle: 'preserve-3d' }}
       >
         <div ref={imageRef} className="absolute inset-0 will-change-transform">
@@ -161,12 +171,10 @@ export function KataCard({ item }: KataCardProps) {
 
         <div
           ref={overlay}
-          className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0"
+          className="kata-card-overlay absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0"
           style={{ transform: 'translateZ(20px)' }}
         >
-          <h3 className="line-clamp-2 font-bold text-white leading-tight mb-1">
-            {item.title}
-          </h3>
+          <h3 className="line-clamp-2 font-bold text-white leading-tight mb-1">{item.title}</h3>
 
           <p className="text-xs text-[var(--text-secondary)] mb-1 line-clamp-1">
             {item.author || item.platform || item.releaseYear}
@@ -187,20 +195,22 @@ export function KataCard({ item }: KataCardProps) {
           </div>
 
           <div className="flex items-center justify-between card-actions translate-y-2 opacity-0">
-            <button
-              className="liquid-glass-soft rounded-full border border-white/15 p-2 text-white hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] transition-all hover:scale-110 active:scale-95 touch-target-mobile"
+            <IconButton
+              variant="secondary"
+
               onClick={handleEdit}
-              aria-label="Editar"
+              label="Editar"
             >
               <Edit size={16} />
-            </button>
-            <button
-              className="liquid-glass-soft rounded-full border border-white/15 p-2 text-white hover:border-white/30 transition-all hover:scale-110 active:scale-95 touch-target-mobile"
+            </IconButton>
+            <IconButton
+              variant="secondary"
+
               onClick={() => setShowActions(!showActions)}
-              aria-label="Más opciones"
+              label="Más opciones"
             >
               <MoreVertical size={16} />
-            </button>
+            </IconButton>
           </div>
 
           {showActions && (
@@ -224,11 +234,13 @@ export function KataCard({ item }: KataCardProps) {
         </div>
       </div>
 
-      <EditItemModal
-        item={item}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-      />
+      {isEditModalOpen && (
+        <EditItemModal
+          item={item}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}

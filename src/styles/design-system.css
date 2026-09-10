@@ -1,0 +1,298 @@
+/* Kata's shared visual contract. Components own behavior; tokens own appearance. */
+:root {
+  --kata-accent: #10b981;
+  --kata-accent-hover: #34d399;
+  --kata-accent-text: #6ee7b7;
+  --kata-on-accent: #052e23;
+  --kata-danger: #f87171;
+  --kata-border: rgba(255, 255, 255, 0.12);
+  --kata-border-hover: rgba(255, 255, 255, 0.24);
+  --kata-selected-border: rgba(16, 185, 129, 0.5);
+  --kata-selected-bg: rgba(16, 185, 129, 0.12);
+  --kata-surface: linear-gradient(180deg, rgba(30, 30, 30, 0.65), rgba(16, 16, 16, 0.75));
+  --kata-surface-soft: rgba(255, 255, 255, 0.035);
+  --kata-surface-raised: linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(16, 16, 16, 0.97));
+  --kata-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 4px 16px rgba(0, 0, 0, 0.15);
+  --kata-shadow-raised: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 64px rgba(0, 0, 0, 0.45);
+  --kata-radius-control: 0.75rem;
+  --kata-radius-card: 1.25rem;
+  --kata-radius-dialog: 1.5rem;
+  --kata-radius-pill: 999px;
+  --kata-control-sm: 2.25rem;
+  --kata-control-md: 2.75rem;
+  --kata-control-lg: 3rem;
+  --kata-space-1: 0.25rem;
+  --kata-space-2: 0.5rem;
+  --kata-space-3: 0.75rem;
+  --kata-space-4: 1rem;
+  --kata-space-6: 1.5rem;
+  --kata-space-8: 2rem;
+  --kata-duration: 160ms;
+  --kata-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kata-focus: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+@layer components {
+  .kata-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--kata-control-md);
+    padding: 0.625rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--kata-radius-control);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background var(--kata-duration) var(--kata-ease),
+      border-color var(--kata-duration),
+      box-shadow var(--kata-duration),
+      color var(--kata-duration);
+  }
+  .kata-button--primary {
+    background: var(--kata-accent);
+    color: var(--kata-on-accent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  .kata-button--primary:hover:not(:disabled) {
+    background: var(--kata-accent-hover);
+  }
+  .kata-button--secondary {
+    background: var(--kata-surface);
+    border-color: var(--kata-border);
+    color: var(--text-primary);
+    box-shadow: var(--kata-shadow-soft);
+  }
+  .kata-button--outline {
+    background: transparent;
+    border-color: var(--kata-border);
+    color: var(--text-primary);
+  }
+  .kata-button--ghost {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .kata-button--secondary:hover:not(:disabled),
+  .kata-button--outline:hover:not(:disabled),
+  .kata-button--ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--kata-border-hover);
+    color: var(--text-primary);
+  }
+  .kata-button--danger {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.3);
+    color: #fca5a5;
+  }
+  .kata-button--danger:hover:not(:disabled) {
+    background: rgba(248, 113, 113, 0.2);
+  }
+  .kata-button--warning {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fcd34d;
+  }
+  .kata-button--sm {
+    min-height: var(--kata-control-sm);
+    padding: 0.375rem 0.75rem;
+  }
+  .kata-button--lg {
+    min-height: var(--kata-control-lg);
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+  .kata-button--icon {
+    width: var(--kata-control-md);
+    height: var(--kata-control-md);
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .kata-button:disabled,
+  .kata-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .kata-button:focus-visible,
+  .kata-field:focus-visible,
+  .kata-chip:focus-visible,
+  .kata-choice:has(input:focus-visible) {
+    outline: 2px solid var(--kata-accent-hover);
+    outline-offset: 3px;
+    box-shadow: var(--kata-focus);
+  }
+  .kata-field {
+    width: 100%;
+    min-height: var(--kata-control-md);
+    padding: 0.625rem 0.875rem;
+    background: var(--kata-surface-soft);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-control);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    transition:
+      border-color var(--kata-duration),
+      background var(--kata-duration);
+  }
+  .kata-field::placeholder {
+    color: var(--text-tertiary);
+  }
+  .kata-field:hover:not(:disabled) {
+    border-color: var(--kata-border-hover);
+  }
+  .kata-field:focus {
+    border-color: var(--kata-accent);
+  }
+  .kata-field[aria-invalid='true'] {
+    border-color: var(--kata-danger);
+  }
+  textarea.kata-field {
+    min-height: 7rem;
+    resize: vertical;
+  }
+  select.kata-field {
+    background-color: var(--bg-secondary);
+  }
+  .kata-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--kata-control-sm);
+    padding: 0.375rem 0.875rem;
+    border: 1px solid transparent;
+    border-radius: var(--kata-radius-pill);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--kata-duration),
+      border-color var(--kata-duration);
+  }
+  .kata-chip:disabled,
+  .kata-choice:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .kata-chip:hover:not(:disabled) {
+    background: var(--kata-surface-soft);
+    color: var(--text-primary);
+  }
+  .kata-chip[aria-pressed='true'] {
+    background: var(--kata-selected-bg);
+    border-color: var(--kata-selected-border);
+    color: var(--kata-accent-text);
+  }
+  .kata-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    min-height: var(--kata-control-lg);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-control);
+    color: var(--text-secondary);
+    background: var(--kata-surface-soft);
+    cursor: pointer;
+    transition:
+      background var(--kata-duration),
+      border-color var(--kata-duration);
+  }
+  .kata-choice:hover {
+    border-color: var(--kata-border-hover);
+  }
+  .kata-choice:has(input:checked) {
+    background: var(--kata-selected-bg);
+    border-color: var(--kata-selected-border);
+    color: var(--kata-accent-text);
+  }
+  .kata-panel {
+    background: var(--kata-surface);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-card);
+    box-shadow: var(--kata-shadow-soft);
+    padding: var(--kata-space-6);
+  }
+  .kata-panel--subtle {
+    background: var(--kata-surface-soft);
+    box-shadow: none;
+  }
+  .kata-panel--accent {
+    background: var(--kata-selected-bg);
+    border-color: var(--kata-selected-border);
+    box-shadow: none;
+  }
+  .kata-dialog-panel {
+    background: var(--kata-surface-raised);
+    border: 1px solid var(--kata-border);
+    border-radius: var(--kata-radius-dialog);
+    box-shadow: var(--kata-shadow-raised);
+  }
+  .kata-title-page {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  .kata-title-section {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .kata-title-dialog {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .kata-copy {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  .kata-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .kata-action-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--kata-border);
+  }
+  @media (max-width: 640px) {
+    .kata-button--sm,
+    .kata-chip {
+      min-height: var(--kata-control-md);
+    }
+    .kata-field {
+      font-size: 1rem;
+    }
+    .kata-action-row {
+      flex-direction: column-reverse;
+    }
+    .kata-action-row > .kata-button {
+      width: 100%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kata-button,
+    .kata-field,
+    .kata-chip,
+    .kata-choice {
+      transition: none;
+    }
+  }
+}

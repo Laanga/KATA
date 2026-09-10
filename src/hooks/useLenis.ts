@@ -16,14 +16,14 @@ export function useLenis() {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);  
+  }, []);
 
   useEffect(() => {
     if (!isClient) return;
 
     const isMobile = window.innerWidth <= 768;
 
-    if (isMobile) {
+    if (isMobile || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
 
@@ -38,15 +38,17 @@ export function useLenis() {
       infinite: false,
     });
 
+    let frame = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      frame = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    frame = requestAnimationFrame(raf);
 
     // Cleanup
     return () => {
+      cancelAnimationFrame(frame);
       lenis.destroy();
     };
   }, [isClient]);

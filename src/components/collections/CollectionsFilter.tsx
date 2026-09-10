@@ -10,7 +10,10 @@ interface CollectionsFilterProps {
   onCollectionSelect: (collectionId: string | 'ALL') => void;
 }
 
-export default function CollectionsFilter({ selectedCollection, onCollectionSelect }: CollectionsFilterProps) {
+export default function CollectionsFilter({
+  selectedCollection,
+  onCollectionSelect,
+}: CollectionsFilterProps) {
   const collections = useMediaStore((state) => state.collections);
   const getItemsByCollection = useMediaStore((state) => state.getItemsByCollection);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

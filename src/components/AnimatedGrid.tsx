@@ -15,11 +15,11 @@ interface AnimatedGridProps {
  * Grid with stagger animation
  * Children fade in with cascading effect
  */
-export function AnimatedGrid({ 
-  children, 
+export function AnimatedGrid({
+  children,
   className,
   staggerDelay = 0.05,
-  animateOnMount = true 
+  animateOnMount = true,
 }: AnimatedGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
@@ -27,13 +27,14 @@ export function AnimatedGrid({
   /* eslint-disable react-hooks/set-state-in-effect */
 
   // Asegurarse de que estamos en el cliente
-    
+
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   useEffect(() => {
     if (!animateOnMount || !gridRef.current || !isClient) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const items = gridRef.current.children;
 
@@ -61,7 +62,7 @@ export function AnimatedGrid({
       ref={gridRef}
       className={cn(
         'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6',
-        className
+        className,
       )}
     >
       {children}

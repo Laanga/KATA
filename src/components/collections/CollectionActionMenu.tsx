@@ -32,7 +32,10 @@ export function CollectionActionMenu({
   const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null);
+  const [colorPickerPosition, setColorPickerPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,24 +64,21 @@ export function CollectionActionMenu({
     }
   }, [isColorPickerOpen]);
 
-  useGSAP(
-    () => {
-      if (isOpen) {
-        gsap.fromTo(
-          containerRef.current,
-          { opacity: 0, scale: 0.95, y: -10 },
-          {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.2,
-            ease: 'back.out(1.7)',
-          }
-        );
-      }
-    },
-    [isOpen]
-  );
+  useGSAP(() => {
+    if (isOpen) {
+      gsap.fromTo(
+        containerRef.current,
+        { opacity: 0, scale: 0.95, y: -10 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.2,
+          ease: 'back.out(1.7)',
+        },
+      );
+    }
+  }, [isOpen]);
 
   const handleClose = () => {
     gsap.to(containerRef.current, {
@@ -123,7 +123,10 @@ export function CollectionActionMenu({
                   boxShadow: `0 0 12px ${collection.color}40`,
                 }}
               >
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: collection.color }} />
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: collection.color }}
+                />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -148,7 +151,9 @@ export function CollectionActionMenu({
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
               <Edit size={14} className="text-[var(--text-secondary)]" />
             </div>
-            <span className="text-sm text-[var(--text-secondary)] group-hover:text-white transition-colors">Editar nombre</span>
+            <span className="text-sm text-[var(--text-secondary)] group-hover:text-white transition-colors">
+              Editar nombre
+            </span>
           </button>
 
           <button
@@ -163,7 +168,9 @@ export function CollectionActionMenu({
               <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                 <Palette size={14} className="text-[var(--text-secondary)]" />
               </div>
-              <span className="text-sm text-[var(--text-secondary)] group-hover:text-white transition-colors">Cambiar color</span>
+              <span className="text-sm text-[var(--text-secondary)] group-hover:text-white transition-colors">
+                Cambiar color
+              </span>
             </div>
             {collection.color && (
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: collection.color }} />
@@ -185,44 +192,51 @@ export function CollectionActionMenu({
             <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
               <Trash2 size={14} className="text-red-400" />
             </div>
-            <span className="text-sm text-red-400 group-hover:text-red-300 transition-colors">Eliminar colección</span>
+            <span className="text-sm text-red-400 group-hover:text-red-300 transition-colors">
+              Eliminar colección
+            </span>
           </button>
         </div>
       </div>
     </div>
   );
 
-  const colorPickerContent = isColorPickerOpen && colorPickerPosition ? (
-    <div
-      className="liquid-glass-soft fixed w-44 rounded-xl border border-white/10 z-[150] p-2 animate-in fade-in duration-200"
-      style={{
-        top: `${colorPickerPosition.top}px`,
-        left: `${colorPickerPosition.left}px`,
-      }}
-    >
-      <div className="grid grid-cols-6 gap-1.5">
-        {DEFAULT_COLLECTION_COLORS.map((color) => (
-          <button
-            key={color}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleChangeColor(color);
-            }}
-            className={`w-6 h-6 rounded-md transition-transform hover:scale-110 active:scale-95 ${
-              collection.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-[var(--bg-tertiary)]' : ''
-            }`}
-            style={{ backgroundColor: color }}
-          />
-        ))}
+  const colorPickerContent =
+    isColorPickerOpen && colorPickerPosition ? (
+      <div
+        className="liquid-glass-soft fixed w-44 rounded-xl border border-white/10 z-[150] p-2 animate-in fade-in duration-200"
+        style={{
+          top: `${colorPickerPosition.top}px`,
+          left: `${colorPickerPosition.left}px`,
+        }}
+      >
+        <div className="grid grid-cols-6 gap-1.5">
+          {DEFAULT_COLLECTION_COLORS.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleChangeColor(color);
+              }}
+              className={`w-6 h-6 rounded-md transition-transform hover:scale-110 active:scale-95 ${
+                collection.color === color
+                  ? 'ring-2 ring-white ring-offset-2 ring-offset-[var(--bg-tertiary)]'
+                  : ''
+              }`}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  ) : null;
+    ) : null;
 
   return (
     <>
       {typeof document !== 'undefined' && createPortal(menuContent, document.body)}
-      {typeof document !== 'undefined' && colorPickerContent && createPortal(colorPickerContent, document.body)}
+      {typeof document !== 'undefined' &&
+        colorPickerContent &&
+        createPortal(colorPickerContent, document.body)}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => {

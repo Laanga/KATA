@@ -1,221 +1,69 @@
-<picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
-   <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=200&section=header&text=型%20Kata&fontSize=80&fontAlignY=35&desc=Tu%20biblioteca%20personal%20de%20medios&descAlignY=55&animation=fadeIn">
- </picture>
+# 型 Kata
 
-<div align="center">
+Biblioteca personal de películas, series, libros y videojuegos. Busca títulos, guarda su estado, puntúa de **0 a 5** (incluido cero, medios puntos y sin puntuar), escribe notas y organiza colecciones.
 
-**Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.**
+Incluye una bienvenida opcional con modales breves dentro de la app, ayuda junto al buscador y progreso guardado por cuenta. También ofrece recomendaciones, estadísticas y acceso rápido a lo que estás leyendo, viendo o jugando.
 
-[![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+## Desarrollo
 
-[Demo en vivo](https://katalibrary.vercel.app/)
+Requisitos: Node.js 22.22.2+ (o 24.15+), npm y Supabase. Se utiliza únicamente `package-lock.json`.
 
-</div>
-
----
-
-## ✨ ¿Qué es Kata?
-
-**Kata** (型 - "forma" en japonés) es una aplicación web que te permite crear tu **biblioteca personal multimedia**. Busca contenido real usando APIs profesionales, organiza tu colección y lleva un registro de todo lo que has visto, leído o jugado.
-
-<div align="center">
-  <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/landing.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9sYW5kaW5nLnBuZyIsImlhdCI6MTc2ODc1MTc1NywiZXhwIjoxODAwMjg3NzU3fQ.pNoZVn0OJ_IZMNa_61iAMcjiKdBTR_qu-EireMN0nCo" alt="Preview" width="80%">
-</div>
-
----
-
-## 🎯 Características Principales
-
-<table>
-<tr>
-<td width="50%">
-
-### 🔍 Búsqueda Inteligente
-Encuentra películas, series, libros y videojuegos con datos reales de **TMDB**, **IGDB** y **Google Books**. Portadas en HD, sinopsis, géneros y más.
-
-</td>
-<td width="50%">
-
-### 📊 Estadísticas Visuales
-Dashboard con métricas de tu biblioteca: distribución por tipo, estados, valoraciones medias y actividad reciente.
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🎮 Tracking de Progreso
-Marca contenido como **Pendiente**, **En progreso**, **Completado** o **Abandonado**. Cada tipo de medio tiene sus propios estados.
-
-</td>
-<td width="50%">
-
-### ⭐ Sistema de Valoración
-Puntúa del 0 al 10 con medios puntos. Escribe reseñas personales para recordar qué te pareció cada título.
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🔐 Cuenta Personal
-Regístrate y accede desde cualquier dispositivo. Tu biblioteca se sincroniza en la nube con **Supabase**.
-
-</td>
-<td width="50%">
-
-### 🎨 Diseño Moderno
-Interfaz oscura con animaciones fluidas. Cards 3D interactivas, transiciones suaves y diseño responsive.
-
-</td>
-</tr>
-</table>
-
----
-
-## 📱 Tipos de Contenido
-
-<div align="center">
-
-| 🎬 **Películas** | 📺 **Series** | 📚 **Libros** | 🎮 **Videojuegos** |
-|:---:|:---:|:---:|:---:|
-| Datos de TMDB | Datos de TMDB | Google Books | IGDB (Twitch) |
-| Año, director, sinopsis | Temporadas, episodios | Autor, editorial, páginas | Plataformas, géneros |
-
-</div>
-
----
-
-## 🚀 Comenzar
-
-### Requisitos Previos
-
-- [Bun](https://bun.sh/) o [Node.js](https://nodejs.org/) 18+
-- Cuenta en [Supabase](https://supabase.com/) (gratis)
-
-### Instalación
-
-```bash
-# 1. Clona el repositorio
-git clone https://github.com/tu-usuario/kata.git
-cd kata
-
-# 2. Instala dependencias
-bun install
-
-# 3. Configura variables de entorno
+```sh
+npm ci
 cp .env.example .env.local
-# Edita .env.local con tus credenciales de Supabase
-
-# 4. Ejecuta en desarrollo
-bun dev
+npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) y ¡listo! 🎉
+Configura en `.env.local` la URL y clave pública de Supabase. TMDB e IGDB requieren sus claves de servidor; los libros usan Google Books con respaldo de Open Library. Las claves de servicio nunca se configuran como `NEXT_PUBLIC_*`.
 
----
+Abre [localhost:3000](http://localhost:3000). Antes de usar la aplicación, aplica las migraciones según [la guía de base de datos](docs/BASE-DE-DATOS.md).
 
-## 🔑 APIs Utilizadas
+## Supabase local
 
-Para obtener datos reales de contenido multimedia, Kata utiliza:
+Con Docker disponible:
 
-| API | Contenido | ¿Requiere Key? |
-|-----|-----------|----------------|
-| [TMDB](https://www.themoviedb.org/documentation/api) | Películas y Series | Sí (gratis) |
-| [IGDB](https://api-docs.igdb.com/) | Videojuegos | Sí (cuenta Twitch) |
-| [Google Books](https://developers.google.com/books) | Libros | Opcional |
-
-> 💡 Las instrucciones para obtener las API keys están en `.env.example`
-
----
-
-## 🛠️ Stack Tecnológico
-
-<div align="center">
-
-| Frontend | Backend | Base de Datos | Animaciones |
-|:--------:|:-------:|:-------------:|:-----------:|
-| Next.js 16 | API Routes | Supabase | GSAP |
-| React 19 | Supabase Auth | PostgreSQL | Lenis |
-| TypeScript | Row Level Security | - | - |
-| Tailwind CSS | - | - | - |
-| Zustand | - | - | - |
-
-</div>
-
----
-
-## 📂 Estructura del Proyecto
-
-```
-src/
-├── app/                    # Páginas (App Router)
-│   ├── (public)/          # Landing, Login, Signup
-│   ├── api/               # API Routes (proxy de APIs externas)
-│   ├── library/           # Biblioteca personal
-│   ├── profile/           # Perfil de usuario
-│   └── [movies|series|books|games]/  # Páginas por categoría
-│
-├── components/            # Componentes React
-│   ├── ui/               # Botones, Modales, Selects...
-│   ├── media/            # Cards, Búsqueda, Modales de items
-│   ├── dashboard/        # Widgets del dashboard
-│   └── layout/           # Navbar, Footer...
-│
-├── lib/
-│   ├── store.ts          # Estado global (Zustand)
-│   └── supabase/         # Cliente y funciones de Supabase
-│
-└── types/                # Tipos de TypeScript
+```sh
+npx supabase start -x realtime,studio,edge-runtime,logflare,vector,supavisor
+npx supabase status
 ```
 
----
+Usa los valores locales en `.env.local`. La configuración versionada utiliza los puertos 54321 (API), 54322 (PostgreSQL) y 54324 (correo de pruebas). Las cuentas de prueba son desechables; no se conectan a producción.
 
-## 🎨 Capturas de Pantalla
+## Comprobaciones
 
-<div align="center">
+```sh
+npm run lint -- --max-warnings=0
+npx next typegen
+npm run typecheck
+npm test
+npm run build
+node scripts/test-service-worker.mjs
+npm audit
+```
 
-| Home | Perfil |
-|:------------:|:---------:|
-| <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/home.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ob21lLnBuZyIsImlhdCI6MTc2ODc1MTc5MywiZXhwIjoxODAwMjg3NzkzfQ.oo7Vwj-QXkQT19ssFIsWH50QSaUKE-vLuFT_LIT1V0Q" alt="Landing"> | <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/perfil.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9wZXJmaWwucG5nIiwiaWF0IjoxNzY4NzUxODEwLCJleHAiOjE4MDAyODc4MTB9.29svb_ik8t-gRHUhQvpZ94OfQuzDvk8UQ73LrRqSlGg" alt="Dashboard"> |
+Pruebas reales de Auth, Storage, RLS e importación con Supabase local iniciado:
 
-| Búsqueda | Biblioteca |
-|:--------:|:----------:|
-| <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/busqueda.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9idXNxdWVkYS5wbmciLCJpYXQiOjE3Njg3NTE4MjMsImV4cCI6MTgwMDI4NzgyM30.mJYXmKw25IkoUhHk84UiMQtvIWp6Nq7XV-RBQFfVhoM" alt="Search"> | <img src="https://kozaaowscbupshdxqdqu.supabase.co/storage/v1/object/sign/fotos/biblio.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMWIwN2IwZC0zYWQ2LTQ3ODQtOWFlYi1iMGRlMzY3Mzc4ZWIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9iaWJsaW8ucG5nIiwiaWF0IjoxNzY4NzUxODQyLCJleHAiOjE4MDAyODc4NDJ9.7kEYeu1UjWH5V9kQc8xyWL3CM3LOQLumbG-MD0bO31M" alt="Library"> |
+```sh
+npx supabase status -o json > /tmp/kata-local-supabase.json
+npm run test:integration
+PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f tests/db/library.sql -f tests/db/api.sql
+```
 
-</div>
+El JSON temporal contiene credenciales locales: no se versiona. `KATA_LOCAL_CONFIG` permite indicar otra ruta. El script rechaza servidores que no sean locales y elimina sus cuentas de prueba al terminar.
 
----
+CI ejecuta lint, tipos, pruebas, auditoría y build, además de una instancia independiente de Supabase para comprobar los datos.
 
-## 🤝 Contribuir
+## Datos y primera sesión
 
-Las contribuciones son bienvenidas. Para cambios importantes:
+- Los usuarios nuevos pueden elegir categoría, guardar su primer título y abrir la biblioteca. «Ahora no» se recuerda; Ajustes permite retomar la bienvenida.
+- Las cuentas anteriores a la migración no reciben la bienvenida obligatoriamente, aunque su biblioteca esté vacía.
+- Importar permite fusionar conservando los datos existentes o reemplazar con confirmación. Se confirma el resultado después de guardarlo en la base de datos.
+- JSON es la copia completa: títulos, colecciones y relaciones. CSV conserva los campos de los títulos, con comillas, saltos de línea y protección de fórmulas.
+- Las estadísticas de finalización usan una fecha propia. No se inventan fechas históricas para títulos que ya estaban completados antes de la migración.
+- La PWA conserva recursos estáticos y portadas. Autenticación, APIs y respuestas de Supabase requieren conexión; no hay edición privada offline.
 
-1. Haz fork del proyecto
-2. Crea tu rama (`git checkout -b feature/NuevaFeature`)
-3. Commit tus cambios (`git commit -m 'Add: nueva feature'`)
-4. Push a la rama (`git push origin feature/NuevaFeature`)
-5. Abre un Pull Request
+Consulta [la revisión inicial](REVISION-PROYECTO.md), [el estado de implementación y pruebas](docs/IMPLEMENTACION.md) y [la guía de migración](docs/BASE-DE-DATOS.md).
 
----
+## Sistema de diseño
 
-## 📄 Licencia
-
-Proyecto personal de código abierto. Úsalo como quieras.
-
----
-
-<div align="center">
-
-**Hecho con ❤️ y mucho ☕**
-
-<picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
-   <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=24&height=100&section=footer">
-</picture>
-
-</div>
+Los componentes compartidos, tokens y reglas visuales se describen en [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md). El catálogo interactivo está disponible en `/design-system` con sesión iniciada.

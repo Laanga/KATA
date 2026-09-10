@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/ui/Field';
 
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
@@ -10,7 +11,7 @@ import { VALID_STATUSES, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils/constant
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { FolderPlus, Check } from 'lucide-react';
-import Image from 'next/image';
+import { MediaCover as Image } from './MediaCover';
 
 interface EditItemModalProps {
   item: MediaItem;
@@ -19,6 +20,7 @@ interface EditItemModalProps {
 }
 
 export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
+  const [isSaving, setIsSaving] = useState(false);
   const updateItem = useMediaStore((state) => state.updateItem);
   const collections = useMediaStore((state) => state.collections);
   const collectionItemIds = useMediaStore((state) => state.collectionItemIds);
@@ -66,30 +68,42 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
         setItemCollections((prev) => [...prev, collectionId]);
         toast.success('Añadido a la colección');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar colección');
     } finally {
       setIsUpdatingCollections(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    updateItem(item.id, {
-      status: formData.status,
-      rating: formData.rating,
-      review: formData.review || undefined,
-    });
-
-    toast.success(`"${item.title}" actualizado`);
-    onClose();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await updateItem(item.id, {
+        status: formData.status,
+        rating: formData.rating,
+        review: formData.review,
+      });
+      toast.success(`"${item.title}" actualizado`);
+      onClose();
+    } catch {
+      toast.error('No se pudo guardar. Tus cambios siguen aquí para reintentar.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar" size="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        if (!isSaving && !isUpdatingCollections) onClose();
+      }}
+      title="Editar"
+      size="lg"
+    >
       <form onSubmit={handleSubmit} className="space-y-6">
-        
         {/* Item Preview - Read Only */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <div className="flex items-start gap-4">
@@ -102,29 +116,25 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
                 sizes="80px"
               />
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2 mb-1">
-                <h3 className="text-base font-bold text-white line-clamp-2 flex-1">
-                  {item.title}
-                </h3>
+                <h3 className="text-base font-bold text-white line-clamp-2 flex-1">{item.title}</h3>
                 <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/5 text-[var(--text-secondary)]">
                   {TYPE_LABELS[item.type]}
                 </span>
               </div>
-              
+
               {(item.author || item.platform) && (
                 <p className="text-sm text-[var(--text-secondary)] mb-1">
                   {item.author || item.platform}
                 </p>
               )}
-              
+
               {item.releaseYear && (
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  {item.releaseYear}
-                </p>
+                <p className="text-xs text-[var(--text-tertiary)]">{item.releaseYear}</p>
               )}
-              
+
               {item.genres && item.genres.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {item.genres.slice(0, 3).map((genre, index) => (
@@ -149,6 +159,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
               Estado
             </label>
             <Select
+              aria-label="Estado"
               value={formData.status}
               onChange={(value) => setFormData({ ...formData, status: value as MediaStatus })}
               options={statusOptions}
@@ -179,7 +190,7 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
                 {collections.map((collection) => {
                   const isSelected = isInCollection(collection.id);
                   const color = collection.color || '#6366F1';
-                  
+
                   return (
                     <button
                       key={collection.id}
@@ -215,17 +226,13 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
                       }}
                     >
                       {/* Icon o emoji */}
-                      {collection.icon && (
-                        <span className="text-base">{collection.icon}</span>
-                      )}
-                      
+                      {collection.icon && <span className="text-base">{collection.icon}</span>}
+
                       {/* Nombre */}
                       <span>{collection.name}</span>
-                      
+
                       {/* Check cuando está seleccionado */}
-                      {isSelected && (
-                        <Check size={14} className="ml-0.5" />
-                      )}
+                      {isSelected && <Check size={14} className="ml-0.5" />}
                     </button>
                   );
                 })}
@@ -243,11 +250,12 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
                 {formData.review.length}/500
               </span>
             </div>
-            <textarea
+            <TextArea
+              aria-label="Reseña / Notas"
               value={formData.review}
               onChange={(e) => setFormData({ ...formData, review: e.target.value })}
               placeholder="¿Qué te pareció? (opcional)"
-              className="min-h-[100px] w-full resize-none rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder-[var(--text-tertiary)] transition-colors focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full"
               maxLength={500}
             />
           </div>
@@ -255,10 +263,20 @@ export function EditItemModal({ item, isOpen, onClose }: EditItemModalProps) {
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-          <Button type="button" variant="ghost" onClick={onClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={isSaving || isUpdatingCollections}
+          >
             Cancelar
           </Button>
-          <Button type="submit" variant="primary">
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSaving}
+            disabled={isUpdatingCollections}
+          >
             Guardar
           </Button>
         </div>

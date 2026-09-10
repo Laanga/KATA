@@ -1,6 +1,6 @@
-import type { NextConfig } from "next";
-import { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } from "next/constants";
-import withPWA from "@ducanh2912/next-pwa";
+import type { NextConfig } from 'next';
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
+import withPWA from '@ducanh2912/next-pwa';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -16,10 +16,15 @@ function getHostnameFromUrl(value?: string): string | null {
 
 const supabaseHostname = getHostnameFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 const supabaseRemotePattern = supabaseHostname
-  ? { protocol: 'https' as const, hostname: supabaseHostname }
+  ? {
+      protocol: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).protocol.replace(':', '') as
+        'http' | 'https',
+      hostname: supabaseHostname,
+      port: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).port,
+    }
   : { protocol: 'https' as const, hostname: '*.supabase.co' };
 const supabaseCspOrigin = supabaseHostname
-  ? `https://${supabaseHostname}`
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).origin
   : 'https://*.supabase.co';
 
 const nextConfig: NextConfig = {
@@ -50,18 +55,18 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      { source: '/api/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
+      { source: '/auth/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
       {
         source: '/:path*',
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            value: 'on',
           },
           {
             key: 'Strict-Transport-Security',
-            value: isDevelopment
-              ? 'max-age=300'
-              : 'max-age=63072000; includeSubDomains; preload'
+            value: isDevelopment ? 'max-age=300' : 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'X-Frame-Options',
@@ -81,9 +86,9 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
-            {
+          {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
@@ -97,7 +102,7 @@ const nextConfig: NextConfig = {
               "base-uri 'self'",
               "manifest-src 'self'",
               "worker-src 'self' blob:",
-            ].join('; ')
+            ].join('; '),
           },
         ],
       },
@@ -106,26 +111,42 @@ const nextConfig: NextConfig = {
 };
 
 // PWA configuration
-export default (phase: string) => {
+const configureNext = (phase: string) => {
   // Only enable PWA in production builds
   if (phase === PHASE_DEVELOPMENT_SERVER) {
     return nextConfig;
   }
 
   const pwaConfig = withPWA({
-    dest: "public",
+    dest: 'public',
     disable: false,
     register: true,
-    extendDefaultRuntimeCaching: true,
+    cacheStartUrl: false,
+    dynamicStartUrl: false,
+    cacheOnFrontEndNav: false,
+    extendDefaultRuntimeCaching: false,
     workboxOptions: {
       skipWaiting: true,
       clientsClaim: true,
+      importScripts: ['/cache-cleanup.js'],
       runtimeCaching: [
+        // Never cache Supabase auth or private records, even offline.
+        {
+          urlPattern: new RegExp(
+            `^${supabaseCspOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/|^https://[^/]+\\.supabase\\.co/`,
+          ),
+          handler: 'NetworkOnly',
+        },
+        {
+          urlPattern: ({ url, sameOrigin }) =>
+            sameOrigin && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')),
+          handler: 'NetworkOnly',
+        },
         {
           urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
-          handler: "StaleWhileRevalidate",
+          handler: 'StaleWhileRevalidate',
           options: {
-            cacheName: "tmdb-images",
+            cacheName: 'tmdb-images',
             expiration: {
               maxEntries: 100,
               maxAgeSeconds: 60 * 60 * 48,
@@ -134,15 +155,15 @@ export default (phase: string) => {
               statuses: [0, 200],
             },
             fetchOptions: {
-              credentials: "omit",
+              credentials: 'omit',
             },
           },
         },
         {
           urlPattern: /^https:\/\/images\.igdb\.com\/.*/i,
-          handler: "StaleWhileRevalidate",
+          handler: 'StaleWhileRevalidate',
           options: {
-            cacheName: "igdb-images",
+            cacheName: 'igdb-images',
             expiration: {
               maxEntries: 100,
               maxAgeSeconds: 60 * 60 * 48,
@@ -151,15 +172,15 @@ export default (phase: string) => {
               statuses: [0, 200],
             },
             fetchOptions: {
-              credentials: "omit",
+              credentials: 'omit',
             },
           },
         },
         {
           urlPattern: /^https:\/\/media\.rawg\.io\/.*/i,
-          handler: "StaleWhileRevalidate",
+          handler: 'StaleWhileRevalidate',
           options: {
-            cacheName: "rawg-images",
+            cacheName: 'rawg-images',
             expiration: {
               maxEntries: 100,
               maxAgeSeconds: 60 * 60 * 48,
@@ -168,15 +189,15 @@ export default (phase: string) => {
               statuses: [0, 200],
             },
             fetchOptions: {
-              credentials: "omit",
+              credentials: 'omit',
             },
           },
         },
         {
           urlPattern: /^https:\/\/books\.google\.com\/.*/i,
-          handler: "StaleWhileRevalidate",
+          handler: 'StaleWhileRevalidate',
           options: {
-            cacheName: "google-books-images",
+            cacheName: 'google-books-images',
             expiration: {
               maxEntries: 100,
               maxAgeSeconds: 60 * 60 * 48,
@@ -185,15 +206,15 @@ export default (phase: string) => {
               statuses: [0, 200],
             },
             fetchOptions: {
-              credentials: "omit",
+              credentials: 'omit',
             },
           },
         },
         {
           urlPattern: /^https:\/\/covers\.openlibrary\.org\/.*/i,
-          handler: "StaleWhileRevalidate",
+          handler: 'StaleWhileRevalidate',
           options: {
-            cacheName: "openlibrary-images",
+            cacheName: 'openlibrary-images',
             expiration: {
               maxEntries: 100,
               maxAgeSeconds: 60 * 60 * 48,
@@ -202,7 +223,7 @@ export default (phase: string) => {
               statuses: [0, 200],
             },
             fetchOptions: {
-              credentials: "omit",
+              credentials: 'omit',
             },
           },
         },
@@ -212,3 +233,5 @@ export default (phase: string) => {
 
   return pwaConfig;
 };
+
+export default configureNext;

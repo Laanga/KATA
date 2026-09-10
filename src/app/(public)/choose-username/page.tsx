@@ -1,6 +1,8 @@
 'use client';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +12,7 @@ import { isValidUsername } from '@/lib/utils/validation';
 export const dynamic = 'force-dynamic';
 
 export default function ChooseUsernamePage() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
@@ -17,16 +20,19 @@ export default function ChooseUsernamePage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
-        window.location.href = '/login';
+        router.replace('/login');
         return;
       }
 
       // Si ya tiene username, redirigir al dashboard
       if (user.user_metadata?.username) {
-        window.location.href = '/home';
+        router.replace('/home');
+        router.refresh();
         return;
       }
 
@@ -34,14 +40,16 @@ export default function ChooseUsernamePage() {
     };
 
     checkUser();
-  }, [supabase.auth]);
+  }, [supabase.auth, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validar username
     if (!isValidUsername(username)) {
-      toast.error('El nombre de usuario debe tener entre 3 y 30 caracteres y solo puede contener letras, números, guiones y guiones bajos');
+      toast.error(
+        'El nombre de usuario debe tener entre 3 y 30 caracteres y solo puede contener letras, números, guiones y guiones bajos',
+      );
       return;
     }
 
@@ -57,7 +65,8 @@ export default function ChooseUsernamePage() {
       if (error) throw error;
 
       toast.success('¡Nombre de usuario guardado!');
-      window.location.href = '/home';
+      router.replace('/home');
+      router.refresh();
     } catch (error) {
       console.error('Error al guardar username:', error);
       toast.error(error instanceof Error ? error.message : 'Error al guardar el nombre de usuario');
@@ -82,7 +91,10 @@ export default function ChooseUsernamePage() {
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
@@ -98,7 +110,7 @@ export default function ChooseUsernamePage() {
           <h1 className="text-2xl font-bold text-center text-white mb-2">
             Elige tu Nombre de Usuario
           </h1>
-          
+
           <p className="text-center text-[var(--text-secondary)] mb-6">
             Para completar tu registro, elige un nombre de usuario único para tu cuenta.
           </p>
@@ -106,16 +118,19 @@ export default function ChooseUsernamePage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+              >
                 Nombre de Usuario
               </label>
-              <input
+              <TextInput
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="ej: langa123"
-                className="w-full rounded-lg border border-white/10 bg-[var(--bg-tertiary)] px-4 py-3 text-white placeholder-[var(--text-tertiary)] focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)] transition-colors"
+                className="w-full"
                 required
                 minLength={3}
                 maxLength={30}

@@ -1,12 +1,7 @@
-import type { MediaItem, MediaType, MediaStatus } from './media';
+import type { MediaItem, MediaType, MediaStatus, MediaProvider } from './media';
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+import type { Database, Json } from './database.generated';
+export type { Database, Json } from './database.generated';
 
 // Metadata flexible en JSONB
 export interface MediaMetadata {
@@ -14,129 +9,29 @@ export interface MediaMetadata {
   platform?: string;
   release_year?: number;
   genres?: string[];
-  [key: string]: unknown;
-}
-
-export interface Database {
-  public: {
-    Tables: {
-      media_items: {
-        Row: {
-          id: string;
-          user_id: string;
-          type: MediaType;
-          title: string;
-          cover_url: string | null;
-          status: MediaStatus;
-          rating: number | null;
-          review: string | null;
-          metadata: MediaMetadata;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          type: MediaType;
-          title: string;
-          cover_url?: string | null;
-          status: MediaStatus;
-          rating?: number | null;
-          review?: string | null;
-          metadata?: MediaMetadata;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          type?: MediaType;
-          title?: string;
-          cover_url?: string | null;
-          status?: MediaStatus;
-          rating?: number | null;
-          review?: string | null;
-          metadata?: MediaMetadata;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      collections: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          description: string | null;
-          color: string | null;
-          icon: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          name: string;
-          description?: string | null;
-          color?: string | null;
-          icon?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          name?: string;
-          description?: string | null;
-          color?: string | null;
-          icon?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
-      };
-      media_items_collections: {
-        Row: {
-          id: string;
-          media_item_id: string;
-          collection_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          media_item_id: string;
-          collection_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          media_item_id?: string;
-          collection_id?: string;
-          created_at?: string;
-        };
-      };
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      [_ in never]: never;
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-  };
+  [key: string]: Json | undefined;
 }
 
 // Helper function to convert database row to MediaItem
-export const dbRowToMediaItem = (row: Database['public']['Tables']['media_items']['Row']): MediaItem => {
-  const metadata = row.metadata || {};
-  
+export const dbRowToMediaItem = (
+  row: Database['public']['Tables']['media_items']['Row'],
+): MediaItem => {
+  const metadata = (
+    row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+      ? row.metadata
+      : {}
+  ) as MediaMetadata;
+
   return {
     id: row.id,
     title: row.title,
-    type: row.type,
+    type: row.type as MediaType,
     coverUrl: row.cover_url || '',
     rating: row.rating,
-    status: row.status,
+    provider: (row.provider as MediaProvider | null) || undefined,
+    externalId: row.external_id || undefined,
+    completedAt: row.completed_at || undefined,
+    status: row.status as MediaStatus,
     author: metadata.author,
     platform: metadata.platform,
     releaseYear: metadata.release_year,
@@ -150,7 +45,7 @@ export const dbRowToMediaItem = (row: Database['public']['Tables']['media_items'
 // Helper function to convert MediaItem to database insert
 export const mediaItemToDbInsert = (
   item: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>,
-  userId: string
+  userId: string,
 ): Database['public']['Tables']['media_items']['Insert'] => {
   const metadata: MediaMetadata = {};
   if (item.author) metadata.author = item.author;
@@ -165,6 +60,8 @@ export const mediaItemToDbInsert = (
     cover_url: item.coverUrl || null,
     status: item.status,
     rating: item.rating,
+    provider: item.provider || null,
+    external_id: item.externalId || null,
     review: item.review || null,
     metadata,
   };
@@ -173,18 +70,18 @@ export const mediaItemToDbInsert = (
 // Helper function to convert MediaItem updates to database update
 export const mediaItemToDbUpdate = (
   updates: Partial<MediaItem>,
-  currentMetadata?: MediaMetadata
+  currentMetadata?: MediaMetadata,
 ): Database['public']['Tables']['media_items']['Update'] => {
   const dbUpdate: Database['public']['Tables']['media_items']['Update'] = {};
-  
+
   if (updates.title !== undefined) dbUpdate.title = updates.title;
   if (updates.type !== undefined) dbUpdate.type = updates.type;
   if (updates.coverUrl !== undefined) dbUpdate.cover_url = updates.coverUrl || null;
   if (updates.rating !== undefined) dbUpdate.rating = updates.rating;
   if (updates.status !== undefined) dbUpdate.status = updates.status;
   if (updates.review !== undefined) dbUpdate.review = updates.review || null;
-  
-  const hasMetadataUpdates = 
+
+  const hasMetadataUpdates =
     updates.author !== undefined ||
     updates.platform !== undefined ||
     updates.releaseYear !== undefined ||
@@ -192,14 +89,39 @@ export const mediaItemToDbUpdate = (
 
   if (hasMetadataUpdates) {
     const newMetadata: MediaMetadata = { ...(currentMetadata || {}) };
-    
+
     if (updates.author !== undefined) newMetadata.author = updates.author;
     if (updates.platform !== undefined) newMetadata.platform = updates.platform;
     if (updates.releaseYear !== undefined) newMetadata.release_year = updates.releaseYear;
     if (updates.genres !== undefined) newMetadata.genres = updates.genres;
-    
+
     dbUpdate.metadata = newMetadata;
   }
-  
+
   return dbUpdate;
 };
+
+export type UserPreferences = {
+  user_id: string;
+  onboarding_status: 'pending' | 'in_progress' | 'completed' | 'skipped';
+  onboarding_version: number;
+  onboarding_step: number;
+  preferred_type: MediaType | null;
+  first_item_id: string | null;
+  finished_at: string | null;
+  updated_at: string;
+};
+
+export function parsePreferences(
+  row: Database['public']['Tables']['user_preferences']['Row'],
+): UserPreferences {
+  if (!['pending', 'in_progress', 'completed', 'skipped'].includes(row.onboarding_status))
+    throw new Error('Estado de bienvenida inválido');
+  if (row.preferred_type && !['MOVIE', 'SERIES', 'BOOK', 'GAME'].includes(row.preferred_type))
+    throw new Error('Categoría inválida');
+  return {
+    ...row,
+    onboarding_status: row.onboarding_status as UserPreferences['onboarding_status'],
+    preferred_type: row.preferred_type as MediaType | null,
+  };
+}

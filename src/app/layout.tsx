@@ -1,46 +1,60 @@
-import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
-import "./globals.css";
-import { ToastProvider } from "@/components/ui/ToastProvider";
-import { StoreInitializer } from "@/components/StoreInitializer";
-import { SmoothScroll } from "@/components/SmoothScroll";
-import { PageTransition } from "@/components/PageTransition";
-import { AuthProvider } from "@/components/AuthProvider";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import BottomNavigation from "@/components/layout/BottomNavigation";
-import { Navbar } from "@/components/layout/Navbar";
-import { Analytics } from "@vercel/analytics/next";
+import type { Metadata } from 'next';
+import { Noto_Sans_JP } from 'next/font/google';
+import './globals.css';
+import { ToastProvider } from '@/components/ui/ToastProvider';
+import { StoreInitializer } from '@/components/StoreInitializer';
+import { SmoothScroll } from '@/components/SmoothScroll';
+import { PageTransition } from '@/components/PageTransition';
+import { OnboardingProvider } from '@/components/OnboardingProvider';
+import { DataBoundary } from '@/components/DataBoundary';
+import { AuthProvider } from '@/components/AuthProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import BottomNavigation from '@/components/layout/BottomNavigation';
+import { Navbar } from '@/components/layout/Navbar';
+import { Analytics } from '@vercel/analytics/next';
 
 const notoSansJP = Noto_Sans_JP({
-  variable: "--font-noto",
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["latin"],
+  variable: '--font-noto',
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kata.app'),
   title: {
-    default: "Kata (型) - Tu biblioteca personal de medios",
-    template: "%s | Kata"
+    default: 'Kata (型) - Tu biblioteca personal de medios',
+    template: '%s | Kata',
   },
-  description: "Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar. Tu biblioteca personal multimedia con datos reales de APIs profesionales.",
-  keywords: ["biblioteca", "medios", "películas", "series", "libros", "videojuegos", "tracking", "organización", "kata"],
-  authors: [{ name: "Kata" }],
-  creator: "Kata",
-  publisher: "Kata",
+  description:
+    'Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar. Tu biblioteca personal multimedia con datos reales de APIs profesionales.',
+  keywords: [
+    'biblioteca',
+    'medios',
+    'películas',
+    'series',
+    'libros',
+    'videojuegos',
+    'tracking',
+    'organización',
+    'kata',
+  ],
+  authors: [{ name: 'Kata' }],
+  creator: 'Kata',
+  publisher: 'Kata',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    type: "website",
-    locale: "es_ES",
-    url: "/",
-    siteName: "Kata",
-    title: "Kata (型) - Tu biblioteca personal de medios",
-    description: "Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.",
+    type: 'website',
+    locale: 'es_ES',
+    url: '/',
+    siteName: 'Kata',
+    title: 'Kata (型) - Tu biblioteca personal de medios',
+    description:
+      'Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.',
     // TODO: Create og-image.png (1200x630) for social sharing
     // images: [
     //   {
@@ -52,12 +66,13 @@ export const metadata: Metadata = {
     // ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Kata (型) - Tu biblioteca personal de medios",
-    description: "Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.",
+    card: 'summary_large_image',
+    title: 'Kata (型) - Tu biblioteca personal de medios',
+    description:
+      'Organiza, trackea y descubre películas, series, libros y videojuegos en un solo lugar.',
     // TODO: Update images when og-image.png is created
     // images: ["/og-image.png"],
-    creator: "@kata",
+    creator: '@kata',
   },
   robots: {
     index: true,
@@ -65,24 +80,24 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
-  manifest: "/manifest.json",
+  manifest: '/manifest.json',
 };
 
 export const viewport = {
-  themeColor: "#10b981",
-  width: "device-width" as const,
+  themeColor: '#10b981',
+  width: 'device-width' as const,
   initialScale: 1,
-  viewportFit: "cover" as const,
+  viewportFit: 'cover' as const,
 };
 
 export default function RootLayout({
@@ -99,7 +114,9 @@ export default function RootLayout({
               <StoreInitializer />
               <Navbar />
               <PageTransition>
-                {children}
+                <OnboardingProvider>
+                  <DataBoundary>{children}</DataBoundary>
+                </OnboardingProvider>
               </PageTransition>
               <ToastProvider />
             </SmoothScroll>

@@ -29,7 +29,7 @@ export function FadeIn({
   duration = 0.6,
   direction = 'up',
   className,
-  scrollTrigger = false
+  scrollTrigger = false,
 }: FadeInProps) {
   /* eslint-disable react-hooks/set-state-in-effect */
 
@@ -37,13 +37,14 @@ export function FadeIn({
   const [isClient, setIsClient] = useState(false);
 
   // Asegurarse de que estamos en el cliente antes de animar
-   
+
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   useEffect(() => {
     if (!ref.current || !isClient) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const directionMap = {
       up: { y: 30 },
@@ -74,7 +75,7 @@ export function FadeIn({
             toggleActions: 'play none none reverse',
           },
         }),
-      }
+      },
     );
 
     return () => {
@@ -87,11 +88,7 @@ export function FadeIn({
 
   // En el servidor, renderizar sin estilos de animación
   if (!isClient) {
-    return (
-      <div className={className}>
-        {children}
-      </div>
-    );
+    return <div className={className}>{children}</div>;
   }
 
   return (

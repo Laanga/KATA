@@ -1,8 +1,9 @@
 'use client';
+import { MediaCover } from '@/components/media/MediaCover';
 
-import { FadeIn } from "@/components/FadeIn";
-import { useMediaStore } from "@/lib/store";
-import { getTopRatedItems } from "@/lib/utils/analytics";
+import { FadeIn } from '@/components/FadeIn';
+import { useMediaStore } from '@/lib/store';
+import { getTopRatedItems } from '@/lib/utils/analytics';
 import { Star, BookOpen, Gamepad2, Film, Tv } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +22,7 @@ export function TopRatedItems() {
   if (topRated.length === 0) {
     return (
       <FadeIn delay={0.2}>
-        <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-6">
+        <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6">
           <h3 className="text-lg font-semibold mb-4">Top Valorados</h3>
           <p className="text-sm text-[var(--text-tertiary)] text-center py-8">
             No hay items con rating alto (≥4)
@@ -33,13 +34,11 @@ export function TopRatedItems() {
 
   return (
     <FadeIn delay={0.2}>
-      <div className="group bg-[var(--bg-secondary)] border border-white/5 rounded-2xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative">
+      <div className="group liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] overflow-hidden hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
         <div className="p-6 border-b border-white/5 relative z-10">
           <h3 className="text-lg font-semibold">Top Valorados</h3>
-          <p className="text-sm text-[var(--text-tertiary)] mt-1">
-            Tus items mejor puntuados
-          </p>
+          <p className="text-sm text-[var(--text-tertiary)] mt-1">Tus items mejor puntuados</p>
         </div>
         <div className="relative z-10">
           {topRated.map((item, index) => {
@@ -55,7 +54,9 @@ export function TopRatedItems() {
                   {/* Cover */}
                   <div className="relative h-16 w-12 flex-shrink-0 rounded overflow-hidden bg-white/5 z-10">
                     {item.coverUrl ? (
-                      <img
+                      <MediaCover
+                        width={96}
+                        height={128}
                         src={item.coverUrl}
                         alt={item.title}
                         className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-300"

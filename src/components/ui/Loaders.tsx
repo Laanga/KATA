@@ -11,6 +11,7 @@ export function KataLoader() {
   const pathRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!pathRef.current) return;
 
     const path = pathRef.current;
@@ -24,13 +25,12 @@ export function KataLoader() {
 
     // Animation loop
     const tl = gsap.timeline({ repeat: -1 });
-    
+
     tl.to(path, {
       strokeDashoffset: 0,
       duration: 2,
       ease: 'power2.inOut',
-    })
-    .to(path, {
+    }).to(path, {
       strokeDashoffset: -length,
       duration: 2,
       ease: 'power2.inOut',
@@ -71,6 +71,7 @@ export function DotsLoader() {
   const dotsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!dotsRef.current) return;
 
     const dots = dotsRef.current.children;
@@ -104,6 +105,7 @@ export function RingLoader({ size = 40 }: { size?: number }) {
   const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!ringRef.current) return;
 
     gsap.to(ringRef.current, {

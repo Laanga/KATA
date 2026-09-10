@@ -1,47 +1,59 @@
 'use client';
+import { TextInput } from '@/components/ui/Field';
+
+import { MediaCover } from '@/components/media/MediaCover';
 
 import { useState, useEffect, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useMediaStore } from '@/lib/store';
 import toast from 'react-hot-toast';
-import { Upload, Trash2, LogOut, Camera, User, Loader2, Lock, Mail, CheckCircle, FileJson, FileSpreadsheet } from 'lucide-react';
+import {
+  Upload,
+  Trash2,
+  LogOut,
+  Camera,
+  User,
+  Loader2,
+  Lock,
+  Mail,
+  CheckCircle,
+  FileJson,
+  FileSpreadsheet,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import type { MediaItem, MediaType, MediaStatus } from '@/types/media';
+import {
+  createBackup,
+  exportCSV,
+  parseImport,
+  type LibraryBackup,
+} from '@/lib/utils/libraryTransfer';
+import { sameMedia } from '@/lib/utils/mediaIdentity';
+import { useOnboarding } from './OnboardingProvider';
+import { useRouter } from 'next/navigation';
+import { saveAvatar, removeAvatar } from '@/lib/supabase/avatar';
+import { isValidUsername } from '@/lib/utils/validation';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface ErrorWithMessage {
-  message?: string;
-}
-
-interface ImportedItem {
-  title?: string;
-  type?: string;
-  status?: string;
-  rating?: string | number;
-  review?: string;
-  author?: string;
-  platform?: string;
-  genres?: string;
-  coverUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  releaseYear?: string | number;
-  id?: string;
-}
-
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const { save: saveOnboarding } = useOnboarding();
+  const router = useRouter();
   const items = useMediaStore((state) => state.items);
-  const setItems = useMediaStore((state) => state.setItems);
+  const importLibrary = useMediaStore((state) => state.importLibrary);
+  const clearLibrary = useMediaStore((state) => state.clearLibrary);
+  const collections = useMediaStore((state) => state.collections);
+  const relationships = useMediaStore((state) => state.collectionItemIds);
+  const [pendingImport, setPendingImport] = useState<LibraryBackup | null>(null);
+  const [replaceImport, setReplaceImport] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -55,11 +67,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   // Cargar datos del usuario
   useEffect(() => {
     const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         // Detectar si el usuario se registró con Google OAuth
         const hasGoogleIdentity = user.identities?.some(
-          identity => identity.provider === 'google'
+          (identity) => identity.provider === 'google',
         );
         setIsGoogleUser(!!hasGoogleIdentity);
 
@@ -79,146 +93,49 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona una imagen');
-      return;
-    }
-
-    // Validar tamaño (máximo 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('La imagen debe ser menor a 2MB');
-      return;
-    }
-
+    e.target.value = '';
     setIsUploadingAvatar(true);
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No autenticado');
-
-      // Crear nombre único para el archivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      // Eliminar avatar anterior si existe
-      if (avatarUrl) {
-        const oldPath = avatarUrl.split('/').pop();
-        if (oldPath) {
-          await supabase.storage.from('avatars').remove([`avatars/${oldPath}`]);
-        }
-      }
-
-      // Subir nuevo avatar
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Guardar URL en user_metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
-      });
-
-      if (updateError) throw updateError;
-
-      setAvatarUrl(publicUrl);
+      setAvatarUrl(await saveAvatar(file, avatarUrl));
       toast.success('Foto de perfil actualizada');
-      
-      window.location.reload();
     } catch (error) {
-      console.error('Error uploading avatar:', error);
-      const errorWithMessage = error as ErrorWithMessage;
-      toast.error(errorWithMessage.message || 'Error al subir la imagen');
+      toast.error(error instanceof Error ? error.message : 'No se pudo guardar la imagen');
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
-  // Eliminar avatar
   const handleRemoveAvatar = async () => {
     if (!avatarUrl) return;
-
     setIsUploadingAvatar(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No autenticado');
-
-      // Eliminar de storage
-      const fileName = avatarUrl.split('/').pop();
-      if (fileName) {
-        await supabase.storage.from('avatars').remove([`avatars/${fileName}`]);
-      }
-
-      // Eliminar de user_metadata
-      const { error } = await supabase.auth.updateUser({
-        data: { avatar_url: null }
-      });
-
-      if (error) throw error;
-
+      await removeAvatar(avatarUrl);
       setAvatarUrl(null);
-      setImageError(false);
       toast.success('Foto de perfil eliminada');
-      window.location.reload();
-    } catch (error) {
-      console.error('Error removing avatar:', error);
-      toast.error('Error al eliminar la imagen');
+    } catch {
+      toast.error('No se pudo eliminar la imagen');
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
   const handleExportJSON = () => {
-    const dataStr = JSON.stringify(items, null, 2);
+    const dataStr = JSON.stringify(createBackup(items, collections, relationships), null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `kata-export-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
-    
+
     URL.revokeObjectURL(url);
     toast.success(`Biblioteca exportada como JSON (${items.length} items)`);
   };
 
   const handleExportCSV = () => {
-    // Headers CSV
-    const headers = ['ID', 'Título', 'Tipo', 'Estado', 'Valoración', 'Autor', 'Plataforma', 'Año', 'Géneros', 'Reseña', 'Fecha Creación', 'Fecha Actualización'];
-    
-    // Convertir items a filas CSV
-    const rows = items.map(item => [
-      item.id,
-      `"${item.title.replace(/"/g, '""')}"`, // Escapar comillas
-      item.type,
-      item.status,
-      item.rating?.toString() || '',
-      item.author ? `"${item.author.replace(/"/g, '""')}"` : '',
-      item.platform ? `"${item.platform.replace(/"/g, '""')}"` : '',
-      item.releaseYear?.toString() || '',
-      item.genres ? `"${item.genres.join(', ').replace(/"/g, '""')}"` : '',
-      item.review ? `"${item.review.replace(/"/g, '""')}"` : '',
-      item.createdAt,
-      item.updatedAt || '',
-    ]);
-    
-    // Crear contenido CSV
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-    
+    const csvContent = exportCSV(items);
+
     // Crear blob y descargar
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para Excel
     const url = URL.createObjectURL(blob);
@@ -232,290 +149,71 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     toast.success(`Biblioteca exportada como CSV (${items.length} items)`);
   };
 
-  const validateImportData = (data: unknown): { valid: boolean; errors: string[] } => {
-    const errors: string[] = [];
-
-    if (!Array.isArray(data)) {
-      errors.push('El formato debe ser un array de elementos');
-      return { valid: false, errors };
-    }
-
-    if (data.length === 0) {
-      errors.push('El archivo está vacío');
-      return { valid: false, errors };
-    }
-
-    data.forEach((item: ImportedItem, _index) => {
-      const itemNum = _index + 1;
-
-      if (!item.title || typeof item.title !== 'string') {
-        errors.push(`Item #${itemNum}: El título es requerido`);
-      }
-
-      if (!item.type || !['BOOK', 'GAME', 'MOVIE', 'SERIES'].includes(item.type)) {
-        errors.push(`Item #${itemNum}: El tipo debe ser BOOK, GAME, MOVIE o SERIES`);
-      }
-
-      if (item.coverUrl && typeof item.coverUrl !== 'string') {
-        errors.push(`Item #${itemNum}: La URL de portada debe ser un texto válido`);
-      }
-
-      if (item.rating !== null && item.rating !== undefined) {
-        const rating = Number(item.rating);
-        if (isNaN(rating) || rating < 0 || rating > 5) {
-          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 5`);
-        }
-      }
-    });
-
-    return { valid: errors.length === 0, errors };
-  };
-
-  const detectFileType = (fileName: string): 'json' | 'csv' => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    if (extension === 'json') return 'json';
-    if (extension === 'csv') return 'csv';
-    return 'json';
-  };
-
-  const parseCSVLine = (line: string): string[] => {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-
-    result.push(current.trim());
-    return result;
-  };
-
-  const parseCSVValue = (value: string): string => {
-    if (!value) return '';
-    return value.replace(/^"|"$/g, '').replace(/""/g, '"');
-  };
-
-  const parseRating = (value: string): number | null => {
-    if (!value || value.trim() === '') return null;
-
-    const rating = Number(value);
-
-    if (isNaN(rating) || rating < 0 || rating > 5) {
-      return null;
-    }
-
-    return rating;
-  };
-
-  const parseYear = (value: string): number | undefined => {
-    if (!value || value.trim() === '') return undefined;
-
-    const year = Number(value);
-    if (isNaN(year) || year < 1900 || year > 2100) return undefined;
-
-    return year;
-  };
-
-  const parseGenres = (value: string): string[] | undefined => {
-    if (!value || value.trim() === '') return undefined;
-
-    const genres = parseCSVValue(value);
-    if (!genres) return undefined;
-
-    return genres.split(',').map((g) => g.trim()).filter(Boolean);
-  };
-
-  const parseCSVToMediaItems = (csvContent: string): MediaItem[] => {
-    const cleanContent = csvContent.replace(/^\ufeff/, '');
-
-    const lines = cleanContent.split('\n');
-
-    if (lines.length < 2) {
-      throw new Error('El CSV debe tener al menos headers y una fila de datos');
-    }
-
-    const headersLine = lines[0].split(',');
-    const expectedHeaders = [
-      'ID', 'Título', 'Tipo', 'Estado', 'Valoración',
-      'Autor', 'Plataforma', 'Año', 'Géneros', 'Reseña',
-      'Fecha Creación', 'Fecha Actualización'
-    ];
-
-    const columnIndex = expectedHeaders.reduce((acc, header, _index) => {
-      acc[header] = headersLine.findIndex((h) => h.trim() === header);
-      return acc;
-    }, {} as Record<string, number>);
-
-    const mediaItems: MediaItem[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      const values = parseCSVLine(line);
-
-      if (values.length < 2) continue;
-
-      const mediaItem: MediaItem = {
-        id: values[columnIndex['ID']] || crypto.randomUUID(),
-        title: parseCSVValue(values[columnIndex['Título']]),
-        type: values[columnIndex['Tipo']]?.trim() as MediaType,
-        coverUrl: '',
-        status: values[columnIndex['Estado']]?.trim() as MediaStatus || 'WANT_TO_WATCH',
-        rating: parseRating(values[columnIndex['Valoración']]),
-        author: parseCSVValue(values[columnIndex['Autor']]),
-        platform: parseCSVValue(values[columnIndex['Plataforma']]),
-        releaseYear: parseYear(values[columnIndex['Año']]),
-        genres: parseGenres(values[columnIndex['Géneros']]),
-        review: parseCSVValue(values[columnIndex['Reseña']]),
-        createdAt: values[columnIndex['Fecha Creación']] || new Date().toISOString(),
-        updatedAt: values[columnIndex['Fecha Actualización']] || undefined,
-      };
-
-      mediaItems.push(mediaItem);
-    }
-
-    return mediaItems;
-  };
-
-  const parseJSONToMediaItems = (data: unknown): MediaItem[] => {
-    if (!Array.isArray(data)) {
-      throw new Error('El archivo JSON debe ser un array de elementos');
-    }
-
-    return data.map((item) => {
-      const importedItem = item as ImportedItem;
-      return {
-        id: importedItem.id || crypto.randomUUID(),
-        title: importedItem.title || '',
-        type: importedItem.type as MediaType,
-        coverUrl: importedItem.coverUrl || '',
-        rating: importedItem.rating ? Number(importedItem.rating) : null,
-        status: importedItem.status as MediaStatus,
-        author: importedItem.author,
-        platform: importedItem.platform,
-        releaseYear: importedItem.releaseYear ? Number(importedItem.releaseYear) : undefined,
-        genres: Array.isArray(importedItem.genres) ? importedItem.genres : (importedItem.genres ? [importedItem.genres] : undefined),
-        review: importedItem.review,
-        createdAt: importedItem.createdAt || new Date().toISOString(),
-        updatedAt: importedItem.updatedAt,
-      };
-    });
-  };
-
-  const validateCSVItems = (items: MediaItem[]): { valid: boolean; errors: string[] } => {
-    const errors: string[] = [];
-
-    items.forEach((item, index) => {
-      const itemNum = index + 1;
-
-      if (!item.title || typeof item.title !== 'string') {
-        errors.push(`Item #${itemNum}: El título es requerido`);
-      }
-
-      if (!['BOOK', 'GAME', 'MOVIE', 'SERIES'].includes(item.type)) {
-        errors.push(`Item #${itemNum}: El tipo debe ser BOOK, GAME, MOVIE o SERIES`);
-      }
-
-      if (item.rating !== null && item.rating !== undefined) {
-        if (isNaN(item.rating) || item.rating < 0 || item.rating > 5) {
-          errors.push(`Item #${itemNum}: La valoración debe estar entre 0 y 5`);
-        }
-      }
-
-      if (item.releaseYear !== undefined) {
-        if (isNaN(item.releaseYear) || item.releaseYear < 1900 || item.releaseYear > 2100) {
-          errors.push(`Item #${itemNum}: El año debe estar entre 1900 y 2100`);
-        }
-      }
-    });
-
-    return { valid: errors.length === 0, errors };
-  };
-
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = event.target?.result as string;
-
-        const fileType = detectFileType(file.name);
-
-        let importedItems: MediaItem[];
-
-        if (fileType === 'json') {
-          const data = JSON.parse(content);
-          importedItems = parseJSONToMediaItems(data);
-
-          const jsonValidation = validateImportData(data);
-          if (!jsonValidation.valid) {
-            toast.error(jsonValidation.errors[0]);
-            return;
-          }
-        } else {
-          importedItems = parseCSVToMediaItems(content);
-
-          const csvValidation = validateCSVItems(importedItems);
-          if (!csvValidation.valid) {
-            toast.error(csvValidation.errors[0]);
-            return;
-          }
-        }
-
-        if (importedItems.length === 0) {
-          toast.error('El archivo no contiene elementos válidos');
-          return;
-        }
-
-        setItems(importedItems);
-        toast.success(`${importedItems.length} elementos importados desde ${fileType.toUpperCase()}`);
-        onClose();
-      } catch (error) {
-        console.error('Import failed:', error);
-        const fileType = detectFileType(file.name);
-        toast.error(`Error al importar el archivo ${fileType.toUpperCase()}. Asegúrate de que sea un formato válido.`);
-      }
-    };
-    reader.readAsText(file);
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo debe ocupar menos de 10 MB');
+      return;
+    }
+    try {
+      setPendingImport(parseImport(await file.text(), file.name));
+      setReplaceImport(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Archivo inválido');
+    }
   };
 
-  const handleClearLibrary = () => {
-    setItems([]);
-    setShowClearConfirm(false);
-    toast.success('Biblioteca vaciada');
-    onClose();
+  const confirmImport = async () => {
+    if (!pendingImport || isTransferring) return;
+    setIsTransferring(true);
+    try {
+      const count = await importLibrary(pendingImport, replaceImport);
+      toast.success(`${count} elementos guardados. Los duplicados existentes se han conservado.`);
+      setPendingImport(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo importar. No se ha aplicado la operación.',
+      );
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  const handleClearLibrary = async () => {
+    if (isTransferring) return;
+    setIsTransferring(true);
+    try {
+      await clearLibrary();
+      setShowClearConfirm(false);
+      toast.success('Biblioteca vaciada. Tus colecciones se conservan vacías.');
+    } catch {
+      toast.error('No se pudo vaciar la biblioteca. Inténtalo de nuevo.');
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
   const handleSaveUsername = async () => {
-    if (!username.trim()) {
-      toast.error('El nombre de usuario no puede estar vacío');
+    if (!isValidUsername(username)) {
+      toast.error('Usa entre 3 y 30 caracteres: letras, números, guiones o guiones bajos');
       return;
     }
 
     setIsSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({
-        data: { username: username.trim() }
+        data: { username: username.trim() },
       });
 
       if (error) throw error;
 
       toast.success('Nombre actualizado correctamente');
       setIsEditingUsername(false);
-      
+
       window.location.reload();
     } catch (error) {
       console.error('Error updating username:', error);
@@ -528,7 +226,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const handleChangePassword = async () => {
     setIsSendingPasswordEmail(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user?.email) {
         throw new Error('No se pudo obtener el email del usuario');
       }
@@ -543,8 +243,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       toast.success('Email de recuperación enviado');
     } catch (error) {
       console.error('Error sending password reset email:', error);
-      const errorWithMessage = error as ErrorWithMessage;
-      toast.error(errorWithMessage.message || 'Error al enviar el email de recuperación');
+      toast.error(
+        error instanceof Error ? error.message : 'Error al enviar el email de recuperación',
+      );
     } finally {
       setIsSendingPasswordEmail(false);
     }
@@ -555,7 +256,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       await supabase.auth.signOut();
       toast.success('Sesión cerrada');
       // Usar window.location para forzar una navegación completa y limpiar el estado
-      window.location.href = '/';
+      router.replace('/');
+      router.refresh();
     } catch (error) {
       console.error('Error logging out:', error);
       toast.error('Error al cerrar sesión');
@@ -563,7 +265,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Ajustes" size="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        if (!isTransferring) onClose();
+      }}
+      title="Ajustes"
+      size="lg"
+    >
       <div className="space-y-4 sm:space-y-6">
         {/* User Info Section */}
         <div>
@@ -580,18 +289,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {/* Avatar preview */}
                 <div className="relative group flex-shrink-0">
                   <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gradient-to-br from-[var(--accent-primary)] to-emerald-900 border-2 border-white/10 flex items-center justify-center">
-                    {avatarUrl && !imageError ? (
-                      <img
+                    {avatarUrl ? (
+                      <MediaCover
+                        width={96}
+                        height={128}
                         src={avatarUrl}
                         alt="Avatar"
                         className="w-full h-full object-cover"
-                        onError={() => setImageError(true)}
                       />
                     ) : (
                       <User size={28} className="text-white/70 sm:size-[32]" />
                     )}
                   </div>
-                  
+
                   {/* Overlay con botón de cámara */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -608,21 +318,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                 {/* Botones */}
                 <div className="flex flex-col gap-2">
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
-                    className="text-xs text-[var(--accent-primary)] hover:underline disabled:opacity-50 sm:text-sm"
                   >
                     {isUploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
-                  </button>
+                  </Button>
                   {avatarUrl && (
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={handleRemoveAvatar}
                       disabled={isUploadingAvatar}
-                      className="text-xs text-red-400 hover:underline disabled:opacity-50 sm:text-sm"
                     >
                       Eliminar
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -646,14 +358,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 Nombre de Usuario
               </label>
               <div className="flex gap-2">
-                <input
+                <TextInput
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!isEditingUsername || isSaving}
-                  className={`flex-1 rounded-lg border border-white/10 bg-white/5 p-2.5 text-xs text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] sm:p-3 sm:text-sm ${
-                    !isEditingUsername ? 'opacity-70' : ''
-                  }`}
+                  className="flex-1 min-w-0"
                   placeholder="Tu nombre"
                 />
                 {!isEditingUsername ? (
@@ -675,7 +385,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         // Recargar el nombre original
                         supabase.auth.getUser().then(({ data: { user } }) => {
                           if (user) {
-                            setUsername(user.user_metadata?.username || user.email?.split('@')[0] || 'Usuario');
+                            setUsername(
+                              user.user_metadata?.username ||
+                                user.email?.split('@')[0] ||
+                                'Usuario',
+                            );
                           }
                         });
                       }}
@@ -702,12 +416,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)] sm:text-sm">
                 Email
               </label>
-              <input
-                type="email"
-                value={email}
-                disabled
-                className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 text-xs text-white opacity-70 sm:p-3 sm:text-sm"
-              />
+              <TextInput type="email" value={email} disabled className="w-full" />
               <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                 El email no se puede modificar
               </p>
@@ -721,13 +430,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </label>
                 {!isPasswordEmailSent ? (
                   !isChangingPassword ? (
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setIsChangingPassword(true)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-3"
+                      className="w-full justify-start"
                     >
                       <Lock size={16} className="text-[var(--text-tertiary)] sm:size-[18]" />
                       <span className="text-xs text-white sm:text-sm">Cambiar contraseña</span>
-                    </button>
+                    </Button>
                   ) : (
                     <div className="space-y-2.5 rounded-lg border border-white/10 bg-white/5 p-3 sm:space-y-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3">
@@ -778,7 +489,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           Email enviado
                         </p>
                         <p className="text-xs text-[var(--text-tertiary)] mb-2 sm:mb-3">
-                          Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de entrada y spam.
+                          Hemos enviado un enlace de recuperación a tu email. Revisa tu bandeja de
+                          entrada y spam.
                         </p>
                         <button
                           onClick={() => {
@@ -809,7 +521,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               onClick={handleExportJSON}
               className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
             >
-              <FileJson size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
+              <FileJson
+                size={16}
+                className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white sm:text-sm">Exportar como JSON</p>
                 <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
@@ -823,7 +538,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               onClick={handleExportCSV}
               className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10 sm:gap-3 sm:p-4"
             >
-              <FileSpreadsheet size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
+              <FileSpreadsheet
+                size={16}
+                className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white sm:text-sm">Exportar como CSV</p>
                 <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
@@ -834,7 +552,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Import */}
             <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5 transition-colors hover:bg-white/10 sm:gap-3 sm:p-4">
-              <Upload size={16} className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5" />
+              <Upload
+                size={16}
+                className="text-[var(--accent-primary)] flex-shrink-0 sm:w-5 sm:h-5"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white sm:text-sm">Importar Biblioteca</p>
                 <p className="text-xs text-[var(--text-tertiary)] line-clamp-1 sm:text-sm">
@@ -845,10 +566,55 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 type="file"
                 accept=".json,.csv"
                 onChange={handleImport}
+                disabled={isTransferring}
                 className="hidden"
               />
             </label>
 
+            {pendingImport && (
+              <div
+                className="rounded-xl border border-emerald-500/30 p-4 space-y-3"
+                aria-live="polite"
+              >
+                <p className="font-medium">Revisar importación</p>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {pendingImport.items.length} elementos · {pendingImport.collections?.length || 0}{' '}
+                  colecciones ·{' '}
+                  {
+                    pendingImport.items.filter((incoming) =>
+                      items.some((item) => sameMedia(item, incoming)),
+                    ).length
+                  }{' '}
+                  coincidencias con tu biblioteca.
+                </p>
+                <label className="flex gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={replaceImport}
+                    disabled={isTransferring}
+                    onChange={(e) => setReplaceImport(e.target.checked)}
+                  />
+                  Reemplazar los elementos actuales
+                </label>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {replaceImport
+                    ? 'Se eliminarán los elementos actuales. Si la copia incluye colecciones, también las reemplazará. La operación se aplica completa o no se aplica.'
+                    : 'Se añadirán elementos nuevos y se conservarán las notas y estados de los existentes.'}
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={confirmImport} isLoading={isTransferring}>
+                    {replaceImport ? 'Confirmar reemplazo' : 'Fusionar biblioteca'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    disabled={isTransferring}
+                    onClick={() => setPendingImport(null)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
             {/* Clear Library */}
             {!showClearConfirm ? (
               <button
@@ -881,6 +647,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     size="sm"
                     variant="danger"
                     onClick={handleClearLibrary}
+                    isLoading={isTransferring}
                     className="text-xs sm:text-sm"
                   >
                     Sí, Vaciar Todo
@@ -891,6 +658,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try {
+              await saveOnboarding({
+                onboarding_status: 'in_progress',
+                onboarding_step: 1,
+                finished_at: null,
+              });
+              onClose();
+              router.push('/onboarding');
+            } catch {
+              toast.error('No pudimos abrir la bienvenida. Inténtalo de nuevo.');
+            }
+          }}
+        >
+          Retomar la bienvenida
+        </Button>
         {/* App Info */}
         <div>
           <h3 className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2 sm:mb-4">
@@ -920,9 +705,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <LogOut size={16} className="text-red-400 flex-shrink-0 sm:w-5 sm:h-5" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-red-400 sm:text-sm">Cerrar Sesión</p>
-              <p className="text-xs text-red-400/70 line-clamp-1 sm:text-sm">
-                Salir de tu cuenta
-              </p>
+              <p className="text-xs text-red-400/70 line-clamp-1 sm:text-sm">Salir de tu cuenta</p>
             </div>
           </button>
         </div>

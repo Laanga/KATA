@@ -47,14 +47,14 @@ export default function BottomNavigation() {
   const browserUiOffset = useBrowserUiOffset();
 
   const isAllowed = navItems.some(
-    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
   if (!isAllowed) return null;
 
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed left-1/2 -translate-x-1/2 z-[9999] md:hidden transition-[bottom] duration-200"
+      className="fixed left-1/2 -translate-x-1/2 z-40 md:hidden transition-[bottom] duration-200"
       style={{
         bottom: `calc(0.75rem + env(safe-area-inset-bottom, 0px) + ${browserUiOffset}px)`,
       }}
@@ -62,8 +62,7 @@ export default function BottomNavigation() {
       <div className="liquid-glass flex items-center gap-0.5 px-1.5 py-1.5 rounded-full border border-white/10">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
@@ -85,9 +84,7 @@ export default function BottomNavigation() {
               />
               <span
                 className={`text-[10px] leading-tight mt-0.5 font-medium ${
-                  active
-                    ? 'text-[var(--accent-primary)]'
-                    : 'text-[var(--text-tertiary)]'
+                  active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-tertiary)]'
                 }`}
               >
                 {item.label}

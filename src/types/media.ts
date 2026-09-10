@@ -1,10 +1,17 @@
+export type MediaProvider = 'tmdb' | 'igdb' | 'rawg' | 'google-books' | 'openlibrary';
+
 // Core Media Types
 export type MediaType = 'BOOK' | 'GAME' | 'MOVIE' | 'SERIES';
 
-export type MediaStatus = 
-  | 'WANT_TO_READ' | 'READING' | 'COMPLETED' | 'DROPPED'  // Books
-  | 'WANT_TO_PLAY' | 'PLAYING'  // Games (shares COMPLETED, DROPPED)
-  | 'WANT_TO_WATCH' | 'WATCHING'; // Movies/Series (shares COMPLETED, DROPPED)
+export type MediaStatus =
+  | 'WANT_TO_READ'
+  | 'READING'
+  | 'COMPLETED'
+  | 'DROPPED' // Books
+  | 'WANT_TO_PLAY'
+  | 'PLAYING' // Games (shares COMPLETED, DROPPED)
+  | 'WANT_TO_WATCH'
+  | 'WATCHING'; // Movies/Series (shares COMPLETED, DROPPED)
 
 export interface MediaItem {
   id: string;
@@ -14,12 +21,16 @@ export interface MediaItem {
   rating: number | null;
   status: MediaStatus;
 
+  provider?: MediaProvider;
+  externalId?: string;
+  completedAt?: string;
+
   // Optional metadata
-  author?: string;       // Books
-  platform?: string;     // Games
-  releaseYear?: number;  // All
-  genres?: string[];     // All
-  review?: string;       // User review
+  author?: string; // Books
+  platform?: string; // Games
+  releaseYear?: number; // All
+  genres?: string[]; // All
+  review?: string; // User review
 
   // Timestamps
   createdAt: string;
@@ -37,13 +48,8 @@ export interface MediaFilters {
   genre: string | 'ALL';
 }
 
-export type SortBy = 
-  | 'date_added' 
-  | 'date_added_asc' 
-  | 'rating_desc' 
-  | 'rating_asc'
-  | 'title_asc' 
-  | 'title_desc';
+export type SortBy =
+  'date_added' | 'date_added_asc' | 'rating_desc' | 'rating_asc' | 'title_asc' | 'title_desc';
 
 // Search
 export interface SearchResult {

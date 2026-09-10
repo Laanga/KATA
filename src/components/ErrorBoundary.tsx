@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -68,11 +70,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle size={48} className="text-red-500" />
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-white">
-                Algo salió mal
-              </h1>
+              <h1 className="text-2xl font-bold text-white">Algo salió mal</h1>
               <p className="text-[var(--text-secondary)]">
                 Lo sentimos, ha ocurrido un error inesperado.
               </p>
@@ -80,9 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="text-left bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-sm">
-                <p className="text-red-400 font-mono mb-2">
-                  {this.state.error.toString()}
-                </p>
+                <p className="text-red-400 font-mono mb-2">{this.state.error.toString()}</p>
                 {this.state.errorInfo && (
                   <pre className="text-xs text-[var(--text-tertiary)] overflow-auto max-h-40">
                     {this.state.errorInfo.componentStack}
@@ -100,14 +98,13 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw size={16} />
                 Intentar de nuevo
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => window.location.href = '/'}
-                className="flex items-center gap-2"
+              <Link
+                href="/"
+                className="flex items-center gap-2 rounded-md px-4 py-2 hover:bg-white/10"
               >
                 <Home size={16} />
                 Ir al inicio
-              </Button>
+              </Link>
             </div>
           </div>
         </div>

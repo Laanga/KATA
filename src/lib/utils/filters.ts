@@ -19,10 +19,7 @@ function getStatusesForGroupedStatus(groupedStatus: GroupedStatus): string[] {
 /**
  * Filter media items based on filters
  */
-export function filterMediaItems(
-  items: MediaItem[],
-  filters: MediaFilters
-): MediaItem[] {
+export function filterMediaItems(items: MediaItem[], filters: MediaFilters): MediaItem[] {
   let filtered = [...items];
 
   // Filter by type
@@ -33,7 +30,7 @@ export function filterMediaItems(
   // Filter by status (support both grouped and individual statuses)
   if (filters.status !== 'ALL') {
     const statusFilter = filters.status;
-    
+
     // Check if it's a grouped status
     if (['WANT_TO_CONSUME', 'IN_PROGRESS', 'COMPLETED'].includes(statusFilter)) {
       const statuses = getStatusesForGroupedStatus(statusFilter as GroupedStatus);
@@ -47,8 +44,8 @@ export function filterMediaItems(
   // Filter by rating (0-5 scale)
   if (filters.rating !== 'ALL') {
     filtered = filtered.filter((item) => {
-      if (!item.rating) return false;
-      
+      if (item.rating === null) return false;
+
       switch (filters.rating) {
         case 'HIGH':
           return item.rating >= 4; // 4-5 estrellas
@@ -66,9 +63,7 @@ export function filterMediaItems(
   if (filters.genre !== 'ALL') {
     filtered = filtered.filter((item) => {
       if (!item.genres || item.genres.length === 0) return false;
-      return item.genres.some(genre => 
-        genre.toLowerCase() === filters.genre.toLowerCase()
-      );
+      return item.genres.some((genre) => genre.toLowerCase() === filters.genre.toLowerCase());
     });
   }
 
@@ -78,35 +73,32 @@ export function filterMediaItems(
 /**
  * Sort media items
  */
-export function sortMediaItems(
-  items: MediaItem[],
-  sortBy: SortBy
-): MediaItem[] {
+export function sortMediaItems(items: MediaItem[], sortBy: SortBy): MediaItem[] {
   const sorted = [...items];
 
   switch (sortBy) {
     case 'date_added':
       return sorted.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
-    
+
     case 'date_added_asc':
       return sorted.sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
-    
+
     case 'rating_desc':
       return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    
+
     case 'rating_asc':
       return sorted.sort((a, b) => (a.rating || 0) - (b.rating || 0));
-    
+
     case 'title_asc':
       return sorted.sort((a, b) => a.title.localeCompare(b.title));
-    
+
     case 'title_desc':
       return sorted.sort((a, b) => b.title.localeCompare(a.title));
-    
+
     default:
       return sorted;
   }
@@ -115,10 +107,7 @@ export function sortMediaItems(
 /**
  * Search media items by query
  */
-export function searchMediaItems(
-  items: MediaItem[],
-  query: string
-): MediaItem[] {
+export function searchMediaItems(items: MediaItem[], query: string): MediaItem[] {
   if (!query || query.length < 2) return items;
 
   const lowerQuery = query.toLowerCase();
@@ -134,7 +123,7 @@ export function searchMediaItems(
     if (item.platform?.toLowerCase().includes(lowerQuery)) return true;
 
     // Search in genres
-    if (item.genres?.some(genre => genre.toLowerCase().includes(lowerQuery))) return true;
+    if (item.genres?.some((genre) => genre.toLowerCase().includes(lowerQuery))) return true;
 
     return false;
   });

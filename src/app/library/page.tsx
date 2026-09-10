@@ -1,21 +1,22 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 
 import { useState } from 'react';
-import { KataCard } from "@/components/media/KataCard";
-import { FilterBar } from "@/components/library/FilterBar";
-import { EditItemModal } from "@/components/media/EditItemModal";
-import { useMediaStore, useFilteredItems } from "@/lib/store";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { LibrarySkeleton } from "@/components/ui/Skeleton";
-import { BookOpen, Grid3x3, List, Star, Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { AnimatedGrid } from "@/components/AnimatedGrid";
-import { FadeIn } from "@/components/FadeIn";
-import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
-import CollectionsSidebar from "@/components/collections/CollectionsSidebar";
-import CollectionsFilter from "@/components/collections/CollectionsFilter";
-import { TYPE_COLORS, TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/utils/constants";
-import type { MediaItem } from "@/types/media";
+import { KataCard } from '@/components/media/KataCard';
+import { FilterBar } from '@/components/library/FilterBar';
+import { EditItemModal } from '@/components/media/EditItemModal';
+import { useMediaStore, useFilteredItems } from '@/lib/store';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { LibrarySkeleton } from '@/components/ui/Skeleton';
+import { BookOpen, Grid3x3, List, Star, Edit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { AnimatedGrid } from '@/components/AnimatedGrid';
+import { FadeIn } from '@/components/FadeIn';
+import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
+import CollectionsSidebar from '@/components/collections/CollectionsSidebar';
+import CollectionsFilter from '@/components/collections/CollectionsFilter';
+import { TYPE_COLORS, TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/utils/constants';
+import type { MediaItem } from '@/types/media';
 
 export default function LibraryPage() {
   const router = useRouter();
@@ -29,11 +30,14 @@ export default function LibraryPage() {
 
   const stats = getStats();
 
-  const displayItems = selectedCollection === 'ALL'
-    ? filteredItems
-    : filteredItems.filter(item =>
-      getItemsByCollection(selectedCollection).some(collectionItem => collectionItem.id === item.id)
-    );
+  const displayItems =
+    selectedCollection === 'ALL'
+      ? filteredItems
+      : filteredItems.filter((item) =>
+          getItemsByCollection(selectedCollection).some(
+            (collectionItem) => collectionItem.id === item.id,
+          ),
+        );
 
   if (!isInitialized) {
     return <LibrarySkeleton />;
@@ -71,9 +75,7 @@ export default function LibraryPage() {
             <FadeIn direction="up" delay={0.1}>
               <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-emerald-400/90 bg-clip-text text-transparent leading-none mb-3">
-                    Tu Biblioteca
-                  </h1>
+                  <h1 className="kata-title-page">Tu Biblioteca</h1>
                   <p className="text-sm sm:text-base text-[var(--text-secondary)]">
                     Tu colección personal de medios
                   </p>
@@ -148,14 +150,18 @@ export default function LibraryPage() {
                 <FadeIn delay={0.3}>
                   <EmptyState
                     icon={<BookOpen />}
-                    title={selectedCollection !== 'ALL' ? "Colección vacía" : "No se encontraron elementos"}
+                    title={
+                      selectedCollection !== 'ALL'
+                        ? 'Colección vacía'
+                        : 'No se encontraron elementos'
+                    }
                     description={
                       selectedCollection !== 'ALL'
-                        ? "Esta colección aún no tiene elementos. Añade algunos desde las tarjetas de tus items."
-                        : "Intenta ajustar tus filtros o busca nuevos elementos para añadir a tu biblioteca."
+                        ? 'Esta colección aún no tiene elementos. Añade algunos desde las tarjetas de tus items.'
+                        : 'Intenta ajustar tus filtros o busca nuevos elementos para añadir a tu biblioteca.'
                     }
                     action={{
-                      label: "Comenzar a Buscar",
+                      label: 'Comenzar a Buscar',
                       onClick: () => router.push('/search'),
                     }}
                   />
@@ -170,7 +176,7 @@ export default function LibraryPage() {
                 <div className="space-y-3">
                   {displayItems.map((item, index) => (
                     <FadeIn key={item.id} delay={Math.min(index * 0.02, 0.4)}>
-                      <div className="liquid-glass-soft group flex items-center gap-4 p-3 sm:p-4 rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:scale-[1.005]">
+                      <div className="liquid-glass-soft group flex items-center gap-4 p-3 sm:p-4 rounded-[var(--kata-radius-card)] border border-white/10 hover:border-white/20 transition-all hover:scale-[1.005]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.coverUrl}
@@ -201,7 +207,9 @@ export default function LibraryPage() {
                           </div>
                           <h3 className="font-bold text-white mb-0.5 truncate">{item.title}</h3>
                           <p className="text-xs sm:text-sm text-[var(--text-tertiary)] truncate">
-                            {[item.author, item.platform, item.releaseYear].filter(Boolean).join(' · ')}
+                            {[item.author, item.platform, item.releaseYear]
+                              .filter(Boolean)
+                              .join(' · ')}
                           </p>
                         </div>
                         {item.rating !== null && (
@@ -210,14 +218,15 @@ export default function LibraryPage() {
                             {item.rating.toFixed(1)}
                           </div>
                         )}
-                        <button
+                        <Button
+                          variant="secondary"
                           onClick={() => setEditingItem(item)}
-                          className="liquid-glass-soft flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-xs sm:text-sm text-white hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
+
                           aria-label={`Editar ${item.title}`}
                         >
                           <Edit size={14} />
                           <span className="hidden sm:inline">Editar</span>
-                        </button>
+                        </Button>
                       </div>
                     </FadeIn>
                   ))}

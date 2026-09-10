@@ -1,9 +1,12 @@
 'use client';
+import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { isValidEmail, isValidUsername, isValidPassword } from '@/lib/utils/validation';
 
@@ -15,26 +18,8 @@ interface AuthFormProps {
   mode: 'login' | 'signup';
 }
 
-interface LoginResult {
-  data: { user: { email_confirmed_at?: string | null } | null };
-  error: AuthError | null;
-}
-
-interface User {
-  id: string;
-  email?: string;
-}
-
-interface Session {
-  access_token: string;
-}
-
-interface SignupResult {
-  data: { user: User | null; session: Session | null };
-  error: AuthError | null;
-}
-
 export const AuthForm = ({ mode }: AuthFormProps) => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -64,7 +49,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate email
     if (!isValidEmail(email)) {
       toast.error('Por favor ingresa un email válido');
@@ -86,7 +71,9 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
       // Validate username
       if (!isValidUsername(username)) {
-        toast.error('El nombre de usuario debe tener entre 3 y 30 caracteres y solo puede contener letras, números, guiones y guiones bajos');
+        toast.error(
+          'El nombre de usuario debe tener entre 3 y 30 caracteres y solo puede contener letras, números, guiones y guiones bajos',
+        );
         return;
       }
     }
@@ -96,16 +83,10 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     try {
       if (mode === 'login') {
         // Timeout para evitar que se quede colgado
-        const loginPromise = supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
-
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('La solicitud está tardando demasiado. Por favor intenta de nuevo.')), 10000)
-        );
-
-        const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as LoginResult;
 
         if (error) throw error;
 
@@ -114,21 +95,19 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           toast.error('Por favor verifica tu email antes de iniciar sesión');
           setIsLoading(false);
           // Pequeño delay para que el toast se muestre
-          setTimeout(() => {
-            window.location.href = '/verify-email';
-          }, 1000);
+          router.replace('/verify-email');
+          router.refresh();
           return;
         }
 
         toast.success('¡Bienvenido de vuelta!');
         setIsLoading(false);
         // Usar window.location para forzar navegación completa y cargar el estado de auth
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, 1000);
+        router.replace('/home');
+        router.refresh();
       } else {
         // Timeout para evitar que se quede colgado
-        const signupPromise = supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
@@ -139,28 +118,22 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           },
         });
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('La solicitud está tardando demasiado. Por favor intenta de nuevo.')), 10000)
-        );
-
-        const { data, error } = await Promise.race([signupPromise, timeoutPromise]) as SignupResult;
-
         if (error) throw error;
+
+        sessionStorage.setItem('kata:pending-email', email.trim());
 
         // Si el email requiere verificación
         if (data.user && !data.session) {
           toast.success('¡Cuenta creada! Por favor verifica tu email antes de iniciar sesión.');
           setIsLoading(false);
           // Redirigir a página de verificación pendiente
-          setTimeout(() => {
-            window.location.href = '/verify-email';
-          }, 1000);
+          router.replace('/verify-email');
+          router.refresh();
         } else {
           toast.success('¡Cuenta creada con éxito!');
           setIsLoading(false);
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 1000);
+          router.replace('/home');
+          router.refresh();
         }
       }
     } catch (error) {
@@ -179,7 +152,6 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     }
   };
 
-
   return (
     <div className="w-full space-y-8">
       <div className="text-center">
@@ -187,9 +159,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           {mode === 'login' ? 'Bienvenido de nuevo' : 'Únete a Kata'}
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          {mode === 'login'
-            ? '¿No tienes cuenta? '
-            : '¿Ya tienes cuenta? '}
+          {mode === 'login' ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
           <Link
             href={mode === 'login' ? '/signup' : '/login'}
             className="font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -199,14 +169,17 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+      <form method="post" onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div className="space-y-4">
           {mode === 'signup' && (
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+              >
                 Nombre de Usuario
               </label>
-              <input
+              <TextInput
                 id="username"
                 name="username"
                 type="text"
@@ -214,17 +187,20 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                className="w-full"
                 placeholder="Tu nombre"
               />
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+            >
               Email
             </label>
-            <input
+            <TextInput
               id="email"
               name="email"
               type="email"
@@ -232,14 +208,17 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)]">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-[var(--text-secondary)]"
+              >
                 Contraseña
               </label>
               {mode === 'login' && (
@@ -251,7 +230,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
                 </a>
               )}
             </div>
-            <input
+            <TextInput
               id="password"
               name="password"
               type="password"
@@ -259,17 +238,20 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full"
               placeholder="••••••••"
             />
           </div>
 
           {mode === 'signup' && (
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+              >
                 Confirmar Contraseña
               </label>
-              <input
+              <TextInput
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
@@ -277,24 +259,22 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                className="w-full"
                 placeholder="••••••••"
               />
             </div>
           )}
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={isLoading || isGoogleLoading}
-          className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+          size="lg"
+          variant="primary"
+          className="w-full"
         >
-          {isLoading
-            ? 'Cargando...'
-            : mode === 'login'
-            ? 'Iniciar Sesión'
-            : 'Crear Cuenta'}
-        </button>
+          {isLoading ? 'Cargando...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+        </Button>
       </form>
 
       {/* Divider */}
@@ -310,11 +290,13 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       </div>
 
       {/* Google OAuth Button */}
-      <button
+      <Button
         type="button"
         onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
-        className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        size="lg"
+        variant="secondary"
+        className="w-full"
       >
         {isGoogleLoading ? (
           <>
@@ -344,7 +326,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
             <span>Continuar con Google</span>
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 };

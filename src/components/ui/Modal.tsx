@@ -1,12 +1,9 @@
 'use client';
-
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { IconButton } from './Button';
 import { cn } from '@/lib/utils/cn';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,146 +11,67 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
-
+// Native modal dialogs provide focus containment, inert background and focus return.
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-
-  // Prevent body scroll when modal is open
+  const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      
-      // Lock body scroll
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-
-      return () => {
-        // Restore body scroll
-        const scrollY = document.body.style.top;
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      };
-    }
+    const dialog = ref.current;
+    if (!isOpen || !dialog) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      dialog.close();
+      document.body.style.overflow = overflow;
+      previous?.focus();
+    };
   }, [isOpen]);
-
-  // GSAP Animation
-  useGSAP(() => {
-    if (isOpen) {
-      // Open animation
-      gsap.fromTo(
-        overlayRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.2, ease: 'power2.out' }
-      );
-      gsap.fromTo(
-        contentRef.current,
-        { scale: 0.9, opacity: 0, y: 20 },
-        { scale: 1, opacity: 1, y: 0, duration: 0.3, ease: 'back.out(1.7)' }
-      );
-    }
-  }, [isOpen]);
-
-  const handleClose = () => {
-    // Close animation
-    gsap.to(overlayRef.current, {
-      opacity: 0,
-      duration: 0.2,
-      onComplete: onClose,
-    });
-    gsap.to(contentRef.current, {
-      scale: 0.9,
-      opacity: 0,
-      y: 20,
-      duration: 0.2,
-    });
-  };
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-  };
-
-  const modalContent = (
-    <div 
-      className="fixed inset-0 z-50 overflow-hidden"
-      role="dialog" 
-      aria-modal="true"
+  if (!isOpen || typeof document === 'undefined') return null;
+  const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
+  return createPortal(
+    <dialog
+      ref={ref}
+      aria-labelledby={titleId}
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="m-0 h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-white backdrop:bg-black/70 backdrop:backdrop-blur-sm open:flex open:items-end sm:open:items-center open:justify-center sm:p-6"
     >
-      {/* Overlay */}
       <div
-        ref={overlayRef}
-        className="absolute inset-0 bg-black/60 backdrop-blur-md"
-        onClick={handleOverlayClick}
-      />
-
-      {/* Modal Container: bottom-sheet en móvil, centrado en escritorio */}
-      <div className="relative h-full flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden">
-        {/* Content */}
-        <div
-          ref={contentRef}
-          className={cn(
-            'liquid-glass relative w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col rounded-t-3xl rounded-b-none sm:rounded-3xl border border-white/10 shadow-2xl',
-            sizeClasses[size]
-          )}
-        >
-          {/* Asa de bottom-sheet (solo móvil) */}
-          <div className="sm:hidden flex justify-center pt-2.5 flex-shrink-0">
-            <div className="h-1 w-10 rounded-full bg-white/20" />
-          </div>
-
-          {/* Header */}
-          {title && (
-            <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
-              <h2 className="text-lg sm:text-xl font-bold text-white">{title}</h2>
-              <button
-                onClick={handleClose}
-                className="rounded-full p-1.5 sm:p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/10 hover:text-white"
-                aria-label="Cerrar modal"
-              >
-                <X size={18} className="sm:w-5 sm:h-5" />
-              </button>
-            </div>
-          )}
-
-          {/* Body - Scrollable */}
-          <div
-            ref={bodyRef}
-            className="px-4 py-4 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain sm:px-6 sm:py-6"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)',
-            }}
-            onWheel={(e) => {
-              // Ensure wheel events work on this element
-              e.stopPropagation();
-            }}
+        className={cn(
+          'kata-dialog-panel w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col max-sm:rounded-b-none',
+          sizes[size],
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 shrink-0">
+          <h2 id={titleId} className={title ? 'kata-title-dialog' : 'sr-only'}>
+            {title || 'Confirmación'}
+          </h2>
+          <IconButton
+            type="button"
+            autoFocus
+            onClick={onClose}
+            label="Cerrar diálogo"
+            className="ml-auto"
           >
-            {children}
-          </div>
+            <X size={20} />
+          </IconButton>
+        </div>
+        <div
+          className="overflow-y-auto overscroll-contain px-5 py-5 sm:px-6"
+          data-lenis-prevent
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1.5rem)' }}
+        >
+          {children}
         </div>
       </div>
-    </div>
+    </dialog>,
+    document.body,
   );
-
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(modalContent, document.body);
 }

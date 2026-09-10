@@ -1,9 +1,9 @@
 'use client';
 
-import { FadeIn } from "@/components/FadeIn";
-import { useMediaStore } from "@/lib/store";
-import { TYPE_LABELS } from "@/lib/utils/constants";
-import { MediaType } from "@/types/media";
+import { FadeIn } from '@/components/FadeIn';
+import { useMediaStore } from '@/lib/store';
+import { TYPE_LABELS } from '@/lib/utils/constants';
+import { MediaType } from '@/types/media';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = {
@@ -75,17 +75,20 @@ const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: Cu
 export function TypeComparison() {
   const items = useMediaStore((state) => state.items);
 
-  const byType = items.reduce((acc, item) => {
-    acc[item.type] = (acc[item.type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byType = items.reduce(
+    (acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const total = Object.values(byType).reduce((a, b) => a + b, 0);
 
   if (total === 0) {
     return (
       <FadeIn delay={0.2}>
-        <div className="bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-6">
+        <div className="liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6">
           <h3 className="text-lg font-semibold mb-4">Distribución por Tipo</h3>
           <p className="text-sm text-[var(--text-tertiary)] text-center py-8">
             No hay datos para mostrar
@@ -106,11 +109,11 @@ export function TypeComparison() {
 
   return (
     <FadeIn delay={0.2}>
-      <div className="group bg-[var(--bg-secondary)] border border-white/5 rounded-2xl p-6 hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative overflow-hidden">
+      <div className="group liquid-glass border border-[var(--kata-border)] rounded-[var(--kata-radius-card)] p-6 hover:border-emerald-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] relative overflow-hidden">
         {/* Glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0 group-hover:from-emerald-500/5 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
         <h3 className="text-lg font-semibold mb-6 relative z-10">Distribución por Tipo</h3>
-        
+
         <div className="h-64 relative z-10">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart key={`chart-${total}-${data.length}`}>
@@ -138,20 +141,16 @@ export function TypeComparison() {
 
         <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
           {data.map((item, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-default"
             >
               <div
                 className="w-3 h-3 rounded-full shadow-lg"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-sm text-[var(--text-secondary)] flex-1">
-                {item.name}
-              </span>
-              <span className="text-sm font-medium text-white">
-                {item.value}
-              </span>
+              <span className="text-sm text-[var(--text-secondary)] flex-1">{item.name}</span>
+              <span className="text-sm font-medium text-white">{item.value}</span>
             </div>
           ))}
         </div>

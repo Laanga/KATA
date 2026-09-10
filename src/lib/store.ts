@@ -3,6 +3,7 @@ import { MediaItem, MediaFilters, SortBy } from '@/types/media';
 import { filterMediaItems, sortMediaItems, searchMediaItems } from '@/lib/utils/filters';
 import { mediaDb } from '@/lib/supabase/database';
 import { collectionsDb } from '@/lib/supabase/collections';
+import type { LibraryBackup } from '@/lib/utils/libraryTransfer';
 import type { Collection, CreateCollectionInput, UpdateCollectionInput } from '@/types/collections';
 
 interface MediaStore {
@@ -15,6 +16,11 @@ interface MediaStore {
   searchQuery: string;
   isLoading: boolean;
   isInitialized: boolean;
+  error: string | null;
+  userId: string | null;
+  reset: (userId?: string | null) => void;
+  clearLibrary: () => Promise<void>;
+  importLibrary: (backup: LibraryBackup, replace?: boolean) => Promise<number>;
 
   // Actions
   initialize: () => Promise<void>;
@@ -55,6 +61,9 @@ const DEFAULT_FILTERS: MediaFilters = {
   genre: 'ALL',
 };
 
+let sessionVersion = 0;
+let initialization: Promise<void> | null = null;
+
 export const useMediaStore = create<MediaStore>()((set, get) => ({
   // Initial State
   items: [],
@@ -65,173 +74,213 @@ export const useMediaStore = create<MediaStore>()((set, get) => ({
   searchQuery: '',
   isLoading: false,
   isInitialized: false,
-
-  // Initialize - Load data from Supabase
-  initialize: async () => {
-    if (get().isInitialized) return;
-    
-    set({ isLoading: true });
-    try {
-      const [items, collections] = await Promise.all([
-        mediaDb.getAll(),
-        collectionsDb.getAll(),
-      ]);
-
-      // Load item IDs for each collection
-      const collectionItemIds: Record<string, string[]> = {};
-      await Promise.all(
-        collections.map(async (collection) => {
-          const itemIds = await collectionsDb.getMediaItemIdsForCollection(collection.id);
-          collectionItemIds[collection.id] = itemIds;
-        })
-      );
-
-      set({ items, collections, collectionItemIds, isInitialized: true });
-    } catch (error) {
-      console.error('Failed to initialize store:', error);
-      set({ items: [], collections: [], collectionItemIds: {}, isInitialized: true });
-    } finally {
-      set({ isLoading: false });
-    }
+  error: null,
+  userId: null,
+  reset: (userId = null) => {
+    sessionVersion++;
+    initialization = null;
+    set({
+      items: [],
+      collections: [],
+      collectionItemIds: {},
+      isInitialized: false,
+      isLoading: false,
+      error: null,
+      userId,
+      filters: DEFAULT_FILTERS,
+      searchQuery: '',
+      sortBy: 'date_added',
+    });
   },
 
-  // Refresh items from database
+  initialize: async () => {
+    if (get().isInitialized) return;
+    if (initialization) return initialization;
+    const version = sessionVersion;
+    set({ isLoading: true, error: null });
+    const request = (async () => {
+      try {
+        const [items, collections, collectionItemIds] = await Promise.all([
+          mediaDb.getAll(),
+          collectionsDb.getAll(),
+          collectionsDb.getRelationships(),
+        ]);
+        if (version === sessionVersion)
+          set({ items, collections, collectionItemIds, isInitialized: true });
+      } catch (error) {
+        if (version === sessionVersion)
+          set({ error: 'No hemos podido cargar tu biblioteca. Inténtalo de nuevo.' });
+        throw error;
+      } finally {
+        if (version === sessionVersion) {
+          set({ isLoading: false });
+          initialization = null;
+        }
+      }
+    })();
+    initialization = request;
+    return request;
+  },
+
   refreshItems: async () => {
-    set({ isLoading: true });
-    try {
-      const items = await mediaDb.getAll();
-      set({ items });
-    } catch (error) {
-      console.error('Failed to refresh items:', error);
-    } finally {
-      set({ isLoading: false });
+    const version = sessionVersion;
+    const [items, collections, collectionItemIds] = await Promise.all([
+      mediaDb.getAll(),
+      collectionsDb.getAll(),
+      collectionsDb.getRelationships(),
+    ]);
+    if (version === sessionVersion)
+      set({ items, collections, collectionItemIds, error: null, isInitialized: true });
+  },
+
+  clearLibrary: async () => {
+    const version = sessionVersion;
+    await mediaDb.clear();
+    if (version === sessionVersion) set({ items: [], collectionItemIds: {} });
+  },
+
+  importLibrary: async (backup, replace = false) => {
+    const version = sessionVersion;
+    const imported = await mediaDb.import(backup, replace);
+    if (version === sessionVersion) {
+      try {
+        await get().refreshItems();
+      } catch {
+        set({
+          error:
+            'La importación se ha guardado, pero no pudimos actualizar la vista. Recarga para verla.',
+        });
+        throw new Error('Importación guardada. Recarga la biblioteca para verla.');
+      }
     }
+    return imported;
   },
 
   // Actions
   setItems: (items) => set({ items }),
 
   addItem: async (item) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       const newItem = await mediaDb.create(item);
-      set((state) => ({
-        items: [newItem, ...state.items],
-        isLoading: false,
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          items: [newItem, ...state.items],
+        }));
       return newItem;
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   updateItem: async (id, updates) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       const updatedItem = await mediaDb.update(id, updates);
-      set((state) => ({
-        items: state.items.map((item) =>
-          item.id === id ? updatedItem : item
-        ),
-        isLoading: false,
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          items: state.items.map((item) => (item.id === id ? updatedItem : item)),
+        }));
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   deleteItem: async (id) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       await mediaDb.delete(id);
-      set((state) => ({
-        items: state.items.filter((item) => item.id !== id),
-        isLoading: false,
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+          collectionItemIds: Object.fromEntries(
+            Object.entries(state.collectionItemIds).map(([key, ids]) => [
+              key,
+              ids.filter((itemId) => itemId !== id),
+            ]),
+          ),
+        }));
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   // Collection Actions
   createCollection: async (input) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       const newCollection = await collectionsDb.create(input);
-      set((state) => ({
-        collections: [newCollection, ...state.collections],
-        collectionItemIds: { ...state.collectionItemIds, [newCollection.id]: [] },
-        isLoading: false,
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          collections: [newCollection, ...state.collections],
+          collectionItemIds: { ...state.collectionItemIds, [newCollection.id]: [] },
+        }));
       return newCollection;
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   updateCollection: async (id, input) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       const updatedCollection = await collectionsDb.update(id, input);
-      set((state) => ({
-        collections: state.collections.map((c) =>
-          c.id === id ? updatedCollection : c
-        ),
-        isLoading: false,
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          collections: state.collections.map((c) => (c.id === id ? updatedCollection : c)),
+        }));
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   deleteCollection: async (id) => {
-    set({ isLoading: true });
+    const version = sessionVersion;
     try {
       await collectionsDb.delete(id);
-      set((state) => {
-        const { [id]: _, ...remainingItemIds } = state.collectionItemIds;
-        return {
-          collections: state.collections.filter((c) => c.id !== id),
-          collectionItemIds: remainingItemIds,
-          isLoading: false,
-        };
-      });
+      if (version === sessionVersion)
+        set((state) => {
+          const remainingItemIds = { ...state.collectionItemIds };
+          delete remainingItemIds[id];
+          return {
+            collections: state.collections.filter((c) => c.id !== id),
+            collectionItemIds: remainingItemIds,
+          };
+        });
     } catch (error) {
-      set({ isLoading: false });
       throw error;
     }
   },
 
   addItemToCollection: async (itemId, collectionId) => {
+    const version = sessionVersion;
     try {
       await collectionsDb.addItemToCollection(itemId, collectionId);
-      set((state) => ({
-        collectionItemIds: {
-          ...state.collectionItemIds,
-          [collectionId]: [...(state.collectionItemIds[collectionId] || []), itemId],
-        },
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          collectionItemIds: {
+            ...state.collectionItemIds,
+            [collectionId]: [...(state.collectionItemIds[collectionId] || []), itemId],
+          },
+        }));
     } catch (error) {
       throw error;
     }
   },
 
   removeItemFromCollection: async (itemId, collectionId) => {
+    const version = sessionVersion;
     try {
       await collectionsDb.removeItemFromCollection(itemId, collectionId);
-      set((state) => ({
-        collectionItemIds: {
-          ...state.collectionItemIds,
-          [collectionId]: (state.collectionItemIds[collectionId] || []).filter(
-            (id) => id !== itemId
-          ),
-        },
-      }));
+      if (version === sessionVersion)
+        set((state) => ({
+          collectionItemIds: {
+            ...state.collectionItemIds,
+            [collectionId]: (state.collectionItemIds[collectionId] || []).filter(
+              (id) => id !== itemId,
+            ),
+          },
+        }));
     } catch (error) {
       throw error;
     }
@@ -263,15 +312,21 @@ export const useMediaStore = create<MediaStore>()((set, get) => ({
   getStats: () => {
     const items = get().items;
 
-    const byType = items.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = items.reduce(
+      (acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const byStatus = items.reduce((acc, item) => {
-      acc[item.status] = (acc[item.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byStatus = items.reduce(
+      (acc, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const ratingsSum = items
       .filter((item) => item.rating !== null)

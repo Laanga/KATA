@@ -1,4 +1,5 @@
 'use client';
+import { TextInput } from '@/components/ui/Field';
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -14,20 +15,24 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState<string>('');
   const [isResending, setIsResending] = useState(false);
   const supabase = createClient();
-  
+
   const kanjiRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);  
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setEmail(user.email || '');
+      } else {
+        setEmail(sessionStorage.getItem('kata:pending-email') || '');
       }
     };
     getUser();
@@ -36,6 +41,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (!mounted) return;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = gsap.context(() => {
       // Animación del kanji
       gsap.fromTo(
@@ -51,7 +57,7 @@ export default function VerifyEmailPage() {
           rotateY: 0,
           duration: 1.5,
           ease: 'elastic.out(1, 0.5)',
-        }
+        },
       );
 
       // Animación continua del kanji (flotando)
@@ -67,7 +73,7 @@ export default function VerifyEmailPage() {
       gsap.fromTo(
         '.verify-content',
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, delay: 0.3, ease: 'power3.out' }
+        { y: 0, opacity: 1, duration: 0.8, delay: 0.3, ease: 'power3.out' },
       );
 
       // Rotación del glow
@@ -83,8 +89,8 @@ export default function VerifyEmailPage() {
   }, [mounted]);
 
   const handleResendEmail = async () => {
-    if (!email) {
-      toast.error('No se pudo obtener tu email');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error('Introduce un correo válido');
       return;
     }
 
@@ -92,7 +98,7 @@ export default function VerifyEmailPage() {
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email,
+        email: email.trim(),
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -111,14 +117,17 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="min-h-screen relative overflow-hidden flex items-center justify-center p-4"
     >
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
       </div>
 
       <div className="relative z-10 w-full max-w-2xl">
@@ -129,10 +138,10 @@ export default function VerifyEmailPage() {
             <div className="kanji-glow absolute inset-0 blur-3xl opacity-30">
               <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 via-emerald-400/40 to-transparent rounded-full" />
             </div>
-            
+
             {/* Kanji character */}
             <div ref={kanjiRef} style={{ perspective: '1000px' }}>
-              <span 
+              <span
                 className="relative block text-[clamp(80px,20vw,160px)] font-bold leading-none select-none"
                 style={{
                   background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%)',
@@ -156,20 +165,29 @@ export default function VerifyEmailPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/10 mb-4">
                 <Mail size={32} className="text-emerald-400" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                Verifica tu Email
-              </h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Verifica tu Email</h1>
               <p className="text-[var(--text-secondary)] text-lg">
                 Hemos enviado un enlace de verificación a tu correo
               </p>
             </div>
 
-            {/* Email Display */}
-            {email && (
-              <div className="bg-[var(--bg-tertiary)] border border-white/5 rounded-xl p-5 mb-8 text-center">
-                <p className="text-emerald-400 font-medium text-lg break-all">{email}</p>
-              </div>
-            )}
+            <div className="mb-8">
+              <label htmlFor="verification-email" className="block text-sm mb-2">
+                Correo de tu cuenta
+              </label>
+              <TextInput
+                id="verification-email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+                placeholder="tu@email.com"
+              />
+              <p className="text-xs text-[var(--text-secondary)] mt-2">
+                Puedes corregirlo para reenviar el enlace de verificación.
+              </p>
+            </div>
 
             {/* Instructions */}
             <div className="space-y-4 mb-8">
@@ -221,7 +239,10 @@ export default function VerifyEmailPage() {
               </Button>
 
               <Link href="/login" className="block">
-                <Button variant="ghost" className="w-full h-12 flex items-center justify-center gap-2">
+                <Button
+                  variant="ghost"
+                  className="w-full h-12 flex items-center justify-center gap-2"
+                >
                   <ArrowLeft size={18} />
                   Volver al Login
                 </Button>

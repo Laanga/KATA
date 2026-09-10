@@ -10,7 +10,7 @@ export default function SignupPage() {
       {/* Background */}
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -30,7 +30,10 @@ export default function SignupPage() {
       </Link>
 
       {/* Logo */}
-      <Link href="/" className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <Link
+        href="/"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
+      >
         <span className="text-3xl text-emerald-400">型</span>
         <span className="text-xl font-bold text-white">Kata</span>
       </Link>

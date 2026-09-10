@@ -8,10 +8,7 @@ interface HorizontalScrollProps {
   showArrows?: boolean;
 }
 
-export function HorizontalScroll({ 
-  children, 
-  showArrows = true, 
-}: HorizontalScrollProps) {
+export function HorizontalScroll({ children, showArrows = true }: HorizontalScrollProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -31,7 +28,7 @@ export function HorizontalScroll({
 
     checkScrollability();
     el.addEventListener('scroll', checkScrollability);
-    
+
     // Observer para detectar cambios en el contenido
     const resizeObserver = new ResizeObserver(checkScrollability);
     resizeObserver.observe(el);
@@ -78,9 +75,10 @@ export function HorizontalScroll({
               border border-white/10 shadow-lg
               hidden sm:flex items-center justify-center
               transition-all duration-300
-              ${canScrollLeft 
-                ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]' 
-                : 'opacity-0 pointer-events-none'
+              ${
+                canScrollLeft
+                  ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]'
+                  : 'opacity-0 pointer-events-none'
               }
             `}
             aria-label="Scroll left"
@@ -96,9 +94,10 @@ export function HorizontalScroll({
               border border-white/10 shadow-lg
               hidden sm:flex items-center justify-center
               transition-all duration-300
-              ${canScrollRight 
-                ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]' 
-                : 'opacity-0 pointer-events-none'
+              ${
+                canScrollRight
+                  ? 'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-[var(--bg-tertiary)]'
+                  : 'opacity-0 pointer-events-none'
               }
             `}
             aria-label="Scroll right"
