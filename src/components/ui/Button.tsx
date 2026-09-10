@@ -3,7 +3,8 @@ import type { ComponentProps } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'warning';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'warning' | 'rating';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export function buttonStyles({
   variant = 'primary',

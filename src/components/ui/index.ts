@@ -9,3 +9,5 @@ export { ToastProvider } from './ToastProvider';
 export { TextInput, TextArea, NativeSelect, FileInput } from './Field';
 export { Chip, RadioChoice, ColorSwatch, Checkbox, FilePicker } from './Choice';
 export { Panel } from './Panel';
+
+export { StarRating } from './StarRating';

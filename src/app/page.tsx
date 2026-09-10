@@ -4,7 +4,6 @@ import { ButtonLink } from '@/components/ui/Button';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Link from 'next/link';
 import {
   BookOpen,
   Gamepad2,
@@ -338,16 +337,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl text-emerald-400">型</span>
-            <span className="text-lg font-bold text-white">Kata</span>
+            <span className="hidden min-[380px]:inline text-lg font-bold text-white">Kata</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-white transition-colors"
-            >
-              Iniciar Sesión
-            </Link>
-            <ButtonLink size="lg" variant="primary" href="/signup" className="group">
+          <div className="flex items-center gap-1 sm:gap-3">
+            <ButtonLink size="sm" variant="ghost" href="/login">
+              Iniciar sesión
+            </ButtonLink>
+            <ButtonLink size="sm" variant="primary" href="/signup">
               Registrarse
             </ButtonLink>
           </div>
@@ -408,7 +404,6 @@ export default function LandingPage() {
               Comenzar Gratis
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
           </ButtonLink>
 
           <ButtonLink size="lg" variant="secondary" href="/login" className="group">

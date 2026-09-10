@@ -105,3 +105,21 @@ it('keeps optional notes collapsed in the guided first save, without requiring a
     ),
   );
 });
+
+it('saves a new title with the clicked whole-star score, including zero', async () => {
+  const addItem = vi.fn().mockResolvedValue(item);
+  useMediaStore.setState({ addItem });
+  render(
+    <AddItemModal
+      isOpen
+      onClose={vi.fn()}
+      prefilledType="BOOK"
+      initialData={{ title: 'Rated book' }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: '5 estrellas' }));
+  expect(addItem).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: '0 estrellas' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Añadir a Biblioteca' }));
+  await waitFor(() => expect(addItem).toHaveBeenCalledWith(expect.objectContaining({ rating: 0 })));
+});

@@ -506,3 +506,36 @@
     overflow-wrap: anywhere;
   }
 }
+
+@layer components {
+  .kata-button--rating {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+  }
+  .kata-button--rating[aria-pressed='true'] {
+    background: transparent;
+    border-color: transparent;
+  }
+  .kata-button--rating:hover {
+    background: var(--kata-surface-soft);
+  }
+  .kata-rating-icon {
+    color: var(--text-tertiary);
+    fill: transparent;
+    transition:
+      color var(--kata-duration),
+      fill var(--kata-duration);
+  }
+  .kata-rating-icon[data-filled='true'] {
+    color: var(--accent-warning);
+    fill: currentColor;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kata-rating-icon {
+      transition: none;
+    }
+  }
+}

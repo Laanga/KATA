@@ -53,3 +53,5 @@ La regla de ESLint `no-restricted-syntax` impide añadir botones, inputs, select
 - `kata-popover`, `kata-icon-well`, `kata-notice`: menús, iconos y mensajes de información, advertencia o error. Las notificaciones flotantes usan los mismos tokens.
 
 La paleta por categoría, los gráficos, los avatares, las insignias y las ilustraciones de portada conservan su significado visual. No son familias alternativas de botones o formularios.
+
+La valoración usa `StarRating`: cinco estrellas pulsables, puntuaciones enteras de 0 a 5 y una acción independiente para quitar la puntuación. No sustituirlo por un desplegable ni añadir medias estrellas.

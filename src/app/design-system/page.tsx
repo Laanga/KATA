@@ -6,9 +6,11 @@ import { Button, IconButton, ActionButton, MediaButton } from '@/components/ui/B
 import { TextInput, TextArea, NativeSelect } from '@/components/ui/Field';
 import { Chip, RadioChoice, ColorSwatch, Checkbox, FilePicker } from '@/components/ui/Choice';
 import { Panel } from '@/components/ui/Panel';
+import { StarRating } from '@/components/ui/StarRating';
 import { Modal } from '@/components/ui/Modal';
 
 export default function DesignSystemPage() {
+  const [rating, setRating] = useState<number | null>(null);
   const [color, setColor] = useState('#10B981');
   const [fileName, setFileName] = useState('Selecciona una copia JSON');
   const [open, setOpen] = useState(false);
@@ -89,6 +91,7 @@ export default function DesignSystemPage() {
         </Panel>
         <Panel className="space-y-5">
           <h2 className="kata-title-section">Selección</h2>
+          <StarRating value={rating} onChange={setRating} />
           <div className="flex flex-wrap gap-2" aria-label="Filtrar por estado">
             {['Todos', 'Pendientes', 'Completados'].map((value) => (
               <Chip key={value} selected={filter === value} onClick={() => setFilter(value)}>
