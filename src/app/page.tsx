@@ -352,7 +352,7 @@ export default function LandingPage() {
 
       <section
         ref={heroRef}
-        className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-4 pt-28 pb-20 sm:pt-32"
+        className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-4 pt-28 pb-8 sm:pt-32"
       >
         <div ref={kanjiContainerRef} className="relative mb-4 sm:mb-6">
           <div ref={kanjiRef} style={{ perspective: '1000px' }}>
@@ -411,7 +411,7 @@ export default function LandingPage() {
           </ButtonLink>
         </div>
 
-        <div className="scroll-indicator absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
+        <div className="scroll-indicator mt-8 flex flex-col items-center gap-2 text-[var(--text-tertiary)]">
           <span className="text-[10px] sm:text-xs uppercase tracking-widest">Descubre más</span>
           <div className="w-px h-8 bg-gradient-to-b from-emerald-500/50 to-transparent animate-pulse" />
         </div>
