@@ -11,6 +11,10 @@ interface Particle {
   opacity: number;
 }
 
+const LINK_DISTANCE = 100;
+const LINK_DISTANCE_SQ = LINK_DISTANCE * LINK_DISTANCE;
+const LINE_BUCKETS = 8;
+
 export function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -52,6 +56,8 @@ export function ParticleBackground() {
 
     createParticles();
 
+    const linePaths: number[][] = Array.from({ length: LINE_BUCKETS }, () => []);
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -81,22 +87,32 @@ export function ParticleBackground() {
         ctx.fill();
       });
 
-      particles.forEach((particle, i) => {
+      // Conexiones agrupadas por nivel de opacidad: unos pocos stroke() por frame en lugar
+      // de uno por línea, y distancia al cuadrado para descartar pares lejanos sin sqrt.
+      for (const path of linePaths) path.length = 0;
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
         for (let j = i + 1; j < particles.length; j++) {
           const other = particles[j];
           const dx = other.x - particle.x;
           const dy = other.y - particle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 100) {
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(other.x, other.y);
-            ctx.strokeStyle = `rgba(16, 185, 129, ${0.1 * (1 - distance / 100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+          const distanceSq = dx * dx + dy * dy;
+          if (distanceSq >= LINK_DISTANCE_SQ) continue;
+          const strength = 1 - Math.sqrt(distanceSq) / LINK_DISTANCE;
+          const bucket = Math.min(LINE_BUCKETS - 1, Math.floor(strength * LINE_BUCKETS));
+          linePaths[bucket].push(particle.x, particle.y, other.x, other.y);
         }
+      }
+      ctx.lineWidth = 0.5;
+      linePaths.forEach((path, bucket) => {
+        if (!path.length) return;
+        ctx.beginPath();
+        for (let k = 0; k < path.length; k += 4) {
+          ctx.moveTo(path[k], path[k + 1]);
+          ctx.lineTo(path[k + 2], path[k + 3]);
+        }
+        ctx.strokeStyle = `rgba(16, 185, 129, ${(0.1 * (bucket + 0.5)) / LINE_BUCKETS})`;
+        ctx.stroke();
       });
 
       animationRef.current = requestAnimationFrame(animate);

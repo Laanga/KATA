@@ -21,24 +21,20 @@ import type { MediaItem } from '@/types/media';
 
 export default function LibraryPage() {
   const router = useRouter();
-  const getStats = useMediaStore((state) => state.getStats);
-  const getItemsByCollection = useMediaStore((state) => state.getItemsByCollection);
+  const totalItems = useMediaStore((state) => state.items.length);
+  const collectionItemIds = useMediaStore((state) => state.collectionItemIds);
   const filteredItems = useFilteredItems();
   const isInitialized = useMediaStore((state) => state.isInitialized);
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<string | 'ALL'>('ALL');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const stats = getStats();
-
-  const displayItems =
-    selectedCollection === 'ALL'
-      ? filteredItems
-      : filteredItems.filter((item) =>
-          getItemsByCollection(selectedCollection).some(
-            (collectionItem) => collectionItem.id === item.id,
-          ),
-        );
+  // Set de ids para filtrar por colección en O(n) en lugar de recorrer la colección por cada item.
+  const collectionIds =
+    selectedCollection === 'ALL' ? null : new Set(collectionItemIds[selectedCollection] || []);
+  const displayItems = collectionIds
+    ? filteredItems.filter((item) => collectionIds.has(item.id))
+    : filteredItems;
 
   if (!isInitialized) {
     return <LibrarySkeleton />;
@@ -85,7 +81,7 @@ export default function LibraryPage() {
                 <div className="liquid-glass-soft inline-flex items-center gap-2 self-start sm:self-end px-4 py-2 rounded-full border border-white/10 text-sm">
                   <span className="text-white font-semibold">{displayItems.length}</span>
                   <span className="text-[var(--text-tertiary)]">de</span>
-                  <span className="text-[var(--text-secondary)]">{stats.total}</span>
+                  <span className="text-[var(--text-secondary)]">{totalItems}</span>
                   {selectedCollection !== 'ALL' && (
                     <span className="text-[var(--text-tertiary)] text-xs ml-1">en colección</span>
                   )}
@@ -174,6 +170,8 @@ export default function LibraryPage() {
                         <img
                           src={item.coverUrl}
                           alt={item.title}
+                          loading="lazy"
+                          decoding="async"
                           className="h-20 w-14 sm:h-24 sm:w-16 rounded-lg object-cover flex-shrink-0 ring-1 ring-white/10"
                         />
                         <div className="flex-1 min-w-0">

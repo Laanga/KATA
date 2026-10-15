@@ -97,7 +97,7 @@ async function fetchFromGoogleBooks(
           googleUrl.searchParams.set('key', apiKey);
         }
 
-        const response = await providerFetch(googleUrl.toString());
+        const response = await providerFetch(googleUrl.toString(), { next: { revalidate: 3600 } });
 
         if (response.ok) {
           const data = await response.json();
@@ -160,12 +160,12 @@ async function fetchFromOpenLibrary(
       url = `https://openlibrary.org/trending/daily.json?limit=40`;
     }
 
-    const response = await providerFetch(url);
+    const response = await providerFetch(url, { next: { revalidate: 3600 } });
 
     if (!response.ok) {
       // Fallback a búsqueda general
       const searchUrl = `https://openlibrary.org/search.json?q=${genre || 'fiction'}&sort=new&limit=40`;
-      const searchResponse = await providerFetch(searchUrl);
+      const searchResponse = await providerFetch(searchUrl, { next: { revalidate: 3600 } });
 
       if (!searchResponse.ok) throw new Error('El catálogo de libros no está disponible');
 

@@ -4,6 +4,8 @@ import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils/cn';
 
+const MAX_ANIMATED_ITEMS = 24;
+
 interface AnimatedGridProps {
   children: React.ReactNode;
   className?: string;
@@ -36,7 +38,9 @@ export function AnimatedGrid({
     if (!animateOnMount || !gridRef.current || !isClient) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const items = gridRef.current.children;
+    // Solo las primeras filas, que son las visibles al entrar: con bibliotecas grandes el
+    // escalonado dejaba cientos de tarjetas invisibles durante segundos.
+    const items = Array.from(gridRef.current.children).slice(0, MAX_ANIMATED_ITEMS);
 
     // Initial state
     gsap.set(items, {

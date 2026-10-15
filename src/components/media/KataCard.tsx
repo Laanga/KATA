@@ -60,56 +60,46 @@ export function KataCard({ item }: KataCardProps) {
           '<',
         );
 
+      // quickTo reutiliza un único tween por propiedad en lugar de crear dos tweens nuevos
+      // en cada evento mousemove, que se acumulaban compitiendo por las mismas propiedades.
+      const tilt = { duration: 0.3, ease: 'power2.out' };
+      const rotateXTo = gsap.quickTo(card, 'rotationX', tilt);
+      const rotateYTo = gsap.quickTo(card, 'rotationY', tilt);
+      const imageXTo = gsap.quickTo(imageRef.current, 'x', tilt);
+      const imageYTo = gsap.quickTo(imageRef.current, 'y', tilt);
+
       const handleMouseMove = (e: MouseEvent) => {
-        if (!card) return;
-
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
+        const offsetX = (e.clientX - rect.left - centerX) / centerX;
+        const offsetY = (e.clientY - rect.top - centerY) / centerY;
 
-        const rotateX = ((y - centerY) / centerY) * -8;
-        const rotateY = ((x - centerX) / centerX) * 8;
-
-        gsap.to(card, {
-          rotationX: rotateX,
-          rotationY: rotateY,
-          duration: 0.3,
-          ease: 'power2.out',
-          transformPerspective: 1000,
-        });
-
-        gsap.to(imageRef.current, {
-          x: ((x - centerX) / centerX) * 10,
-          y: ((y - centerY) / centerY) * 10,
-          duration: 0.3,
-          ease: 'power2.out',
-        });
+        rotateXTo(offsetY * -8);
+        rotateYTo(offsetX * 8);
+        imageXTo(offsetX * 10);
+        imageYTo(offsetY * 10);
       };
 
       const handleMouseLeave = () => {
         tl.reverse();
         setShowActions(false);
 
+        rotateXTo(0);
+        rotateYTo(0);
+        imageXTo(0);
+        imageYTo(0);
         gsap.to(card, {
-          rotationX: 0,
-          rotationY: 0,
           scale: 1,
-          duration: 0.5,
-          ease: 'power2.out',
-        });
-
-        gsap.to(imageRef.current, {
-          x: 0,
-          y: 0,
           duration: 0.5,
           ease: 'power2.out',
         });
       };
 
-      const handleMouseEnter = () => tl.play();
+      const handleMouseEnter = () => {
+        gsap.set(card, { transformPerspective: 1000 });
+        tl.play();
+      };
       card.addEventListener('mouseenter', handleMouseEnter);
       card.addEventListener('mousemove', handleMouseMove);
       card.addEventListener('mouseleave', handleMouseLeave);
@@ -149,10 +139,10 @@ export function KataCard({ item }: KataCardProps) {
     <>
       <div
         ref={container}
-        className="kata-card kata-media-surface group relative aspect-[2/3] w-full overflow-hidden will-change-transform"
+        className="kata-card kata-media-surface group relative aspect-[2/3] w-full overflow-hidden"
         style={{ transformStyle: 'preserve-3d' }}
       >
-        <div ref={imageRef} className="absolute inset-0 will-change-transform">
+        <div ref={imageRef} className="absolute inset-0">
           <Image
             src={item.coverUrl}
             alt={item.title}

@@ -1,4 +1,5 @@
 import { createClient } from './client';
+import { getSessionUser } from './session';
 import type { MediaItem } from '@/types/media';
 import type { LibraryBackup } from '@/lib/utils/libraryTransfer';
 import type { Json } from '@/types/supabase';
@@ -20,9 +21,7 @@ class MediaDatabase {
   async getAll(): Promise<MediaItem[]> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     // Si no hay usuario, retornar array vacío en lugar de lanzar error
     if (!user) return [];
 
@@ -48,9 +47,7 @@ class MediaDatabase {
   async getById(id: string): Promise<MediaItem | null> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) return null;
 
     const { data, error } = await supabase
@@ -74,9 +71,7 @@ class MediaDatabase {
   async create(item: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<MediaItem> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para crear items');
     }
@@ -101,25 +96,29 @@ class MediaDatabase {
   async update(id: string, updates: Partial<MediaItem>): Promise<MediaItem> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para actualizar items');
     }
 
-    // Obtener metadata actual de la base de datos
-    const { data: currentData, error: metadataError } = await supabase
-      .from('media_items')
-      .select('metadata')
-      .eq('user_id', user.id)
-      .eq('id', id)
-      .single();
+    // El metadata actual solo hace falta para fusionarlo cuando cambia alguno de sus campos.
+    const touchesMetadata =
+      updates.author !== undefined ||
+      updates.platform !== undefined ||
+      updates.releaseYear !== undefined ||
+      updates.genres !== undefined;
+    let metadata: MediaMetadata | undefined;
+    if (touchesMetadata) {
+      const { data: currentData, error: metadataError } = await supabase
+        .from('media_items')
+        .select('metadata')
+        .eq('user_id', user.id)
+        .eq('id', id)
+        .single();
 
-    if (metadataError) throw metadataError;
-    const metadata = currentData
-      ? (currentData as { metadata?: MediaMetadata }).metadata
-      : undefined;
+      if (metadataError) throw metadataError;
+      metadata = currentData ? (currentData as { metadata?: MediaMetadata }).metadata : undefined;
+    }
     const dbUpdate = mediaItemToDbUpdate(updates, metadata);
 
     const { data, error } = await supabase
@@ -141,9 +140,7 @@ class MediaDatabase {
   async delete(id: string): Promise<void> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para eliminar items');
     }

@@ -65,7 +65,7 @@ async function fetchTMDBRecommendations(
       discoverUrl.searchParams.set('with_genres', genres);
     }
 
-    const response = await providerFetch(discoverUrl.toString());
+    const response = await providerFetch(discoverUrl.toString(), { next: { revalidate: 3600 } });
     if (!response.ok) return NextResponse.json({ results: [] });
 
     const data = await response.json();
@@ -224,7 +224,7 @@ async function fetchRAWGRecommendations(
     if (apiKey) url += `&key=${apiKey}`;
     if (genreSlugs) url += `&genres=${genreSlugs}`;
 
-    const response = await providerFetch(url);
+    const response = await providerFetch(url, { next: { revalidate: 3600 } });
     if (!response.ok) return [];
 
     const data = await response.json();
@@ -287,7 +287,7 @@ async function fetchBookRecommendations(genres: string, excludeTitles: string[],
         googleUrl.searchParams.set('key', apiKey);
       }
 
-      const response = await providerFetch(googleUrl.toString());
+      const response = await providerFetch(googleUrl.toString(), { next: { revalidate: 3600 } });
       if (response.ok) {
         const data = await response.json();
         allResults.push(...(data.items || []));

@@ -1,4 +1,5 @@
 import { createClient } from './client';
+import { getSessionUser } from './session';
 import type { Collection, CreateCollectionInput, UpdateCollectionInput } from '@/types/collections';
 import type { Database } from '@/types/supabase';
 
@@ -10,9 +11,7 @@ class CollectionsDatabase {
   async getAll(): Promise<Collection[]> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) return [];
 
     const data: Database['public']['Tables']['collections']['Row'][] = [];
@@ -59,9 +58,7 @@ class CollectionsDatabase {
   async getById(id: string): Promise<Collection | null> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) return null;
 
     const { data, error } = (await supabase
@@ -95,9 +92,7 @@ class CollectionsDatabase {
   async create(input: CreateCollectionInput): Promise<Collection> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para crear colecciones');
     }
@@ -135,9 +130,7 @@ class CollectionsDatabase {
   async update(id: string, input: UpdateCollectionInput): Promise<Collection> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para actualizar colecciones');
     }
@@ -176,9 +169,7 @@ class CollectionsDatabase {
   async delete(id: string): Promise<void> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) {
       throw new Error('Debes iniciar sesión para eliminar colecciones');
     }
@@ -223,9 +214,7 @@ class CollectionsDatabase {
   async getCollectionsForItem(itemId: string): Promise<Collection[]> {
     const supabase = this.getClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     if (!user) return [];
 
     const { data, error } = (await supabase

@@ -1,12 +1,15 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useAuth } from './AuthProvider';
 import { createClient } from '@/lib/supabase/client';
 import { parsePreferences, type UserPreferences } from '@/types/supabase';
 import { useMediaStore } from '@/lib/store';
-import { OnboardingGuide } from './OnboardingGuide';
 import { Button } from './ui/Button';
+
+// La guía solo aparece durante la bienvenida; se descarga cuando hace falta mostrarla.
+const OnboardingGuide = dynamic(() => import('./OnboardingGuide').then((m) => m.OnboardingGuide));
 type Changes = Partial<Omit<UserPreferences, 'user_id' | 'updated_at'>>;
 const Context = createContext<{
   preferences: UserPreferences | null;
@@ -31,26 +34,28 @@ function UserOnboarding({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const ready = !!user?.email_confirmed_at && !!user?.user_metadata?.username;
+  const userId = user?.id;
+  // Depende del id y no del objeto: revalidar la sesión crea otro objeto User del mismo usuario.
   useEffect(() => {
     let active = true;
-    if (!user || !ready) return;
+    if (!userId || !ready) return;
     const client = createClient();
     (async () => {
       const { data, error } = await client
         .from('user_preferences')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
       if (error) throw error;
       if (data) return data;
       const { error: insertError } = await client
         .from('user_preferences')
-        .upsert({ user_id: user.id }, { onConflict: 'user_id', ignoreDuplicates: true });
+        .upsert({ user_id: userId }, { onConflict: 'user_id', ignoreDuplicates: true });
       if (insertError) throw insertError;
       const result = await client
         .from('user_preferences')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
       if (result.error) throw result.error;
       return result.data;
@@ -64,7 +69,7 @@ function UserOnboarding({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [user, ready, attempt]);
+  }, [userId, ready, attempt]);
   const save = useCallback(
     async (changes: Changes) => {
       if (!user) throw new Error('Inicia sesión para continuar');

@@ -49,7 +49,14 @@ export async function GET(request: NextRequest) {
       discoverUrl.searchParams.set('with_genres', genre);
     }
 
-    const response = await providerFetch(discoverUrl.toString());
+    // Próximos estrenos y géneros en paralelo; ambos cambian poco y se cachean en el servidor.
+    const [response, genresResponse] = await Promise.all([
+      providerFetch(discoverUrl.toString(), { next: { revalidate: 3600 } }),
+      providerFetch(
+        `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=es-ES`,
+        { next: { revalidate: 86400 } },
+      ).catch(() => null),
+    ]);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -59,12 +66,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    // Obtener géneros
-    const genresResponse = await providerFetch(
-      `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=es-ES`,
-    );
-
-    const genresData = genresResponse.ok ? await genresResponse.json() : { genres: [] };
+    const genresData = genresResponse?.ok ? await genresResponse.json() : { genres: [] };
     const availableGenres = (genresData.genres || []).map((g: TMDBGenre) => ({
       id: g.id,
       name: g.name,

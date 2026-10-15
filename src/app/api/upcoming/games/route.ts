@@ -137,7 +137,7 @@ async function fetchFromRAWG(dateFrom: Date, dateTo: Date, genre?: string | null
       url += `&genres=${genre}`;
     }
 
-    const response = await providerFetch(url);
+    const response = await providerFetch(url, { next: { revalidate: 3600 } });
 
     if (!response.ok) {
       console.error('RAWG API Error:', response.status, await response.text());

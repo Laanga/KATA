@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Settings, User, Star, Library } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useMediaStore } from '@/lib/store';
@@ -12,15 +13,20 @@ import { Panel } from '@/components/ui/Panel';
 import { ProfileSkeleton } from '@/components/ui/Skeleton';
 import { MediaCover } from '@/components/media/MediaCover';
 import { EditItemModal } from '@/components/media/EditItemModal';
-import { SettingsModal } from '@/components/SettingsModal';
 import { DistributionPanel } from '@/components/dashboard/DistributionPanel';
 import type { MediaItem, MediaType } from '@/types/media';
+
+// Ajustes incluye importación/exportación (papaparse) y solo se usa al abrirlo.
+const SettingsModal = dynamic(() =>
+  import('@/components/SettingsModal').then((m) => m.SettingsModal),
+);
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const items = useMediaStore((s) => s.items);
   const ready = useMediaStore((s) => s.isInitialized);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [tab, setTab] = useState<'overview' | 'stats' | 'reviews'>('overview');
   const [editing, setEditing] = useState<MediaItem | null>(null);
   const summary = getDashboardSummary(items);
@@ -77,7 +83,10 @@ export default function ProfilePage() {
             <Button
               variant="secondary"
               className="self-start shrink-0"
-              onClick={() => setSettingsOpen(true)}
+              onClick={() => {
+                setSettingsLoaded(true);
+                setSettingsOpen(true);
+              }}
             >
               <Settings size={16} aria-hidden="true" />
               Ajustes
@@ -307,7 +316,9 @@ export default function ProfilePage() {
           )}
         </div>
       </main>
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {settingsLoaded && (
+        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      )}
       {editing && (
         <EditItemModal key={editing.id} item={editing} isOpen onClose={() => setEditing(null)} />
       )}

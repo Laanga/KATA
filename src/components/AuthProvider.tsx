@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     let active = true;
     let revision = 0;
+    let validated = false;
     const sync = (next: User | null) => {
       if (!active) return;
       if (useMediaStore.getState().userId !== (next?.id ?? null))
@@ -32,7 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION') return;
+      // La sesión guardada permite pintar y empezar a cargar datos sin esperar a la red;
+      // getUser() la valida justo después y corrige el estado si se ha revocado.
+      if (event === 'INITIAL_SESSION') {
+        if (!validated && revision === 0 && session?.user) sync(session.user);
+        return;
+      }
       revision++;
       sync(session?.user ?? null);
     });
@@ -40,9 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth
       .getUser()
       .then(({ data }) => {
+        validated = true;
         if (revision === initialRevision) sync(data.user);
       })
       .catch(() => {
+        validated = true;
         if (revision === initialRevision) sync(null);
       });
     return () => {
